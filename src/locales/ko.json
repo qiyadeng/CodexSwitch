@@ -556,7 +556,7 @@
       "uiScale": "UI 배율",
       "uiScaleDesc": "인터페이스 배율 조정",
       "defaultTerminal": "기본 터미널",
-      "defaultTerminalDesc": "Gemini CLI를 열 때 사용되는 터미널",
+      "defaultTerminalDesc": "Codex CLI를 열 때 사용되는 터미널",
       "terminalSystem": "시스템 기본값",
       "accountManagement": "계정 관리",
       "autoRefresh": "Antigravity 자동 새로고침 할당량",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "계정 메모 저장 실패: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api 서비스 패널",
+      "panelTitle": "Newbee API 서비스 패널",
       "servicePanel": "서비스 패널",
       "balance": "잔액",
       "requests": "요청",

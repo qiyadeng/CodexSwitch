@@ -551,7 +551,7 @@
       "theme": "Tema",
       "themeDesc": "Koyu ve açık mod arasında geçiş yapın",
       "defaultTerminal": "Varsayılan Terminal",
-      "defaultTerminalDesc": "Gemini CLI açılırken kullanılan terminal",
+      "defaultTerminalDesc": "Codex CLI açılırken kullanılan terminal",
       "terminalSystem": "Sistem Varsayılanı",
       "themeLight": "Açık",
       "themeDark": "Koyu",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Hesap notu kaydedilemedi: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api hizmet paneli",
+      "panelTitle": "Newbee API hizmet paneli",
       "servicePanel": "Hizmet paneli",
       "balance": "Bakiye",
       "requests": "İstekler",

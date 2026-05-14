@@ -1,7 +1,7 @@
 {
   "name": "cockpit-tools",
   "private": true,
-  "version": "0.23.2",
+  "version": "0.23.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,9 @@
     "preview": "vite preview",
     "pretauri": "npm run typecheck",
     "tauri": "npm run sync-version && tauri",
+    "package:desktop": "node scripts/package-desktop.mjs",
+    "package:nsis": "node scripts/package-desktop.mjs --bundles nsis",
+    "package:nsis:fast": "node scripts/package-desktop.mjs --bundles nsis --fast",
     "sync-version": "node scripts/sync-version.js"
   },
   "dependencies": {

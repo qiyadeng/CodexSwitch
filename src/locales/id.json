@@ -758,7 +758,7 @@
       "antigravityDualSwitchNoRestart": "Penggantian ganda tanpa mulai ulang",
       "antigravityDualSwitchNoRestartDesc": "Saat mengganti, tulis data akun lokal dan panggil penggantian mulus ekstensi dalam satu alur, tanpa memulai ulang Antigravity.",
       "defaultTerminal": "Terminal default",
-      "defaultTerminalDesc": "Terminal yang digunakan saat membuka Gemini CLI.",
+      "defaultTerminalDesc": "Terminal yang digunakan saat membuka Codex CLI.",
       "terminalSystem": "Ikuti sistem",
       "currentAccountRefreshRequiresAutoRefresh": "Aktifkan terlebih dahulu \"Penyegaran Kuota Otomatis\" untuk mengatur penyegaran akun saat ini.",
       "codebuddyCnAppPath": "Path Aplikasi CodeBuddy CN",
@@ -1982,7 +1982,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2455,7 +2455,7 @@
       "saveFailed": "Gagal menyimpan catatan akun: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Panel layanan Cockpit Api",
+      "panelTitle": "Panel layanan Newbee API",
       "servicePanel": "Panel layanan",
       "balance": "Saldo",
       "requests": "Permintaan",
@@ -3061,7 +3061,7 @@
       "runInTerminal": "Jalankan di Terminal",
       "workingDir": "Direktori kerja",
       "workingDirPlaceholder": "Gunakan direktori saat ini sebagai default",
-      "workingDirDesc": "Saat startup, Gemini CLI akan berpindah ke direktori ini terlebih dahulu",
+      "workingDirDesc": "Saat startup, Codex CLI akan berpindah ke direktori ini terlebih dahulu",
       "pickWorkingDir": "Pilih direktori kerja"
     },
     "switch": {

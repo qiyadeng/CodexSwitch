@@ -46,7 +46,6 @@ import {
   saveCurrentAccountRefreshMinutesMap,
 } from '../utils/currentAccountRefresh';
 import { ALL_PLATFORM_IDS, PlatformId } from '../types/platform';
-import { SettingsAccountTransferSection } from '../components/SettingsAccountTransferSection';
 import './settings/Settings.css';
 import { 
   Github, User, Rocket, Save, FolderOpen,
@@ -1848,7 +1847,7 @@ export function SettingsPage() {
               <div className="settings-row">
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.defaultTerminal', '默认终端')}</div>
-                  <div className="row-desc">{t('settings.general.defaultTerminalDesc', 'Gemini CLI 打开时使用的终端')}</div>
+                  <div className="row-desc">{t('settings.general.defaultTerminalDesc', 'Codex CLI 打开时使用的终端')}</div>
                 </div>
                 <div className="row-control">
                   <select 
@@ -1986,7 +1985,7 @@ export function SettingsPage() {
                 </div>
               )}
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.floatingCardStartup', '启动时显示悬浮卡片')}</div>
                   <div className="row-desc">{t('settings.general.floatingCardStartupDesc', '应用启动后默认展示悬浮账号卡片')}</div>
@@ -2003,7 +2002,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.floatingCardAlwaysOnTop', '悬浮卡片默认置顶')}</div>
                   <div className="row-desc">{t('settings.general.floatingCardAlwaysOnTopDesc', '新打开的悬浮卡片窗口默认保持置顶')}</div>
@@ -2037,7 +2036,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.floatingCardShowNow', '立即显示悬浮卡片')}</div>
                   <div className="row-desc">{t('settings.general.floatingCardShowNowDesc', '关闭后可在这里或托盘菜单中重新打开')}</div>
@@ -2061,7 +2060,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.fpDir')}</div>
                   <div className="row-desc">{t('settings.general.fpDirDesc')}</div>
@@ -2074,10 +2073,8 @@ export function SettingsPage() {
               </div>
             </div>
 
-            <SettingsAccountTransferSection />
-
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ order: platformSettingsOrder.antigravity }}>
+              <div style={{ order: platformSettingsOrder.antigravity, display: 'none' }}>
                 <div className="group-title">{t('settings.general.antigravitySettingsTitle', 'Antigravity 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -2737,7 +2734,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.opencodeAuthOverwrite')}</div>
                   <div className="row-desc">{t('settings.general.opencodeAuthOverwriteDesc')}</div>
@@ -2760,7 +2757,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.openclawAuthOverwrite')}</div>
                   <div className="row-desc">{t('settings.general.openclawAuthOverwriteDesc')}</div>
@@ -2777,7 +2774,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.opencodeRestart')}</div>
                   <div className="row-desc">
@@ -2799,7 +2796,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="settings-row">
+              <div className="settings-row" style={{ display: 'none' }}>
                 <div className="row-label">
                   <div className="row-title">{t('settings.general.opencodeAppPath')}</div>
                   <div className="row-desc">
@@ -2917,7 +2914,7 @@ export function SettingsPage() {
 
               </div>
 
-              <div style={{ order: platformSettingsOrder['github-copilot'] }}>
+              <div style={{ order: platformSettingsOrder['github-copilot'], display: 'none' }}>
                 <div className="group-title">{t('settings.general.githubCopilotSettingsTitle', 'GitHub Copilot 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -3104,7 +3101,7 @@ export function SettingsPage() {
 
               </div>
 
-              <div style={{ order: platformSettingsOrder.windsurf }}>
+              <div style={{ order: platformSettingsOrder.windsurf, display: 'none' }}>
                 <div className="group-title">{t('settings.general.windsurfSettingsTitle', 'Windsurf 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -3291,7 +3288,7 @@ export function SettingsPage() {
 
               </div>
 
-              <div style={{ order: platformSettingsOrder.kiro }}>
+              <div style={{ order: platformSettingsOrder.kiro, display: 'none' }}>
                 <div className="group-title">{t('settings.general.kiroSettingsTitle', 'Kiro 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -3477,7 +3474,7 @@ export function SettingsPage() {
             </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.codebuddy }}>
+              <div style={{ order: platformSettingsOrder.codebuddy, display: 'none' }}>
                 <div className="group-title">{t('settings.general.codebuddySettingsTitle', 'CodeBuddy 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -3667,7 +3664,7 @@ export function SettingsPage() {
             </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.codebuddy_cn }}>
+              <div style={{ order: platformSettingsOrder.codebuddy_cn, display: 'none' }}>
                 <div className="group-title">{t('settings.general.codebuddyCnSettingsTitle', 'CodeBuddy CN 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">
@@ -3857,7 +3854,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.qoder }}>
+              <div style={{ order: platformSettingsOrder.qoder, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.qoder.title', 'Qoder 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">
@@ -4047,7 +4044,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.trae }}>
+              <div style={{ order: platformSettingsOrder.trae, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.trae.title', 'Trae 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">
@@ -4237,7 +4234,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.workbuddy }}>
+              <div style={{ order: platformSettingsOrder.workbuddy, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.workbuddy.title', 'WorkBuddy 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">
@@ -4427,7 +4424,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.zed }}>
+              <div style={{ order: platformSettingsOrder.zed, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.zed.title', 'Zed 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">
@@ -4613,7 +4610,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.cursor }}>
+              <div style={{ order: platformSettingsOrder.cursor, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.cursor.title', 'Cursor 设置')}</div>
                 <div className="settings-group">
               <div className="settings-row">
@@ -4799,7 +4796,7 @@ export function SettingsPage() {
             </div>
               </div>
 
-              <div style={{ order: platformSettingsOrder.gemini }}>
+              <div style={{ order: platformSettingsOrder.gemini, display: 'none' }}>
                 <div className="group-title">{t('quickSettings.gemini.title', 'Gemini Cli 设置')}</div>
                 <div className="settings-group">
                   <div className="settings-row">

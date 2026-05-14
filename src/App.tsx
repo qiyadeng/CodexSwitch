@@ -474,6 +474,17 @@ function isWindowsPlatform(): boolean {
   return platform.toLowerCase().includes('win');
 }
 
+function normalizeCodexOnlyPage(page: Page): Page {
+  switch (page) {
+    case 'codex':
+    case 'manual':
+    case 'settings':
+      return page;
+    default:
+      return 'codex';
+  }
+}
+
 function MainApp() {
   const { t } = useTranslation();
   const sideNavLayoutMode = useSideNavLayoutStore((state) => state.mode);
@@ -481,7 +492,7 @@ function MainApp() {
   const sideNavClassicFirstSyncDone = useSideNavLayoutStore((state) => state.classicFirstSyncDone);
   const markSideNavClassicFirstSyncDone = useSideNavLayoutStore((state) => state.markClassicFirstSyncDone);
   const syncSidebarEntriesFromDashboard = usePlatformLayoutStore((state) => state.syncSidebarEntriesFromDashboard);
-  const [page, setPage] = useState<Page>('dashboard');
+  const [page, setPage] = useState<Page>('codex');
   const [showUpdateNotification, setShowUpdateNotification] = useState(false);
   const [updateNotificationKey, setUpdateNotificationKey] = useState(0);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
@@ -2732,19 +2743,7 @@ function MainApp() {
         listen<string>('tray:navigate', (event) => {
           const target = String(event.payload || '');
           switch (target) {
-            case 'overview':
             case 'codex':
-            case 'github-copilot':
-            case 'windsurf':
-            case 'kiro':
-            case 'cursor':
-            case 'gemini':
-            case 'codebuddy':
-            case 'codebuddy-cn':
-            case 'qoder':
-            case 'trae':
-            case 'workbuddy':
-            case 'zed':
             case 'manual':
             case 'settings':
               setPage(target as Page);
@@ -2811,7 +2810,7 @@ function MainApp() {
     const handleRequestNavigate = (e: Event) => {
       const custom = e as CustomEvent<Page>;
       if (custom.detail) {
-        setPage(custom.detail);
+        setPage(normalizeCodexOnlyPage(custom.detail));
       }
     };
     window.addEventListener('app-request-navigate', handleRequestNavigate as EventListener);

@@ -286,6 +286,22 @@
   margin-top: auto;
 }
 
+.side-nav.side-nav-compact {
+  min-height: 0;
+  padding: 24px 0 34px;
+  gap: 18px;
+}
+
+.side-nav.side-nav-compact .nav-items {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.side-nav.side-nav-compact .nav-footer {
+  margin-top: 0;
+}
+
 .side-nav-layout-switch-trigger {
   position: absolute;
   left: 50%;

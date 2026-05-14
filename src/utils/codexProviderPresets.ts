@@ -11,14 +11,18 @@ export interface CodexApiProviderPreset {
 
 export const CODEX_API_PROVIDER_CUSTOM_ID = "custom";
 export const COCKPIT_API_PROVIDER_ID = "cockpit_api";
+const VISIBLE_CODEX_API_PROVIDER_PRESET_IDS = new Set([
+  COCKPIT_API_PROVIDER_ID,
+  "openai_official",
+]);
 
-export const CODEX_API_PROVIDER_PRESETS: readonly CodexApiProviderPreset[] = [
+const CODEX_API_PROVIDER_ALL_PRESETS: readonly CodexApiProviderPreset[] = [
   {
     id: COCKPIT_API_PROVIDER_ID,
-    name: "Cockpit Api",
-    baseUrls: ["https://chongcodex.cn/v1"],
-    website: "https://chongcodex.cn/console",
-    apiKeyUrl: "https://chongcodex.cn/console",
+    name: "Newbee API",
+    baseUrls: ["https://www.newbeeapi.com/v1"],
+    website: "https://www.newbeeapi.com/",
+    apiKeyUrl: "https://www.newbeeapi.com/console/token",
     isPartner: true,
     isService: true,
   },
@@ -191,6 +195,11 @@ export const CODEX_API_PROVIDER_PRESETS: readonly CodexApiProviderPreset[] = [
   },
 ];
 
+export const CODEX_API_PROVIDER_PRESETS: readonly CodexApiProviderPreset[] =
+  CODEX_API_PROVIDER_ALL_PRESETS.filter((preset) =>
+    VISIBLE_CODEX_API_PROVIDER_PRESET_IDS.has(preset.id),
+  );
+
 function normalizeCodexProviderBaseUrl(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -209,7 +218,7 @@ function normalizeCodexProviderBaseUrl(value: string): string | null {
 export function findCodexApiProviderPresetById(
   id: string,
 ): CodexApiProviderPreset | null {
-  return CODEX_API_PROVIDER_PRESETS.find((preset) => preset.id === id) ?? null;
+  return CODEX_API_PROVIDER_ALL_PRESETS.find((preset) => preset.id === id) ?? null;
 }
 
 export function findCodexApiProviderPresetByBaseUrl(
@@ -219,7 +228,7 @@ export function findCodexApiProviderPresetByBaseUrl(
   if (!normalized) return null;
 
   return (
-    CODEX_API_PROVIDER_PRESETS.find((preset) =>
+    CODEX_API_PROVIDER_ALL_PRESETS.find((preset) =>
       preset.baseUrls.some(
         (baseUrl) => normalizeCodexProviderBaseUrl(baseUrl) === normalized,
       ),

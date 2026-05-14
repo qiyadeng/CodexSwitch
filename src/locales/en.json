@@ -695,7 +695,7 @@
       "theme": "Theme",
       "themeDesc": "Switch between dark and light mode",
       "defaultTerminal": "Default Terminal",
-      "defaultTerminalDesc": "The terminal used when opening Gemini CLI",
+      "defaultTerminalDesc": "The terminal used when opening Codex CLI",
       "terminalSystem": "System Default",
       "sideNavLayout": "Sidebar Layout",
       "sideNavLayoutDesc": "Switch between original and classic sidebar layouts",
@@ -1939,7 +1939,7 @@
       },
       "providers": {
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         },
         "openai_official": {
           "name": "OpenAI Official"
@@ -2009,7 +2009,7 @@
       }
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api Service Panel",
+      "panelTitle": "Newbee API Service Panel",
       "servicePanel": "Service Panel",
       "balance": "Balance",
       "requests": "Requests",

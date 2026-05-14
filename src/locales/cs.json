@@ -712,7 +712,7 @@
       "codexAutoSwitchAccountScope": "Rozsah automatického přepínání účtů Codex",
       "codexAutoSwitchAccountScopeDesc": "Aktuální stav automatického přepínání Codex: {{status}}. Zohledněny budou pouze účty v tomto rozsahu.",
       "defaultTerminal": "Výchozí terminál",
-      "defaultTerminalDesc": "Terminál použitý při otevírání Gemini CLI",
+      "defaultTerminalDesc": "Terminál použitý při otevírání Codex CLI",
       "terminalSystem": "Systémový výchozí",
       "currentAccountRefreshRequiresAutoRefresh": "Pro nastavení obnovení aktuálního účtu nejprve zapněte „Automatické obnovení kvóty“.",
       "codebuddyCnAppPath": "Cesta k aplikaci CodeBuddy CN",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Uložení poznámky účtu selhalo: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Panel služby Cockpit Api",
+      "panelTitle": "Panel služby Newbee API",
       "servicePanel": "Panel služby",
       "balance": "Zůstatek",
       "requests": "Požadavky",

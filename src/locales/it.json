@@ -712,7 +712,7 @@
       "codexAutoSwitchAccountScope": "Ambito di cambio automatico account Codex",
       "codexAutoSwitchAccountScopeDesc": "Stato attuale del cambio automatico Codex: {{status}}. Verranno considerati solo gli account in questo ambito.",
       "defaultTerminal": "Terminal predefinito",
-      "defaultTerminalDesc": "Il terminale utilizzato all'apertura di Gemini CLI",
+      "defaultTerminalDesc": "Il terminale utilizzato all'apertura di Codex CLI",
       "terminalSystem": "Predefinito di sistema",
       "currentAccountRefreshRequiresAutoRefresh": "Attiva prima \"Aggiornamento automatico della quota\" per configurare l'aggiornamento dell'account corrente.",
       "codebuddyCnAppPath": "Percorso app CodeBuddy CN",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Salvataggio nota account non riuscito: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Pannello servizio Cockpit Api",
+      "panelTitle": "Pannello servizio Newbee API",
       "servicePanel": "Pannello servizio",
       "balance": "Saldo",
       "requests": "Richieste",

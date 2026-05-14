@@ -212,7 +212,7 @@ const CODEX_TOKEN_BATCH_EXAMPLE = `[
   }
 ]`;
 const OPENAI_OFFICIAL_PRESET_ID = "openai_official";
-const COCKPIT_API_BASE_URL = "https://chongcodex.cn/v1";
+const COCKPIT_API_BASE_URL = "https://www.newbeeapi.com/v1";
 
 function normalizeCodexApiBaseUrl(rawValue?: string | null): string {
   return normalizeHttpBaseUrl(rawValue ?? "") ?? "";
@@ -6504,7 +6504,7 @@ export function CodexAccountsPage() {
           <div className="modal-header cockpit-api-panel-header">
             <div>
               <h2>
-                {t("codex.cockpitApi.panelTitle", "Cockpit Api 服务面板")}
+                {t("codex.cockpitApi.panelTitle", "Newbee API 服务面板")}
               </h2>
               <span className="cockpit-api-panel-subtitle">
                 {maskAccountText(account.account_name || account.email)}

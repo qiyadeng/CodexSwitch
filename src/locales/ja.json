@@ -551,7 +551,7 @@
       "theme": "テーマ",
       "themeDesc": "ダークモードとライトモードを切り替えます",
       "defaultTerminal": "デフォルトのターミナル",
-      "defaultTerminalDesc": "Gemini CLIを開くときに使用されるターミナル",
+      "defaultTerminalDesc": "Codex CLIを開くときに使用されるターミナル",
       "terminalSystem": "システムデフォルト",
       "themeLight": "ライト",
       "themeDark": "ダーク",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "アカウントメモの保存に失敗しました: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api サービスパネル",
+      "panelTitle": "Newbee API サービスパネル",
       "servicePanel": "サービスパネル",
       "balance": "残高",
       "requests": "リクエスト",

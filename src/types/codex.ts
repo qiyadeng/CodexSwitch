@@ -457,7 +457,7 @@ function normalizeCodexAuthFilePlanType(
 
 export function getCodexPlanBadgeLabel(account: CodexAccount): string {
   if (isCodexNewApiAccount(account)) {
-    return account.plan_type?.trim() || "Cockpit Api";
+    return account.plan_type?.trim() || "Newbee API";
   }
   const baseLabel = getCodexPlanDisplayName(account.plan_type);
   if (normalizeCodexPlanKey(account.plan_type) !== "pro") {

@@ -556,7 +556,7 @@
       "uiScale": "Skala interfejsu",
       "uiScaleDesc": "Dostosuj skalę interfejsu",
       "defaultTerminal": "Domyślny terminal",
-      "defaultTerminalDesc": "Terminal używany podczas otwierania Gemini CLI",
+      "defaultTerminalDesc": "Terminal używany podczas otwierania Codex CLI",
       "terminalSystem": "Domyślny systemowy",
       "accountManagement": "Zarządzanie kontami",
       "autoRefresh": "Automatyczne odświeżanie limitu Antigravity",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Nie udało się zapisać notatki konta: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Panel usługi Cockpit Api",
+      "panelTitle": "Panel usługi Newbee API",
       "servicePanel": "Panel usługi",
       "balance": "Saldo",
       "requests": "Żądania",

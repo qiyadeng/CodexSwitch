@@ -1,4 +1,4 @@
-import { Settings, Rocket, GaugeCircle, LayoutGrid, SlidersHorizontal, FileText, ChevronDown, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
+import { Settings, Rocket, LayoutGrid, SlidersHorizontal, FileText, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
@@ -260,6 +260,8 @@ export function SideNav({
     [isClassicLayout, orderedEntries, sidebarMenuEntryIdSet, sidebarMenuPlatformIdSet],
   );
 
+  const isCompactFloatingNav =
+    !isClassicLayout && sidebarMenuEntries.length <= 1 && moreMenuEntries.length === 0;
   const isMoreActive = !!currentEntryId && !sidebarMenuEntryIdSet.has(currentEntryId);
   const shouldLockActiveOnMore = showMore;
 
@@ -730,7 +732,7 @@ export function SideNav({
       <nav
         ref={sideNavRef}
         style={classicScaleStyle}
-        className={`side-nav${isClassicLayout ? ' side-nav-classic' : ''}${isClassicCollapsed ? ' side-nav-classic-collapsed' : ''}`}
+        className={`side-nav${isClassicLayout ? ' side-nav-classic' : ''}${isClassicCollapsed ? ' side-nav-classic-collapsed' : ''}${isCompactFloatingNav ? ' side-nav-compact' : ''}`}
       >
       {shouldShowUpdateEntry && (
         <div className="side-nav-update-entry" ref={updateEntryRef}>
@@ -789,7 +791,7 @@ export function SideNav({
           </div>
 
           {isClassicLayout && !isClassicCollapsed && (
-            <div className="side-nav-brand-title">Cockpit Tools</div>
+            <div className="side-nav-brand-title">Codex Tools</div>
           )}
         </div>
 
@@ -820,19 +822,6 @@ export function SideNav({
         className={`nav-items${isClassicLayout && !classicNavNeedsScroll ? ' nav-items-no-scroll' : ''}`}
         ref={navItemsRef}
       >
-        <button
-          className={`nav-item ${page === 'dashboard' && !shouldLockActiveOnMore ? 'active' : ''}`}
-          onClick={() => setPage('dashboard')}
-          title={t('nav.dashboard')}
-        >
-          <GaugeCircle size={isClassicLayout ? classicMainIconSize : 20} />
-          {showClassicLabels ? (
-            <span className="nav-item-text">{t('nav.dashboard')}</span>
-          ) : !isClassicLayout ? (
-            <span className="tooltip">{t('nav.dashboard')}</span>
-          ) : null}
-        </button>
-
         {sidebarMenuEntries.map((entry) => {
           const active = currentEntryId === entry.id && !shouldLockActiveOnMore;
           return (
@@ -852,19 +841,21 @@ export function SideNav({
           );
         })}
 
-        <button
-          ref={moreButtonRef}
-          className={`nav-item ${showMore || isMoreActive ? 'active' : ''}`}
-          onClick={() => setShowMore((prev) => !prev)}
-          title={t('nav.morePlatforms', '更多平台')}
-        >
-          <LayoutGrid size={isClassicLayout ? classicMainIconSize : 20} />
-          {showClassicLabels ? (
-            <span className="nav-item-text">{t('nav.morePlatforms', '更多平台')}</span>
-          ) : !isClassicLayout ? (
-            <span className="tooltip">{t('nav.morePlatforms', '更多平台')}</span>
-          ) : null}
-        </button>
+        {moreMenuEntries.length > 0 && (
+          <button
+            ref={moreButtonRef}
+            className={`nav-item ${showMore || isMoreActive ? 'active' : ''}`}
+            onClick={() => setShowMore((prev) => !prev)}
+            title={t('nav.morePlatforms', '更多平台')}
+          >
+            <LayoutGrid size={isClassicLayout ? classicMainIconSize : 20} />
+            {showClassicLabels ? (
+              <span className="nav-item-text">{t('nav.morePlatforms', '更多平台')}</span>
+            ) : !isClassicLayout ? (
+              <span className="tooltip">{t('nav.morePlatforms', '更多平台')}</span>
+            ) : null}
+          </button>
+        )}
 
         {morePopoverContent && (
           isClassicLayout && typeof document !== 'undefined'
@@ -876,17 +867,6 @@ export function SideNav({
 
       {isClassicLayout && (
         <div className="nav-bottom-actions" ref={bottomActionsRef}>
-          <button
-            className={`nav-item ${page === '2fa' && !shouldLockActiveOnMore ? 'active' : ''}`}
-            onClick={() => setPage('2fa')}
-            title={t('nav.2faManager', '2FA / MFA 管理')}
-          >
-            <ShieldCheck size={isClassicLayout ? classicMainIconSize : 20} />
-            {showClassicLabels ? (
-              <span className="nav-item-text">{t('nav.2faManager', '2FA / MFA 管理')}</span>
-            ) : null}
-          </button>
-
           <button
             className="nav-item"
             onClick={onOpenLogViewer}

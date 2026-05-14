@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Cockpit Tools",
-  "version": "0.23.2",
+  "version": "0.23.3",
   "identifier": "com.jlcodes.cockpit-tools",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -88,7 +88,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRkU1RTdBRDdCRUUzM0QKUldROTQ3N1hlbDcrd1ZVQ2E3b1ZoVUdXL3BWQmpjdzNnWllNUW1LNHVwcE9wdGI1Q1UxQmdnQ0oK",
       "endpoints": [
-        "https://github.com/jlcodes99/cockpit-tools/releases/latest/download/latest.json"
+        "https://github.com/qiyadeng/CodexSwitch/releases/latest/download/latest.json"
       ]
     }
   }

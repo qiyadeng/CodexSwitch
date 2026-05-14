@@ -695,7 +695,7 @@
       "theme": "应用主题",
       "themeDesc": "切换深色或浅色模式",
       "defaultTerminal": "默认终端",
-      "defaultTerminalDesc": "Gemini CLI 打开时使用的终端",
+      "defaultTerminalDesc": "Codex CLI 打开时使用的终端",
       "terminalSystem": "跟随系统",
       "sideNavLayout": "侧边栏布局",
       "sideNavLayoutDesc": "切换原始布局或经典布局",
@@ -1939,7 +1939,7 @@
       },
       "providers": {
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         },
         "openai_official": {
           "name": "OpenAI Official"
@@ -2009,7 +2009,7 @@
       }
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api 服务面板",
+      "panelTitle": "Newbee API 服务面板",
       "servicePanel": "服务面板",
       "balance": "额度",
       "requests": "请求",

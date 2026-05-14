@@ -556,7 +556,7 @@
       "uiScale": "Масштаб интерфейса",
       "uiScaleDesc": "Настройте масштаб интерфейса",
       "defaultTerminal": "Терминал по умолчанию",
-      "defaultTerminalDesc": "Терминал, используемый при открытии Gemini CLI",
+      "defaultTerminalDesc": "Терминал, используемый при открытии Codex CLI",
       "terminalSystem": "Системный по умолчанию",
       "accountManagement": "Управление аккаунтами",
       "autoRefresh": "Автообновление квоты Antigravity",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Не удалось сохранить заметку аккаунта: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Панель сервиса Cockpit Api",
+      "panelTitle": "Панель сервиса Newbee API",
       "servicePanel": "Панель сервиса",
       "balance": "Баланс",
       "requests": "Запросы",

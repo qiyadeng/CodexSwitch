@@ -551,7 +551,7 @@
       "theme": "Design",
       "themeDesc": "Zwischen hellem und dunklem Modus wechseln",
       "defaultTerminal": "Standard-Terminal",
-      "defaultTerminalDesc": "Das beim Öffnen der Gemini CLI verwendete Terminal",
+      "defaultTerminalDesc": "Das beim Öffnen der Codex CLI verwendete Terminal",
       "terminalSystem": "Systemstandard",
       "themeLight": "Hell",
       "themeDark": "Dunkel",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Kontonotiz konnte nicht gespeichert werden: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api Dienstpanel",
+      "panelTitle": "Newbee API Dienstpanel",
       "servicePanel": "Dienstpanel",
       "balance": "Guthaben",
       "requests": "Anfragen",

@@ -758,7 +758,7 @@
       "codexAutoSwitchAccountScope": "نطاق التبديل التلقائي لحسابات Codex",
       "codexAutoSwitchAccountScopeDesc": "حالة التبديل التلقائي الحالية لـ Codex: {{status}}. سيتم النظر فقط في الحسابات ضمن هذا النطاق.",
       "defaultTerminal": "المحطة الافتراضية",
-      "defaultTerminalDesc": "المحطة المستخدمة عند فتح Gemini CLI",
+      "defaultTerminalDesc": "المحطة المستخدمة عند فتح Codex CLI",
       "terminalSystem": "افتراضي النظام",
       "currentAccountRefreshRequiresAutoRefresh": "فعّل أولاً \"التحديث التلقائي للحصة\" حتى تتمكن من إعداد تحديث الحساب الحالي.",
       "codebuddyCnAppPath": "مسار تطبيق CodeBuddy CN",
@@ -2292,7 +2292,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2455,7 +2455,7 @@
       "saveFailed": "فشل حفظ ملاحظة الحساب: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "لوحة خدمة Cockpit Api",
+      "panelTitle": "لوحة خدمة Newbee API",
       "servicePanel": "لوحة الخدمة",
       "balance": "الرصيد",
       "requests": "الطلبات",

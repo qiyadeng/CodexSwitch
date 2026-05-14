@@ -31,7 +31,9 @@ export const ALL_PLATFORM_IDS: PlatformId[] = [
   'workbuddy',
 ];
 
-export const MENU_HIDDEN_PLATFORM_IDS: PlatformId[] = [];
+export const MENU_HIDDEN_PLATFORM_IDS: PlatformId[] = ALL_PLATFORM_IDS.filter(
+  (platformId) => platformId !== 'codex',
+);
 
 export const MENU_VISIBLE_PLATFORM_IDS: PlatformId[] = ALL_PLATFORM_IDS.filter(
   (platformId) => !MENU_HIDDEN_PLATFORM_IDS.includes(platformId),

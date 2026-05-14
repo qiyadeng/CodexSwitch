@@ -551,7 +551,7 @@
       "theme": "Chủ đề ứng dụng",
       "themeDesc": "Chuyển đổi chế độ sáng hoặc tối",
       "defaultTerminal": "Terminal mặc định",
-      "defaultTerminalDesc": "Terminal được sử dụng khi mở Gemini CLI",
+      "defaultTerminalDesc": "Terminal được sử dụng khi mở Codex CLI",
       "terminalSystem": "Mặc định hệ thống",
       "themeLight": "Sáng (Light)",
       "themeDark": "Tối (Dark)",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Không thể lưu ghi chú tài khoản: {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Bảng dịch vụ Cockpit Api",
+      "panelTitle": "Bảng dịch vụ Newbee API",
       "servicePanel": "Bảng dịch vụ",
       "balance": "Số dư",
       "requests": "Yêu cầu",

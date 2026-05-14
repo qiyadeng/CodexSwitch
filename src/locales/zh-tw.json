@@ -712,7 +712,7 @@
       "codexAutoSwitchAccountScope": "Codex 自動切號帳號範圍",
       "codexAutoSwitchAccountScopeDesc": "當前 Codex 自動切號狀態：{{status}}。僅在該範圍內參與切號。",
       "defaultTerminal": "預設終端機",
-      "defaultTerminalDesc": "啟動 Gemini CLI 時使用的終端機",
+      "defaultTerminalDesc": "啟動 Codex CLI 時使用的終端機",
       "terminalSystem": "跟隨系統",
       "currentAccountRefreshRequiresAutoRefresh": "請先啟用「配額自動刷新」，才能設定目前帳號刷新。",
       "codebuddyCnAppPath": "CodeBuddy CN 應用程式路徑",
@@ -1933,7 +1933,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "儲存帳號備註失敗：{{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Cockpit Api 服務面板",
+      "panelTitle": "Newbee API 服務面板",
       "servicePanel": "服務面板",
       "balance": "額度",
       "requests": "請求",

@@ -712,7 +712,7 @@
       "codexAutoSwitchAccountScope": "Portée de bascule automatique des comptes Codex",
       "codexAutoSwitchAccountScopeDesc": "État actuel de la bascule automatique Codex : {{status}}. Seuls les comptes de cette portée seront pris en compte.",
       "defaultTerminal": "Terminal par défaut",
-      "defaultTerminalDesc": "Le terminal utilisé lors de l'ouverture de Gemini CLI",
+      "defaultTerminalDesc": "Le terminal utilisé lors de l'ouverture de Codex CLI",
       "terminalSystem": "Système par défaut",
       "currentAccountRefreshRequiresAutoRefresh": "Activez d'abord « Actualisation automatique du quota » pour configurer l'actualisation du compte actuel.",
       "codebuddyCnAppPath": "Chemin de l'application CodeBuddy CN",
@@ -2246,7 +2246,7 @@
           "name": "SiliconFlow"
         },
         "cockpit_api": {
-          "name": "Cockpit Api"
+          "name": "Newbee API"
         }
       }
     },
@@ -2409,7 +2409,7 @@
       "saveFailed": "Échec de l’enregistrement de la note de compte : {{error}}"
     },
     "cockpitApi": {
-      "panelTitle": "Panneau du service Cockpit Api",
+      "panelTitle": "Panneau du service Newbee API",
       "servicePanel": "Panneau de service",
       "balance": "Solde",
       "requests": "Requêtes",

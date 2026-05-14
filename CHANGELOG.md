@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.3] - 2026-05-14
+
+### Changed
+- **CodexSwitch release channel now points to the new GitHub repository**: the desktop updater checks `qiyadeng/CodexSwitch` releases instead of the upstream Cockpit Tools release feed.
+
+---
 ## [0.23.2] - 2026-05-12
 
 ### Added

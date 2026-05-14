@@ -7,6 +7,12 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
 ---
+## [0.23.3] - 2026-05-14
+
+### 变更
+- **CodexSwitch 发布通道已切换到新的 GitHub 仓库**：桌面端更新器会检查 `qiyadeng/CodexSwitch` 的 Release，不再跟随上游 Cockpit Tools 的发布源。
+
+---
 ## [0.23.2] - 2026-05-12
 
 ### 新增
