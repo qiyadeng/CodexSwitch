@@ -853,7 +853,7 @@ export function CodexAccountsPage() {
     () => [
       {
         value: "cockpit_tools",
-        label: t("codex.exportFormat.cockpitTools", "Cockpit Tools"),
+        label: t("codex.exportFormat.cockpitTools", "Codex Switch"),
       },
       {
         value: "sub2api",
@@ -7154,7 +7154,7 @@ export function CodexAccountsPage() {
             <div className="toolbar-right">
               <button
                 className="btn btn-primary icon-only"
-                onClick={() => openAddModal("oauth")}
+                onClick={() => openAddModal("apikey")}
                 title={t("common.shared.addAccount", "添加账号")}
               >
                 <Plus size={14} />
@@ -7257,7 +7257,7 @@ export function CodexAccountsPage() {
               >
                 <button
                   className="btn btn-primary"
-                  onClick={() => openAddModal("oauth")}
+                  onClick={() => openAddModal("apikey")}
                 >
                   <Plus size={16} />
                   {t("common.shared.addAccount", "添加账号")}
@@ -7528,6 +7528,15 @@ export function CodexAccountsPage() {
                 </div>
                 <div className="modal-tabs">
                   <button
+                    className={`modal-tab ${addTab === "apikey" ? "active" : ""}`}
+                    onClick={() => openAddModal("apikey")}
+                  >
+                    <KeyRound size={14} />
+                    <span className="modal-tab-label">
+                      {t("codex.addModal.token", "API Key")}
+                    </span>
+                  </button>
+                  <button
                     className={`modal-tab ${addTab === "oauth" ? "active" : ""}`}
                     onClick={() => openAddModal("oauth")}
                   >
@@ -7543,15 +7552,6 @@ export function CodexAccountsPage() {
                     <FileText size={14} />
                     <span className="modal-tab-label">
                       {t("common.shared.addModal.token", "Token / JSON")}
-                    </span>
-                  </button>
-                  <button
-                    className={`modal-tab ${addTab === "apikey" ? "active" : ""}`}
-                    onClick={() => openAddModal("apikey")}
-                  >
-                    <KeyRound size={14} />
-                    <span className="modal-tab-label">
-                      {t("codex.addModal.token", "API Key")}
                     </span>
                   </button>
                   <button

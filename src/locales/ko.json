@@ -217,7 +217,7 @@
       "desc": "이 영역은 모든 페이지의 우측 상단에 고정되어 캠페인 또는 브랜드 광고 노출에 적합합니다.",
       "action": "자세히 보기"
     },
-    "appName": "Cockpit Tools",
+    "appName": "Codex Switch",
     "collapse": "접기",
     "confirmDelete": "삭제 확인",
     "confirmDeleteTag": "태그 삭제 확인",
@@ -538,7 +538,7 @@
   },
   "settings": {
     "title": "앱 설정",
-    "subtitle": "Cockpit Tools 환경을 설정합니다.",
+    "subtitle": "Codex Switch 환경을 설정합니다.",
     "tabs": {
       "general": "일반",
       "network": "네트워크",
@@ -691,7 +691,7 @@
       "sideNavLayoutClassic": "클래식 레이아웃",
       "antigravityDualSwitchNoRestart": "재시작 없이 이중 전환",
       "antigravityDualSwitchNoRestartDesc": "계정 전환 시 로컬 계정 데이터 기록과 확장 프로그램의 원활한 전환을 한 번에 수행하며, Antigravity를 재시작하지 않습니다.",
-      "appAutoLaunch": "로그인 시 Cockpit Tools 시작",
+      "appAutoLaunch": "로그인 시 Codex Switch 시작",
       "appAutoLaunchDesc": "시스템 로그인 후 앱을 자동으로 시작합니다",
       "startupWakeupDisabled": "비활성화",
       "startupWakeupImmediate": "즉시 깨우기",
@@ -783,7 +783,7 @@
       "proxyUrlRequired": "전역 프록시를 켠 경우 프록시 URL은 비워둘 수 없습니다."
     },
     "about": {
-      "appName": "Cockpit Tools",
+      "appName": "Codex Switch",
       "slogan": "전문적인 계정 관리 솔루션",
       "author": "제작자",
       "wechat": "WeChat 플러스",
@@ -1697,7 +1697,7 @@
     },
     "exportFormat": {
       "label": "내보내기 형식",
-      "cockpitTools": "Cockpit Tools",
+      "cockpitTools": "Codex Switch",
       "sub2api": "sub2api 형식",
       "cpa": "cpa 형식",
       "downloadAll": "모두 다운로드",
@@ -3734,7 +3734,7 @@
       "backToCurrent": "돌아가기",
       "switchToThisAccount": "전환",
       "openDetails": "상세 열기",
-      "openCockpitTools": "Cockpit Tools 열기"
+      "openCockpitTools": "Codex Switch 열기"
     },
     "empty": {
       "title": "계정 없음",

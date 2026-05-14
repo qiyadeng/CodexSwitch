@@ -217,7 +217,7 @@
       "loginSuccess": "Login berhasil",
       "switchAccount": "Ganti Akun"
     },
-    "appName": "Cockpit Tools",
+    "appName": "Codex Switch",
     "collapse": "Ciutkan",
     "confirmDelete": "Konfirmasi Hapus",
     "confirmDeleteTag": "Konfirmasi Hapus Tag",
@@ -249,7 +249,7 @@
       "backToCurrent": "Kembali",
       "switchToThisAccount": "Ganti",
       "openDetails": "Buka detail",
-      "openCockpitTools": "Buka Cockpit Tools"
+      "openCockpitTools": "Buka Codex Switch"
     },
     "empty": {
       "title": "Belum ada akun",
@@ -584,7 +584,7 @@
   },
   "settings": {
     "title": "Pengaturan",
-    "subtitle": "Sesuaikan pengalaman Cockpit Tools Anda.",
+    "subtitle": "Sesuaikan pengalaman Codex Switch Anda.",
     "tabs": {
       "general": "Umum",
       "network": "Jaringan",
@@ -636,7 +636,7 @@
       "floatingCardStartupDesc": "Tampilkan kartu akun mengambang secara otomatis setelah aplikasi diluncurkan",
       "floatingCardAlwaysOnTop": "Kartu mengambang selalu di atas secara bawaan",
       "floatingCardAlwaysOnTopDesc": "Jendela kartu mengambang baru tetap di atas saat dibuka",
-      "appAutoLaunch": "Jalankan Cockpit Tools saat login",
+      "appAutoLaunch": "Jalankan Codex Switch saat login",
       "appAutoLaunchDesc": "Jalankan aplikasi secara otomatis setelah masuk ke sistem",
       "startupWakeupDisabled": "Nonaktif",
       "startupWakeupImmediate": "Bangunkan segera",
@@ -829,7 +829,7 @@
       "proxyUrlRequired": "URL Proxy tidak boleh kosong saat proxy global diaktifkan."
     },
     "about": {
-      "appName": "Cockpit Tools",
+      "appName": "Codex Switch",
       "slogan": "Solusi Akun Profesional",
       "author": "Pengembang",
       "wechat": "WeChat",
@@ -1746,7 +1746,7 @@
     },
     "exportFormat": {
       "label": "Format ekspor",
-      "cockpitTools": "Cockpit Tools",
+      "cockpitTools": "Codex Switch",
       "sub2api": "Format sub2api",
       "cpa": "Format cpa",
       "downloadAll": "Unduh semua",

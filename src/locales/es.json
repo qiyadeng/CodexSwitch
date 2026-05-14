@@ -217,7 +217,7 @@
       "desc": "Esta zona se fija en la esquina superior derecha de todas las páginas para campañas o anuncios de marca.",
       "action": "Ver detalles"
     },
-    "appName": "Cockpit Tools",
+    "appName": "Codex Switch",
     "collapse": "Contraer",
     "confirmDelete": "Confirmar eliminación",
     "confirmDeleteTag": "Confirmar eliminación de etiqueta",
@@ -538,7 +538,7 @@
   },
   "settings": {
     "title": "Ajustes de la Aplicación",
-    "subtitle": "Personaliza tu experiencia con Cockpit Tools.",
+    "subtitle": "Personaliza tu experiencia con Codex Switch.",
     "tabs": {
       "general": "General",
       "network": "Red",
@@ -688,7 +688,7 @@
       "sideNavLayoutClassic": "Diseño clásico",
       "antigravityDualSwitchNoRestart": "Cambio dual sin reinicio",
       "antigravityDualSwitchNoRestartDesc": "Al cambiar cuenta, se escriben los datos locales y se ejecuta el cambio fluido de la extensión en un solo flujo, sin reiniciar Antigravity.",
-      "appAutoLaunch": "Iniciar Cockpit Tools al iniciar sesión",
+      "appAutoLaunch": "Iniciar Codex Switch al iniciar sesión",
       "appAutoLaunchDesc": "Iniciar la aplicación automáticamente después de iniciar sesión en el sistema",
       "startupWakeupDisabled": "Desactivado",
       "startupWakeupImmediate": "Despertar inmediatamente",
@@ -783,7 +783,7 @@
       "proxyUrlRequired": "La URL del proxy no puede estar vacía cuando el proxy global está habilitado."
     },
     "about": {
-      "appName": "Cockpit Tools",
+      "appName": "Codex Switch",
       "slogan": "Solución Profesional de Gestión de Cuentas",
       "author": "Autor",
       "wechat": "WeChat",
@@ -1697,7 +1697,7 @@
     },
     "exportFormat": {
       "label": "Formato de exportación",
-      "cockpitTools": "Cockpit Tools",
+      "cockpitTools": "Codex Switch",
       "sub2api": "Formato sub2api",
       "cpa": "Formato cpa",
       "downloadAll": "Descargar todo",
@@ -3734,7 +3734,7 @@
       "backToCurrent": "Volver",
       "switchToThisAccount": "Cambiar",
       "openDetails": "Abrir detalles",
-      "openCockpitTools": "Abrir Cockpit Tools"
+      "openCockpitTools": "Abrir Codex Switch"
     },
     "empty": {
       "title": "No hay cuentas",

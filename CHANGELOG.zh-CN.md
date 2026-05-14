@@ -7,6 +7,13 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
 ---
+## [0.23.4] - 2026-05-14
+
+### Changed
+- **桌面应用名称已调整为 Codex Switch**：安装包元数据、窗口标题和界面中的应用名称使用修正后的 Codex Switch。
+- **新增 Codex 账号时优先展示 API Key 配置**：通用添加入口默认进入 API Key 流程，OAuth 仍保留在后续标签页，并继续用于重新授权操作。
+
+---
 ## [0.23.3] - 2026-05-14
 
 ### 变更

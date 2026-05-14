@@ -7,6 +7,13 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.4] - 2026-05-14
+
+### Changed
+- **Renamed the desktop app to Codex Switch**: installer metadata, window titles, and visible app labels now use the corrected Codex Switch name.
+- **Codex account creation now prioritizes API Key setup**: the generic add-account entry opens the API Key flow first, with OAuth still available as the next tab and for reauthorization actions.
+
+---
 ## [0.23.3] - 2026-05-14
 
 ### Changed
