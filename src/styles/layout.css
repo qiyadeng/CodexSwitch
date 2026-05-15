@@ -227,12 +227,12 @@
   width: 44px; /* 加大 logo (was 40px) */
   height: 44px;
   border-radius: 16px;
-  background: var(--gradient-primary);
+  background: linear-gradient(145deg, #09122a 0%, #102d56 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 24px rgba(15, 31, 61, 0.22);
   cursor: default;
 }
 

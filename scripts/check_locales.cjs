@@ -164,7 +164,9 @@ function isAllowedEnglishReuse(key, value) {
     'Token / JSON',
     // 品牌名 / 产品名允许跨语言保持英文原文
     'Cockpit Tools',
+    'Codex Switch',
     'Cockpit Api',
+    'Newbee API',
     'Antigravity',
     'Codex',
     'GitHub Copilot',

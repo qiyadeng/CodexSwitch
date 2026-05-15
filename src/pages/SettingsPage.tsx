@@ -48,9 +48,10 @@ import {
 import { ALL_PLATFORM_IDS, PlatformId } from '../types/platform';
 import './settings/Settings.css';
 import { 
-  Github, User, Rocket, Save, FolderOpen,
+  Github, User, Save, FolderOpen,
   AlertCircle, RefreshCw, Heart, MessageSquare, FileText, Download, X
 } from 'lucide-react';
+import { CodexIcon } from '../components/icons/CodexIcon';
 
 
 
@@ -5238,7 +5239,7 @@ export function SettingsPage() {
                 onClick={handleAboutAvatarTap}
                 onMouseDown={(event) => event.preventDefault()}
               >
-                <Rocket size={40} />
+                <CodexIcon size={46} />
               </div>
               <div className="app-info">
                 <h2>{t('settings.about.appName')}</h2>

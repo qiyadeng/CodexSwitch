@@ -7,6 +7,13 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.10] - 2026-05-15
+
+### Changed
+- **Promotional content is hidden while the promotion feature is paused**: the dashboard no longer initializes or renders the top-center promotional banner.
+- **Codex Switch now has a refreshed app identity**: the sidebar, settings view, native menu resource, and packaged desktop icon assets now use the new switch-style Codex icon.
+
+---
 ## [0.23.9] - 2026-05-15
 
 ### Fixed
