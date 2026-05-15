@@ -152,31 +152,33 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Validate updater signing secrets
+      - name: Prepare updater signing key
         shell: bash
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_BASE64: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_BASE64 }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]; then
-            echo "Missing TAURI_SIGNING_PRIVATE_KEY secret. Tauri updater artifacts require the private key that matches src-tauri/tauri.conf.json."
+          if [ -z "${TAURI_SIGNING_PRIVATE_KEY_BASE64:-}" ]; then
+            echo "Missing TAURI_SIGNING_PRIVATE_KEY_BASE64 secret. Store the updater private key as base64 so CI can reconstruct it safely."
             exit 1
           fi
           if [ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" ]; then
             echo "Missing TAURI_SIGNING_PRIVATE_KEY_PASSWORD secret. Set it to the password used when generating the updater key."
             exit 1
           fi
-          if ! printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" | grep -q "secret key"; then
-            echo "TAURI_SIGNING_PRIVATE_KEY does not look like a Tauri updater private key."
+          key_path="$RUNNER_TEMP/tauri-updater.key"
+          KEY_PATH="$key_path" node -e "require('fs').writeFileSync(process.env.KEY_PATH, Buffer.from(process.env.TAURI_SIGNING_PRIVATE_KEY_BASE64, 'base64'))"
+          if ! grep -q "secret key" "$key_path"; then
+            echo "Decoded updater key does not look like a Tauri updater private key."
             exit 1
           fi
+          echo "TAURI_SIGNING_PRIVATE_KEY=$key_path" >> "$GITHUB_ENV"
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: "v${{ steps.app_version.outputs.VERSION }}"
@@ -283,6 +285,7 @@ jobs:
     needs:
       - release
       - rebuild-latest-json
+      - upload-checksums
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -351,7 +354,7 @@ jobs:
       - rebuild-latest-json
       - upload-checksums
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: false
     permissions:
       contents: write
       pull-requests: write

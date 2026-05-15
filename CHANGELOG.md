@@ -7,6 +7,13 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.6] - 2026-05-15
+
+### Fixed
+- **Release workflow now reconstructs the Tauri updater signing key from a base64 GitHub secret**: this avoids multiline secret handling problems in GitHub Actions and writes the updater key to a runner-local file before packaging.
+- **Codex Switch releases no longer depend on the upstream Homebrew Cask updater job**: the legacy Cockpit Tools cask step is disabled for this fork so Windows updater releases can be published after `latest.json` and checksums are uploaded.
+
+---
 ## [0.23.5] - 2026-05-15
 
 ### Changed
