@@ -285,7 +285,6 @@ jobs:
     needs:
       - release
       - rebuild-latest-json
-      - upload-checksums
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -445,6 +444,7 @@ jobs:
     needs:
       - release
       - rebuild-latest-json
+      - upload-checksums
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:

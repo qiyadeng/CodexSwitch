@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.8] - 2026-05-15
+
+### Fixed
+- **Release workflow dependency graph no longer contains a self-cycle**: `upload-checksums` now waits only for the app build and merged updater metadata, while `publish-release` waits for checksums before making the release public.
+
+---
 ## [0.23.7] - 2026-05-15
 
 ### Fixed
