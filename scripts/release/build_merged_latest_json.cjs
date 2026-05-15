@@ -72,6 +72,20 @@ function cloneEntry(entry) {
   return { signature: entry.signature, url: entry.url };
 }
 
+function addPlatformIfAsset(platforms, assets, signatures, repo, version, pattern, key, aliases = []) {
+  const assetName = assets.find((name) => pattern.test(name));
+  if (!assetName) {
+    return false;
+  }
+
+  const entry = buildPlatformEntry(assetName, signatures, repo, version);
+  platforms[key] = entry;
+  for (const alias of aliases) {
+    platforms[alias] = cloneEntry(entry);
+  }
+  return true;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const version = requiredArg(args, 'version');
@@ -103,50 +117,117 @@ function main() {
     (name) => !name.endsWith('.sig') && name !== 'latest.json' && name !== 'SHA256SUMS.txt'
   );
 
-  const darwinAarch64Tar = findAsset(assets, /_aarch64\.app\.tar\.gz$/, 'darwin-aarch64');
-  const darwinX64Tar = findAsset(assets, /_x64\.app\.tar\.gz$/, 'darwin-x86_64');
-  const windowsMsi = findAsset(assets, /_x64_en-US\.msi$/, 'windows-x86_64-msi');
-  const windowsNsis = findAsset(assets, /_x64-setup\.exe$/, 'windows-x86_64-nsis');
-  const linuxX64AppImage = findAsset(assets, /_amd64\.AppImage$/, 'linux-x86_64-appimage');
-  const linuxArmAppImage = findAsset(assets, /_aarch64\.AppImage$/, 'linux-aarch64-appimage');
-  const linuxX64Deb = findAsset(assets, /_amd64\.deb$/, 'linux-x86_64-deb');
-  const linuxArmDeb = findAsset(assets, /_arm64\.deb$/, 'linux-aarch64-deb');
-  const linuxX64Rpm = findAsset(assets, /-1\.x86_64\.rpm$/, 'linux-x86_64-rpm');
-  const linuxArmRpm = findAsset(assets, /-1\.aarch64\.rpm$/, 'linux-aarch64-rpm');
+  const platforms = {};
 
-  const darwinAarch64Entry = buildPlatformEntry(darwinAarch64Tar, signatures, repo, version);
-  const darwinX64Entry = buildPlatformEntry(darwinX64Tar, signatures, repo, version);
-  const windowsMsiEntry = buildPlatformEntry(windowsMsi, signatures, repo, version);
-  const windowsNsisEntry = buildPlatformEntry(windowsNsis, signatures, repo, version);
-  const linuxX64AppImageEntry = buildPlatformEntry(linuxX64AppImage, signatures, repo, version);
-  const linuxArmAppImageEntry = buildPlatformEntry(linuxArmAppImage, signatures, repo, version);
-  const linuxX64DebEntry = buildPlatformEntry(linuxX64Deb, signatures, repo, version);
-  const linuxArmDebEntry = buildPlatformEntry(linuxArmDeb, signatures, repo, version);
-  const linuxX64RpmEntry = buildPlatformEntry(linuxX64Rpm, signatures, repo, version);
-  const linuxArmRpmEntry = buildPlatformEntry(linuxArmRpm, signatures, repo, version);
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_aarch64\.app\.tar\.gz$/,
+    'darwin-aarch64',
+    ['darwin-aarch64-app']
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_x64\.app\.tar\.gz$/,
+    'darwin-x86_64',
+    ['darwin-x86_64-app']
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_x64_en-US\.msi$/,
+    'windows-x86_64-msi'
+  );
+  const hasWindowsNsis = addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_x64-setup\.exe$/,
+    'windows-x86_64-nsis',
+    ['windows-x86_64']
+  );
+  if (!hasWindowsNsis && platforms['windows-x86_64-msi']) {
+    platforms['windows-x86_64'] = cloneEntry(platforms['windows-x86_64-msi']);
+  }
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_amd64\.AppImage$/,
+    'linux-x86_64-appimage',
+    ['linux-x86_64']
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_amd64\.deb$/,
+    'linux-x86_64-deb'
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /-1\.x86_64\.rpm$/,
+    'linux-x86_64-rpm'
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_aarch64\.AppImage$/,
+    'linux-aarch64-appimage',
+    ['linux-aarch64']
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /_arm64\.deb$/,
+    'linux-aarch64-deb'
+  );
+  addPlatformIfAsset(
+    platforms,
+    assets,
+    signatures,
+    repo,
+    version,
+    /-1\.aarch64\.rpm$/,
+    'linux-aarch64-rpm'
+  );
+
+  if (!platforms['windows-x86_64']) {
+    findAsset(assets, /_x64-setup\.exe$|_x64_en-US\.msi$/, 'windows-x86_64');
+    throw new Error('Missing signed Windows updater asset. Expected a .sig file next to the Windows NSIS or MSI asset.');
+  }
 
   const latest = {
     version,
     notes: readText(notesFile),
     pub_date: publishedAt,
-    platforms: {
-      'darwin-aarch64': darwinAarch64Entry,
-      'darwin-aarch64-app': cloneEntry(darwinAarch64Entry),
-      'darwin-x86_64': darwinX64Entry,
-      'darwin-x86_64-app': cloneEntry(darwinX64Entry),
-      // Keep Windows fallback aligned to NSIS so updater fallback does not switch installer type.
-      'windows-x86_64': windowsNsisEntry,
-      'windows-x86_64-msi': cloneEntry(windowsMsiEntry),
-      'windows-x86_64-nsis': windowsNsisEntry,
-      'linux-x86_64': linuxX64AppImageEntry,
-      'linux-x86_64-appimage': cloneEntry(linuxX64AppImageEntry),
-      'linux-x86_64-deb': linuxX64DebEntry,
-      'linux-x86_64-rpm': linuxX64RpmEntry,
-      'linux-aarch64': linuxArmAppImageEntry,
-      'linux-aarch64-appimage': cloneEntry(linuxArmAppImageEntry),
-      'linux-aarch64-deb': linuxArmDebEntry,
-      'linux-aarch64-rpm': linuxArmRpmEntry,
-    },
+    platforms,
   };
 
   fs.writeFileSync(output, `${JSON.stringify(latest, null, 2)}\n`);

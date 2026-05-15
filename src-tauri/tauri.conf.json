@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Codex Switch",
-  "version": "0.23.4",
+  "version": "0.23.5",
   "identifier": "com.jlcodes.cockpit-tools",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -86,7 +86,7 @@
       }
     },
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRkU1RTdBRDdCRUUzM0QKUldROTQ3N1hlbDcrd1ZVQ2E3b1ZoVUdXL3BWQmpjdzNnWllNUW1LNHVwcE9wdGI1Q1UxQmdnQ0oK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI2MTczOENERTE4ODk4MTUKUldRVm1Jamh6VGdYSm1TTG9Cb0xvSlp4TXZXdFV5S3VubWVka3Y0ellpaVRDT010c01Ia2NtRmMK",
       "endpoints": [
         "https://github.com/qiyadeng/CodexSwitch/releases/latest/download/latest.json"
       ]

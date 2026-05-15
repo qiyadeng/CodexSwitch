@@ -16,23 +16,30 @@ jobs:
           # macOS Apple Silicon
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
+            optional: true
           # macOS Intel
           - platform: "macos-latest"
             args: "--target x86_64-apple-darwin"
+            optional: true
           # macOS Universal (同时支持 Intel 和 Apple Silicon)
           - platform: "macos-latest"
             args: "--target universal-apple-darwin"
+            optional: true
           # Linux x86_64
           - platform: "ubuntu-22.04"
             args: ""
+            optional: true
           # Linux ARM64
           - platform: "ubuntu-24.04-arm"
             args: ""
+            optional: true
           # Windows x86_64
           - platform: "windows-latest"
             args: ""
+            optional: false
 
     runs-on: ${{ matrix.platform }}
+    continue-on-error: ${{ matrix.optional }}
 
     steps:
       - name: Checkout repository
@@ -145,6 +152,26 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Validate updater signing secrets
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]; then
+            echo "Missing TAURI_SIGNING_PRIVATE_KEY secret. Tauri updater artifacts require the private key that matches src-tauri/tauri.conf.json."
+            exit 1
+          fi
+          if [ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" ]; then
+            echo "Missing TAURI_SIGNING_PRIVATE_KEY_PASSWORD secret. Set it to the password used when generating the updater key."
+            exit 1
+          fi
+          if ! printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" | grep -q "secret key"; then
+            echo "TAURI_SIGNING_PRIVATE_KEY does not look like a Tauri updater private key."
+            exit 1
+          fi
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -236,16 +263,10 @@ jobs:
         run: |
           set -euo pipefail
           jq -e '
-            .platforms["darwin-aarch64"] and
-            .platforms["darwin-x86_64"] and
             .platforms["windows-x86_64"] and
-            .platforms["windows-x86_64-nsis"] and
-            .platforms["linux-x86_64-appimage"] and
-            .platforms["linux-x86_64-deb"] and
-            .platforms["linux-x86_64-rpm"] and
-            .platforms["linux-aarch64-appimage"] and
-            .platforms["linux-aarch64-deb"] and
-            .platforms["linux-aarch64-rpm"]
+            .version and
+            .pub_date and
+            ((.platforms | length) >= 1)
           ' latest.json > /dev/null
           jq -r '.platforms | keys[]' latest.json
 

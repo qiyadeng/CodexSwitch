@@ -7,6 +7,16 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.5] - 2026-05-15
+
+### Changed
+- **Release workflow now validates Tauri updater signing secrets before building**: CI fails early with a clear message when updater private key secrets are missing or malformed.
+- **Updater metadata generation now supports partial platform releases**: `latest.json` is built from the signed assets that actually exist, while still requiring a signed Windows updater asset for the current release channel.
+
+### Fixed
+- **Codex Switch now uses a fresh updater signing key for future releases**: the app public key and GitHub release secrets have been aligned so newly installed builds can trust future signed updates.
+
+---
 ## [0.23.4] - 2026-05-14
 
 ### Changed
