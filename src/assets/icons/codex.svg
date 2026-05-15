@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
   <defs>
     <linearGradient id="codex-switch-icon-top" x1="3" x2="20.5" y1="7.5" y2="7.5" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#38BDF8" />
+      <stop stop-color="#0EA5E9" />
       <stop offset="1" stop-color="#67E8F9" />
     </linearGradient>
     <linearGradient id="codex-switch-icon-bottom" x1="21" x2="3.5" y1="16.5" y2="16.5" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2563EB" />
-      <stop offset="1" stop-color="#60A5FA" />
+      <stop stop-color="#60A5FA" />
+      <stop offset="1" stop-color="#22D3EE" />
     </linearGradient>
   </defs>
   <path d="M3 7.5h12.5V4l5.5 3.5-5.5 3.5V8.9H3z" fill="url(#codex-switch-icon-top)" />
   <path d="M21 16.5H8.5V20L3 16.5 8.5 13v2.1H21z" fill="url(#codex-switch-icon-bottom)" />
-  <path d="M12 7.75 16.25 12 12 16.25 7.75 12z" fill="#F8FAFC" />
-  <rect x="10" y="10" width="4" height="4" rx="1" fill="#0F1F3D" />
+  <path d="M12 7.75 16.25 12 12 16.25 7.75 12z" fill="#FFFFFF" />
+  <rect x="10" y="10" width="4" height="4" rx="1" fill="#7DD3FC" />
 </svg>

@@ -36,9 +36,9 @@ PNG_TARGETS = {
 def gradient(size: int) -> Image.Image:
     image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     pixels = image.load()
-    top = (9, 18, 42)
-    bottom = (17, 45, 86)
-    accent = (11, 98, 142)
+    top = (250, 253, 255)
+    bottom = (214, 246, 255)
+    accent = (125, 211, 252)
     for y in range(size):
         t = y / max(1, size - 1)
         for x in range(size):
@@ -47,7 +47,7 @@ def gradient(size: int) -> Image.Image:
             r = int(top[0] * (1 - t) + bottom[0] * t + accent[0] * mix * 0.22)
             g = int(top[1] * (1 - t) + bottom[1] * t + accent[1] * mix * 0.22)
             b = int(top[2] * (1 - t) + bottom[2] * t + accent[2] * mix * 0.22)
-            pixels[x, y] = (r, g, b, 255)
+            pixels[x, y] = (min(255, r), min(255, g), min(255, b), 255)
     return image
 
 
@@ -86,7 +86,7 @@ def draw_icon(size: int) -> Image.Image:
     glow_draw.rounded_rectangle(
         [inset, inset, canvas_size - inset, canvas_size - inset],
         radius=int(canvas_size * 0.19),
-        outline=(77, 208, 255, 160),
+        outline=(125, 211, 252, 190),
         width=max(2, int(canvas_size * 0.018)),
     )
     image.alpha_composite(glow.filter(ImageFilter.GaussianBlur(canvas_size * 0.012)))
@@ -99,14 +99,14 @@ def draw_icon(size: int) -> Image.Image:
         (canvas_size * 0.25, canvas_size * 0.39),
         (canvas_size * 0.73, canvas_size * 0.39),
         line_width,
-        (0, 0, 0, 75),
+        (14, 165, 233, 52),
     )
     draw_arrow(
         shadow_draw,
         (canvas_size * 0.75, canvas_size * 0.61),
         (canvas_size * 0.27, canvas_size * 0.61),
         line_width,
-        (0, 0, 0, 75),
+        (96, 165, 250, 48),
     )
     image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(canvas_size * 0.012)))
 
@@ -115,25 +115,25 @@ def draw_icon(size: int) -> Image.Image:
         (canvas_size * 0.25, canvas_size * 0.39),
         (canvas_size * 0.73, canvas_size * 0.39),
         line_width,
-        (81, 211, 255, 255),
+        (14, 165, 233, 255),
     )
     draw_arrow(
         draw,
         (canvas_size * 0.75, canvas_size * 0.61),
         (canvas_size * 0.27, canvas_size * 0.61),
         line_width,
-        (77, 124, 255, 255),
+        (96, 165, 250, 255),
     )
 
     node = canvas_size * 0.115
     cx = cy = canvas_size * 0.5
     diamond = [(cx, cy - node), (cx + node, cy), (cx, cy + node), (cx - node, cy)]
-    draw.polygon(diamond, fill=(248, 251, 255, 255))
+    draw.polygon(diamond, fill=(255, 255, 255, 255))
     inner = node * 0.46
     draw.rounded_rectangle(
         [cx - inner, cy - inner, cx + inner, cy + inner],
         radius=max(2, int(inner * 0.45)),
-        fill=(15, 31, 61, 255),
+        fill=(125, 211, 252, 255),
     )
 
     highlight = Image.new("RGBA", image.size, (0, 0, 0, 0))
@@ -141,7 +141,7 @@ def draw_icon(size: int) -> Image.Image:
     highlight_draw.rounded_rectangle(
         [canvas_size * 0.04, canvas_size * 0.035, canvas_size * 0.96, canvas_size * 0.96],
         radius=radius,
-        outline=(255, 255, 255, 45),
+        outline=(255, 255, 255, 140),
         width=max(2, int(canvas_size * 0.012)),
     )
     image.alpha_composite(highlight)

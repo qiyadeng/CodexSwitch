@@ -792,7 +792,7 @@ export function SideNav({
           </div>
 
           {isClassicLayout && !isClassicCollapsed && (
-            <div className="side-nav-brand-title">Codex Tools</div>
+            <div className="side-nav-brand-title">Codex Switch</div>
           )}
         </div>
 

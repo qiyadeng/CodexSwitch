@@ -270,12 +270,12 @@ input:checked + .slider:before {
   width: 80px;
   height: 80px;
   border-radius: 22px;
-  background: linear-gradient(145deg, #09122a 0%, #102d56 100%);
-  color: white;
+  background: linear-gradient(145deg, #ffffff 0%, #e0f7ff 100%);
+  color: #0ea5e9;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 18px 42px rgba(15, 31, 61, 0.28);
+  box-shadow: 0 18px 42px rgba(14, 165, 233, 0.2), inset 0 0 0 1px rgba(125, 211, 252, 0.5);
   position: relative;
   cursor: pointer;
   user-select: none;
