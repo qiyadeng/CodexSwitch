@@ -7,6 +7,13 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.12] - 2026-05-15
+
+### Changed
+- **The sidebar brand shortcut has been removed from the floating navigation**: the app identity now stays in the desktop and launcher icon, while the first remaining sidebar entry continues to use the Codex platform logo.
+- **The hidden rocket click-counter entry has been removed**: the unused click badge, launch animation, and breakout modal code path are no longer bundled.
+
+---
 ## [0.23.11] - 2026-05-15
 
 ### Changed

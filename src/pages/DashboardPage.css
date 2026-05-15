@@ -73,19 +73,6 @@
   justify-content: center;
 }
 
-.stat-icon-trigger {
-  cursor: pointer;
-  transition: transform 0.16s ease;
-}
-
-.stat-icon-trigger:hover {
-  transform: scale(1.07);
-}
-
-.stat-icon-trigger:active {
-  transform: scale(0.95);
-}
-
 .stat-icon-bg.primary { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
 .stat-icon-bg.success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
 .stat-icon-bg.info { background: rgba(14, 165, 198, 0.1); color: #0ea5c6; }

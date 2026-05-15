@@ -98,7 +98,6 @@ import {
 interface DashboardPageProps {
   onNavigate: (page: Page) => void;
   onOpenPlatformLayout: () => void;
-  onEasterEggTriggerClick: () => void;
   topCenterBanner?: React.ReactNode;
 }
 
@@ -161,7 +160,6 @@ interface DashboardCardCollapseState {
 export function DashboardPage({
   onNavigate,
   onOpenPlatformLayout,
-  onEasterEggTriggerClick,
   topCenterBanner,
 }: DashboardPageProps) {
   const { t } = useTranslation();
@@ -2801,12 +2799,7 @@ export function DashboardPage({
                 </span>
               )}
               <div
-                className={`stat-icon-bg ${iconClass} stat-icon-trigger`}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onEasterEggTriggerClick();
-                }}
+                className={`stat-icon-bg ${iconClass}`}
               >
                 {group?.iconKind === 'custom' && group.iconCustomDataUrl ? (
                   <img

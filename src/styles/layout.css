@@ -223,19 +223,6 @@
   margin-bottom: 0px; 
 }
 
-.brand-logo {
-  width: 44px; /* 加大 logo (was 40px) */
-  height: 44px;
-  border-radius: 16px;
-  background: linear-gradient(145deg, #ffffff 0%, #dff7ff 100%);
-  color: #0ea5e9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.18), inset 0 0 0 1px rgba(125, 211, 252, 0.42);
-  cursor: default;
-}
-
 .nav-items {
   display: flex;
   flex-direction: column;
@@ -465,13 +452,6 @@
   gap: var(--side-nav-classic-brand-gap-scaled);
   min-width: 0;
   flex: 1 1 auto;
-}
-
-.side-nav.side-nav-classic .brand-logo {
-  width: var(--side-nav-classic-logo-size-scaled);
-  height: var(--side-nav-classic-logo-size-scaled);
-  border-radius: var(--side-nav-classic-logo-radius-scaled);
-  flex: 0 0 auto;
 }
 
 .side-nav-brand-title {
