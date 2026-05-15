@@ -354,7 +354,7 @@ jobs:
       - rebuild-latest-json
       - upload-checksums
     runs-on: ubuntu-latest
-    if: false
+    if: ${{ false }}
     permissions:
       contents: write
       pull-requests: write

@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.7] - 2026-05-15
+
+### Fixed
+- **Release workflow now disables the legacy Homebrew Cask job with a valid GitHub Actions expression**: this fixes the workflow parse failure seen on the `v0.23.6` release attempt.
+
+---
 ## [0.23.6] - 2026-05-15
 
 ### Fixed
