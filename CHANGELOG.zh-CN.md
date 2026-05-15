@@ -7,6 +7,12 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
 ---
+## [0.23.9] - 2026-05-15
+
+### Fixed
+- **Release workflow no longer rejects valid Tauri updater keys because of a brittle text check**: CI now verifies that the decoded signing key is present and lets the Tauri signing step validate the key format.
+
+---
 ## [0.23.8] - 2026-05-15
 
 ### Fixed
