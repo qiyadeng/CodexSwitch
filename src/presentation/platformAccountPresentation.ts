@@ -202,19 +202,27 @@ function readNumber(
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
 }
 
+function readFirstNumber(
+  sources: Array<Record<string, unknown> | null>,
+  keys: string[],
+): number | null {
+  for (const source of sources) {
+    for (const key of keys) {
+      const value = readNumber(source, key);
+      if (value != null) {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
 function readString(
   value: Record<string, unknown> | null,
   key: string,
 ): string {
   const raw = value?.[key];
   return typeof raw === "string" ? raw.trim() : "";
-}
-
-function readBoolean(
-  value: Record<string, unknown> | null,
-  key: string,
-): boolean {
-  return value?.[key] === true;
 }
 
 function clampPercent(value: number): number {
@@ -243,6 +251,13 @@ function formatQuotaNumber(value: number | null | undefined): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
     Math.max(0, value),
   );
+}
+
+function formatNewApiAmount(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "--";
+  }
+  return formatQuotaNumber(value);
 }
 
 function formatRequestCount(value: number | null | undefined): string {
@@ -581,60 +596,75 @@ function buildCodexNewApiQuotaItems(
     return [];
   }
   const profile = toJsonRecord(raw?.profile);
+  const accountRaw = toJsonRecord(raw?.account) ?? toJsonRecord(profile?.account);
   const usage = toJsonRecord(raw?.usage) ?? toJsonRecord(profile?.usage);
-  const total =
-    readNumber(usage, "total_granted") ?? readNumber(raw, "total_granted") ?? 0;
-  const used =
-    readNumber(usage, "total_used") ?? readNumber(raw, "total_used") ?? 0;
-  const available =
-    readNumber(usage, "total_available") ??
-    readNumber(raw, "total_available") ??
-    0;
-  const unlimited =
-    readBoolean(usage, "unlimited_quota") ||
-    readBoolean(raw, "unlimited_quota");
+  const amountSources = [accountRaw, profile, raw];
+  const currentBalance = readFirstNumber(amountSources, [
+    "current_balance",
+    "available_balance",
+    "balance",
+    "remaining_balance",
+    "remain_amount",
+    "available_amount",
+    "quota_amount",
+    "quota",
+  ]);
+  const usedAmount = readFirstNumber(amountSources, [
+    "used_amount",
+    "historical_usage",
+    "history_usage",
+    "total_usage_amount",
+    "used_quota_amount",
+    "used_quota",
+  ]);
+  const accountTotal =
+    readFirstNumber(amountSources, [
+      "account_total_amount",
+      "total_amount",
+      "total_balance",
+      "total_quota_amount",
+      "granted_amount",
+    ]) ??
+    (currentBalance != null && usedAmount != null
+      ? currentBalance + usedAmount
+      : null);
   const percentage =
-    unlimited || total <= 0
-      ? unlimited
-        ? 100
-        : 0
-      : clampPercent((available / total) * 100);
+    accountTotal != null && accountTotal > 0 && currentBalance != null
+      ? clampPercent((currentBalance / accountTotal) * 100)
+      : 0;
   const expiresAt = readNumber(usage, "expires_at");
-  const unlimitedText = unlimited
-    ? t("codex.newApi.quota.unlimited", "不限量")
-    : "";
-  const statusSuffix = unlimitedText ? ` · ${unlimitedText}` : "";
-  const usedHint = t("codex.newApi.quota.usedHint", {
-    used: formatQuotaNumber(used),
-    defaultValue: "已用 {{used}}",
-  });
 
   return [
     {
-      key: "new_api_available",
-      label: t("codex.newApi.quota.available", "可用额度"),
-      percentage,
+      key: "new_api_account_total",
+      label: t("codex.newApi.quota.accountTotal", "账户总金额"),
+      percentage: accountTotal != null && accountTotal > 0 ? 100 : percentage,
       quotaClass: getCodexQuotaClass(percentage),
-      valueText: `${formatQuotaNumber(available)}${statusSuffix}`,
-      resetText: formatMetricResetText(expiresAt, t),
-      resetAt: expiresAt,
-      used,
-      total,
-      left: available,
-      hintText: usedHint,
-    },
-    {
-      key: "new_api_total",
-      label: t("codex.newApi.quota.total", "总额度"),
-      percentage: total > 0 ? 100 : percentage,
-      quotaClass: getCodexQuotaClass(percentage),
-      valueText: formatQuotaNumber(total),
+      valueText: formatNewApiAmount(accountTotal),
       resetText: "",
       resetAt: expiresAt,
-      used,
-      total,
-      left: available,
-      hintText: usedHint,
+      used: usedAmount ?? undefined,
+      total: accountTotal ?? undefined,
+      left: currentBalance ?? undefined,
+      hintText:
+        usedAmount != null
+          ? t("codex.newApi.quota.usedHint", {
+              used: formatNewApiAmount(usedAmount),
+              defaultValue: "已用 {{used}}",
+            })
+          : undefined,
+    },
+    {
+      key: "new_api_current_balance",
+      label: t("codex.newApi.quota.currentBalance", "当前余额"),
+      percentage,
+      quotaClass: getCodexQuotaClass(percentage),
+      valueText: formatNewApiAmount(currentBalance),
+      resetText: formatMetricResetText(expiresAt, t),
+      resetAt: expiresAt,
+      used: usedAmount ?? undefined,
+      total: accountTotal ?? undefined,
+      left: currentBalance ?? undefined,
     },
   ];
 }

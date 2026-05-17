@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.15] - 2026-05-17
+
+### Fixed
+- **New API quota cards now show account balance amounts**: the account total and current balance are read from balance fields when available, so token usage fallback values and unlimited status are no longer presented as account money.
+
+---
 ## [0.23.14] - 2026-05-17
 
 ### Fixed

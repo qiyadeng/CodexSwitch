@@ -349,13 +349,18 @@ fn build_new_api_usage_url(account: &CodexAccount) -> Result<String, String> {
 }
 
 fn read_i64(value: &serde_json::Value, key: &str) -> i64 {
-    value
-        .get(key)
-        .and_then(|item| {
-            item.as_i64()
-                .or_else(|| item.as_u64().and_then(|raw| i64::try_from(raw).ok()))
-        })
-        .unwrap_or(0)
+    read_i64_opt(value, key).unwrap_or(0)
+}
+
+fn read_i64_opt(value: &serde_json::Value, key: &str) -> Option<i64> {
+    value.get(key).and_then(|item| {
+        item.as_i64()
+            .or_else(|| item.as_u64().and_then(|raw| i64::try_from(raw).ok()))
+    })
+}
+
+fn read_first_i64(value: &serde_json::Value, keys: &[&str]) -> Option<i64> {
+    keys.iter().find_map(|key| read_i64_opt(value, key))
 }
 
 fn read_bool(value: &serde_json::Value, key: &str) -> bool {
@@ -411,13 +416,69 @@ async fn fetch_new_api_profile_quota(account: &CodexAccount) -> Result<FetchQuot
         return Err(message.to_string());
     }
     let data = root.get("data").unwrap_or(&root);
-    let usage = data.get("usage").ok_or("Newbee API 额度响应缺少 usage")?;
-    let total = read_i64(usage, "total_granted");
-    let used = read_i64(usage, "total_used");
-    let available = read_i64(usage, "total_available");
-    let unlimited = read_bool(usage, "unlimited_quota");
+    let usage = data.get("usage");
+    let account_data = data.get("account").unwrap_or(data);
+    let account_current = read_first_i64(
+        account_data,
+        &[
+            "current_balance",
+            "available_balance",
+            "balance",
+            "remaining_balance",
+            "remain_amount",
+            "available_amount",
+            "quota_amount",
+            "quota",
+        ],
+    );
+    let account_used = read_first_i64(
+        account_data,
+        &[
+            "used_amount",
+            "historical_usage",
+            "history_usage",
+            "total_usage_amount",
+            "used_quota_amount",
+            "used_quota",
+        ],
+    );
+    let account_total = read_first_i64(
+        account_data,
+        &[
+            "account_total_amount",
+            "total_amount",
+            "total_balance",
+            "total_quota_amount",
+            "granted_amount",
+        ],
+    )
+    .or_else(|| {
+        account_current
+            .zip(account_used)
+            .map(|(current, used)| current + used)
+    });
+    if usage.is_none() && account_current.is_none() && account_total.is_none() {
+        return Err(
+            "Newbee API quota response is missing usage or account balance fields".to_string(),
+        );
+    }
+    let total = usage
+        .map(|item| read_i64(item, "total_granted"))
+        .or(account_total)
+        .unwrap_or(0);
+    let used = usage
+        .map(|item| read_i64(item, "total_used"))
+        .or(account_used)
+        .unwrap_or(0);
+    let available = usage
+        .map(|item| read_i64(item, "total_available"))
+        .or(account_current)
+        .unwrap_or(0);
+    let unlimited = usage
+        .map(|item| read_bool(item, "unlimited_quota"))
+        .unwrap_or(false);
     let percentage = new_api_percentage(available, total, unlimited);
-    let expires_at = read_i64(usage, "expires_at");
+    let expires_at = usage.map(|item| read_i64(item, "expires_at")).unwrap_or(0);
     let reset_time = if expires_at > 0 {
         Some(expires_at)
     } else {
@@ -438,6 +499,11 @@ async fn fetch_new_api_profile_quota(account: &CodexAccount) -> Result<FetchQuot
                 "provider": "cockpit-api",
                 "object": "codex_cockpit_api_quota",
                 "profile": data,
+                "account": {
+                    "total_amount": account_total,
+                    "current_balance": account_current,
+                    "used_amount": account_used
+                },
                 "usage": usage,
                 "total_granted": total,
                 "total_used": used,
