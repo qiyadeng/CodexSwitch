@@ -330,6 +330,24 @@ fn build_new_api_profile_url(account: &CodexAccount) -> Result<String, String> {
     Ok(parsed.to_string())
 }
 
+fn build_new_api_usage_url(account: &CodexAccount) -> Result<String, String> {
+    let base_url = account
+        .api_base_url
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or("Newbee API account is missing Base URL")?;
+    let mut parsed = reqwest::Url::parse(base_url)
+        .map_err(|err| format!("Newbee API Base URL is invalid: {}", err))?;
+    if !matches!(parsed.scheme(), "http" | "https") {
+        return Err("Newbee API Base URL only supports http/https".to_string());
+    }
+    parsed.set_path("/api/usage/token/");
+    parsed.set_query(None);
+    parsed.set_fragment(None);
+    Ok(parsed.to_string())
+}
+
 fn read_i64(value: &serde_json::Value, key: &str) -> i64 {
     value
         .get(key)
@@ -358,7 +376,7 @@ fn new_api_percentage(available: i64, total: i64, unlimited: bool) -> i32 {
     percentage.round().clamp(0.0, 100.0) as i32
 }
 
-async fn fetch_new_api_quota(account: &CodexAccount) -> Result<FetchQuotaResult, String> {
+async fn fetch_new_api_profile_quota(account: &CodexAccount) -> Result<FetchQuotaResult, String> {
     let api_key = account
         .openai_api_key
         .as_deref()
@@ -435,6 +453,99 @@ async fn fetch_new_api_quota(account: &CodexAccount) -> Result<FetchQuotaResult,
                 .unwrap_or_else(|| COCKPIT_API_PLAN_TYPE.to_string()),
         ),
     })
+}
+
+fn parse_new_api_usage_quota_response(body: &str) -> Result<FetchQuotaResult, String> {
+    let root: serde_json::Value = serde_json::from_str(body)
+        .map_err(|err| format!("Parse New API usage JSON failed: {}", err))?;
+    if root.get("code").and_then(|item| item.as_bool()) == Some(false) {
+        let message = root
+            .get("message")
+            .and_then(|item| item.as_str())
+            .unwrap_or("New API usage endpoint returned failure");
+        return Err(message.to_string());
+    }
+    let data = root
+        .get("data")
+        .ok_or("New API usage response is missing data")?;
+    let total = read_i64(data, "total_granted");
+    let used = read_i64(data, "total_used");
+    let available = read_i64(data, "total_available");
+    let unlimited = read_bool(data, "unlimited_quota");
+    let percentage = new_api_percentage(available, total, unlimited);
+    let expires_at = read_i64(data, "expires_at");
+    let reset_time = if expires_at > 0 {
+        Some(expires_at)
+    } else {
+        None
+    };
+
+    Ok(FetchQuotaResult {
+        quota: CodexQuota {
+            hourly_percentage: percentage,
+            hourly_reset_time: reset_time,
+            hourly_window_minutes: None,
+            hourly_window_present: Some(true),
+            weekly_percentage: 0,
+            weekly_reset_time: None,
+            weekly_window_minutes: None,
+            weekly_window_present: Some(false),
+            raw_data: Some(json!({
+                "provider": "new-api",
+                "object": "codex_new_api_usage_quota",
+                "usage": data,
+                "total_granted": total,
+                "total_used": used,
+                "total_available": available,
+                "unlimited_quota": unlimited,
+                "expires_at": expires_at
+            })),
+        },
+        plan_type: Some(COCKPIT_API_PLAN_TYPE.to_string()),
+    })
+}
+
+async fn fetch_new_api_usage_quota(account: &CodexAccount) -> Result<FetchQuotaResult, String> {
+    let api_key = account
+        .openai_api_key
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or("Newbee API account is missing OPENAI_API_KEY")?;
+    let usage_url = build_new_api_usage_url(account)?;
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&usage_url)
+        .bearer_auth(api_key)
+        .header(ACCEPT, "application/json")
+        .send()
+        .await
+        .map_err(|err| format!("Request New API usage fallback failed: {}", err))?;
+    let status = response.status();
+    let body = response
+        .text()
+        .await
+        .map_err(|err| format!("Read New API usage fallback response failed: {}", err))?;
+    if !status.is_success() {
+        return Err(format!(
+            "New API usage fallback returned HTTP {}",
+            status.as_u16()
+        ));
+    }
+    parse_new_api_usage_quota_response(&body)
+}
+
+async fn fetch_new_api_quota(account: &CodexAccount) -> Result<FetchQuotaResult, String> {
+    match fetch_new_api_profile_quota(account).await {
+        Ok(result) => Ok(result),
+        Err(profile_err) => match fetch_new_api_usage_quota(account).await {
+            Ok(result) => Ok(result),
+            Err(usage_err) => Err(format!(
+                "Newbee API token-profile failed: {}; New API usage fallback failed: {}",
+                profile_err, usage_err
+            )),
+        },
+    }
 }
 
 /// 从 id_token 中提取订阅标识并同步更新账号和索引
@@ -601,4 +712,87 @@ pub async fn refresh_all_quotas() -> Result<Vec<(String, Result<CodexQuota, Stri
     }
 
     Ok(results)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::codex::{CodexApiProviderMode, CodexAuthMode, CodexTokens};
+
+    fn new_api_account(base_url: &str) -> CodexAccount {
+        CodexAccount {
+            id: "account-1".to_string(),
+            email: "sk-test".to_string(),
+            auth_mode: CodexAuthMode::Apikey,
+            openai_api_key: Some("sk-test".to_string()),
+            api_base_url: Some(base_url.to_string()),
+            api_provider_mode: CodexApiProviderMode::Custom,
+            api_provider_id: Some(COCKPIT_API_PROVIDER_ID.to_string()),
+            api_provider_name: Some("Newbee API".to_string()),
+            user_id: None,
+            plan_type: Some(COCKPIT_API_PLAN_TYPE.to_string()),
+            subscription_active_until: None,
+            auth_file_plan_type: None,
+            account_id: None,
+            organization_id: None,
+            account_name: None,
+            account_structure: None,
+            account_note: None,
+            tokens: CodexTokens {
+                id_token: String::new(),
+                access_token: String::new(),
+                refresh_token: None,
+            },
+            token_generation: 0,
+            token_updated_at: None,
+            token_source_mode: "managed".to_string(),
+            requires_reauth: false,
+            reauth_reason: None,
+            quota: None,
+            quota_error: None,
+            usage_updated_at: None,
+            tags: None,
+            created_at: 0,
+            last_used: 0,
+        }
+    }
+
+    #[test]
+    fn new_api_usage_url_uses_base_origin_without_v1_path() {
+        let account = new_api_account("https://www.newbeeapi.com/v1");
+
+        let url = build_new_api_usage_url(&account).expect("usage url");
+
+        assert_eq!(url, "https://www.newbeeapi.com/api/usage/token/");
+    }
+
+    #[test]
+    fn parses_new_api_usage_token_response_into_quota_without_unit_conversion() {
+        let body = r#"{
+            "code": true,
+            "message": "ok",
+            "data": {
+                "object": "token_usage",
+                "name": "test-key",
+                "total_granted": 100000,
+                "total_used": 20000,
+                "total_available": 80000,
+                "unlimited_quota": false,
+                "expires_at": 0
+            }
+        }"#;
+
+        let result = parse_new_api_usage_quota_response(body).expect("quota");
+        let raw = result.quota.raw_data.as_ref().expect("raw data");
+
+        assert_eq!(result.quota.hourly_percentage, 80);
+        assert_eq!(result.quota.hourly_window_present, Some(true));
+        assert_eq!(result.quota.weekly_window_present, Some(false));
+        assert_eq!(raw["total_granted"], json!(100000));
+        assert_eq!(raw["total_used"], json!(20000));
+        assert_eq!(raw["total_available"], json!(80000));
+        assert_eq!(raw["usage"]["total_granted"], json!(100000));
+        assert_eq!(raw["usage"]["total_used"], json!(20000));
+        assert_eq!(raw["usage"]["total_available"], json!(80000));
+    }
 }

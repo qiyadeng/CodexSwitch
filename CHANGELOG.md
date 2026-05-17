@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.13] - 2026-05-17
+
+### Fixed
+- **New API key quota refresh now falls back to the native token usage endpoint**: when the Cockpit token-profile endpoint is unavailable, the client reads `/api/usage/token/` from the API origin, preserves the raw quota values, and keeps displaying the remaining quota without converting units.
+
+---
 ## [0.23.12] - 2026-05-15
 
 ### Changed

@@ -7,6 +7,12 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
 ---
+## [0.23.13] - 2026-05-17
+
+### 修复
+- **New API Key 配额刷新现在会 fallback 到原生 token usage 接口**：当 Cockpit token-profile 接口不可用时，客户端会从 API origin 请求 `/api/usage/token/`，保留原始额度数值，并继续显示剩余额度，不做金额换算。
+
+---
 ## [0.23.12] - 2026-05-15
 
 ### 变更
