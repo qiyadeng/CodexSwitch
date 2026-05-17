@@ -600,27 +600,41 @@ function buildCodexNewApiQuotaItems(
         : 0
       : clampPercent((available / total) * 100);
   const expiresAt = readNumber(usage, "expires_at");
-  const valueText = unlimited
+  const unlimitedText = unlimited
     ? t("codex.newApi.quota.unlimited", "不限量")
-    : readString(usage, "summary_display") ||
-      `${formatQuotaNumber(available)} / ${formatQuotaNumber(total)}`;
+    : "";
+  const statusSuffix = unlimitedText ? ` · ${unlimitedText}` : "";
+  const usedHint = t("codex.newApi.quota.usedHint", {
+    used: formatQuotaNumber(used),
+    defaultValue: "已用 {{used}}",
+  });
 
   return [
     {
-      key: "new_api_quota",
-      label: t("codex.newApi.quota.available", "额度"),
+      key: "new_api_available",
+      label: t("codex.newApi.quota.available", "可用额度"),
       percentage,
       quotaClass: getCodexQuotaClass(percentage),
-      valueText,
+      valueText: `${formatQuotaNumber(available)}${statusSuffix}`,
       resetText: formatMetricResetText(expiresAt, t),
       resetAt: expiresAt,
       used,
       total,
       left: available,
-      hintText: t("codex.newApi.quota.usedHint", {
-        used: formatQuotaNumber(used),
-        defaultValue: "已用 {{used}}",
-      }),
+      hintText: usedHint,
+    },
+    {
+      key: "new_api_total",
+      label: t("codex.newApi.quota.total", "总额度"),
+      percentage: total > 0 ? 100 : percentage,
+      quotaClass: getCodexQuotaClass(percentage),
+      valueText: formatQuotaNumber(total),
+      resetText: "",
+      resetAt: expiresAt,
+      used,
+      total,
+      left: available,
+      hintText: usedHint,
     },
   ];
 }

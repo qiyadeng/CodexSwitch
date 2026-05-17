@@ -7,6 +7,12 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.14] - 2026-05-17
+
+### Fixed
+- **New API quota cards now show the raw available and total quota separately**: token usage fallback data is displayed as explicit "available quota" and "total quota" values, while unlimited keys still keep the unlimited status without hiding the numeric fields.
+
+---
 ## [0.23.13] - 2026-05-17
 
 ### Fixed

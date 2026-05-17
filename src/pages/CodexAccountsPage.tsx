@@ -5141,7 +5141,7 @@ export function CodexAccountsPage() {
                       ? Calendar
                       : item.key === "code_review"
                         ? BookOpen
-                        : item.key === "new_api_quota"
+                        : item.key.startsWith("new_api_")
                           ? Database
                           : Clock;
                   return (
