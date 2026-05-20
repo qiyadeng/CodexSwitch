@@ -7,6 +7,13 @@ All notable changes to Cockpit Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+## [0.23.16] - 2026-05-20
+
+### Changed
+- **Newbee API now uses the updated service base URL**: new API key accounts and the Newbee API provider preset now default to `https://api.newbeeapi.com`.
+- **The Settings About tab is temporarily hidden**: the About tab entry and content are gated off while the page is paused.
+
+---
 ## [0.23.15] - 2026-05-17
 
 ### Fixed

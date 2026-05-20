@@ -7,6 +7,13 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
 
 ---
+## [0.23.16] - 2026-05-20
+
+### 变更
+- **Newbee API 已更新默认基础地址**：新建 API Key 账户和 Newbee API 服务商预设现在默认使用 `https://api.newbeeapi.com`。
+- **设置页“关于”标签页已暂时隐藏**：设置页入口和内容都已加开关隐藏，后续需要时可重新打开。
+
+---
 ## [0.23.15] - 2026-05-17
 
 ### 修复
