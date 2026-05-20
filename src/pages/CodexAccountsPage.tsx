@@ -212,7 +212,7 @@ const CODEX_TOKEN_BATCH_EXAMPLE = `[
   }
 ]`;
 const OPENAI_OFFICIAL_PRESET_ID = "openai_official";
-const COCKPIT_API_BASE_URL = "https://www.newbeeapi.com/v1";
+const COCKPIT_API_BASE_URL = "https://api.newbeeapi.com";
 
 function normalizeCodexApiBaseUrl(rawValue?: string | null): string {
   return normalizeHttpBaseUrl(rawValue ?? "") ?? "";

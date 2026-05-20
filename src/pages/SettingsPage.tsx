@@ -179,6 +179,7 @@ const ANTIGRAVITY_SEAMLESS_SWITCH_UNLOCK_REQUIRED_TAPS = 10;
 const UNLOCK_FIREWORKS_VISIBLE_MS = 6000;
 const AUTO_SWITCH_SCOPE_ALL_ACCOUNTS: AutoSwitchAccountScopeMode = 'all_accounts';
 const AUTO_SWITCH_SCOPE_SELECTED_ACCOUNTS: AutoSwitchAccountScopeMode = 'selected_accounts';
+const SHOW_SETTINGS_ABOUT_TAB = false;
 const FALLBACK_PLATFORM_SETTINGS_ORDER: Record<PlatformId, number> = {
   antigravity: 0,
   codex: 1,
@@ -1792,12 +1793,14 @@ export function SettingsPage() {
           >
             {t('settings.tabs.network')}
           </button>
-          <button 
-            className={`filter-tab ${activeTab === 'about' ? 'active' : ''}`}
-            onClick={() => setActiveTab('about')}
-          >
-            {t('settings.tabs.about')}
-          </button>
+          {SHOW_SETTINGS_ABOUT_TAB && (
+            <button 
+              className={`filter-tab ${activeTab === 'about' ? 'active' : ''}`}
+              onClick={() => setActiveTab('about')}
+            >
+              {t('settings.tabs.about')}
+            </button>
+          )}
         </div>
       </div>
 
@@ -5231,7 +5234,7 @@ export function SettingsPage() {
         )}
 
         {/* === About Tab === */}
-        {activeTab === 'about' && (
+        {SHOW_SETTINGS_ABOUT_TAB && activeTab === 'about' && (
           <div className="about-container">
             <div className="about-logo-section">
               <div

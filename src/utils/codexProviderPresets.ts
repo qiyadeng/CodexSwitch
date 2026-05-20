@@ -20,7 +20,7 @@ const CODEX_API_PROVIDER_ALL_PRESETS: readonly CodexApiProviderPreset[] = [
   {
     id: COCKPIT_API_PROVIDER_ID,
     name: "Newbee API",
-    baseUrls: ["https://www.newbeeapi.com/v1"],
+    baseUrls: ["https://api.newbeeapi.com"],
     website: "https://www.newbeeapi.com/",
     apiKeyUrl: "https://www.newbeeapi.com/console/token",
     isPartner: true,
