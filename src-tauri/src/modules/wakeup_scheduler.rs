@@ -7,6 +7,7 @@ use std::time::Duration;
 use chrono::{DateTime, Datelike, Local, TimeZone, Timelike};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
+use tauri_plugin_notification::NotificationExt;
 use tokio::time::sleep;
 
 use crate::modules;
@@ -56,37 +57,43 @@ pub struct ScheduleConfig {
     pub time_window_end: Option<String>,
     pub fallback_times: Option<Vec<String>>,
     pub startup_delay_minutes: Option<i32>,
+    pub execution_mode: Option<String>,
+    pub confirm_timeout_minutes: Option<i32>,
 }
 
 #[derive(Debug, Clone)]
-struct WakeupTask {
-    id: String,
-    name: String,
-    enabled: bool,
-    last_run_at: Option<i64>,
-    schedule: ScheduleConfigNormalized,
+pub struct WakeupTask {
+    pub id: String,
+    pub name: String,
+    pub enabled: bool,
+    pub last_run_at: Option<i64>,
+    pub schedule: ScheduleConfigNormalized,
+    pub execution_mode: String,
+    pub confirm_timeout_minutes: i32,
 }
 
 #[derive(Debug, Clone)]
-struct ScheduleConfigNormalized {
-    repeat_mode: String,
-    daily_times: Vec<String>,
-    weekly_days: Vec<i32>,
-    weekly_times: Vec<String>,
-    interval_hours: i32,
-    interval_start_time: String,
-    interval_end_time: String,
-    selected_models: Vec<String>,
-    selected_accounts: Vec<String>,
-    crontab: Option<String>,
-    wake_on_reset: bool,
-    custom_prompt: Option<String>,
-    max_output_tokens: i32,
-    time_window_enabled: bool,
-    time_window_start: Option<String>,
-    time_window_end: Option<String>,
-    fallback_times: Vec<String>,
-    startup_delay_minutes: Option<i32>,
+pub struct ScheduleConfigNormalized {
+    pub repeat_mode: String,
+    pub daily_times: Vec<String>,
+    pub weekly_days: Vec<i32>,
+    pub weekly_times: Vec<String>,
+    pub interval_hours: i32,
+    pub interval_start_time: String,
+    pub interval_end_time: String,
+    pub selected_models: Vec<String>,
+    pub selected_accounts: Vec<String>,
+    pub crontab: Option<String>,
+    pub wake_on_reset: bool,
+    pub custom_prompt: Option<String>,
+    pub max_output_tokens: i32,
+    pub time_window_enabled: bool,
+    pub time_window_start: Option<String>,
+    pub time_window_end: Option<String>,
+    pub fallback_times: Vec<String>,
+    pub startup_delay_minutes: Option<i32>,
+    pub execution_mode: String,
+    pub confirm_timeout_minutes: i32,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -109,6 +116,21 @@ struct SchedulerState {
 static STATE: OnceLock<Mutex<SchedulerState>> = OnceLock::new();
 static STARTED: OnceLock<Mutex<bool>> = OnceLock::new();
 static STARTUP_TRIGGERED: OnceLock<Mutex<bool>> = OnceLock::new();
+
+#[derive(Debug, Clone)]
+struct PendingConfirmation {
+    task: WakeupTask,
+    trigger_source: String,
+    scheduled_at: i64,
+    timeout_at: i64,
+}
+
+static PENDING_CONFIRMATIONS: OnceLock<Mutex<HashMap<String, PendingConfirmation>>> =
+    OnceLock::new();
+
+fn pending_confirmations() -> &'static Mutex<HashMap<String, PendingConfirmation>> {
+    PENDING_CONFIRMATIONS.get_or_init(|| Mutex::new(HashMap::new()))
+}
 
 fn state() -> &'static Mutex<SchedulerState> {
     STATE.get_or_init(|| Mutex::new(SchedulerState::default()))
@@ -139,19 +161,35 @@ fn tasks_state_path() -> Result<std::path::PathBuf, String> {
     Ok(modules::account::get_data_dir()?.join(WAKEUP_TASKS_FILE))
 }
 
+fn quarantine_corrupted_tasks_file(path: &Path, error: &impl std::fmt::Display) {
+    match modules::atomic_write::quarantine_file(path, "invalid-json") {
+        Ok(Some(backup_path)) => modules::logger::log_warn(&format!(
+            "[WakeupTasks] 持久化任务解析失败，已隔离并使用空状态: path={}, backup={}, error={}",
+            path.display(),
+            backup_path.display(),
+            error
+        )),
+        Ok(None) => modules::logger::log_warn(&format!(
+            "[WakeupTasks] 持久化任务解析失败，文件已不存在，使用空状态: path={}, error={}",
+            path.display(),
+            error
+        )),
+        Err(backup_error) => modules::logger::log_warn(&format!(
+            "[WakeupTasks] 持久化任务解析失败，隔离失败，使用空状态: path={}, parse_error={}, backup_error={}",
+            path.display(),
+            error,
+            backup_error
+        )),
+    }
+}
+
 fn save_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
     let parent = path.parent().ok_or("无法定位唤醒任务目录")?;
     fs::create_dir_all(parent).map_err(|e| format!("创建唤醒任务目录失败: {}", e))?;
-    let temp_path = parent.join(format!(
-        "{}.tmp",
-        path.file_name()
-            .and_then(|item| item.to_str())
-            .unwrap_or("wakeup_tasks")
-    ));
     let content =
         serde_json::to_string_pretty(value).map_err(|e| format!("序列化唤醒任务失败: {}", e))?;
-    fs::write(&temp_path, content).map_err(|e| format!("写入唤醒任务临时文件失败: {}", e))?;
-    fs::rename(&temp_path, path).map_err(|e| format!("替换唤醒任务文件失败: {}", e))
+    modules::atomic_write::write_string_atomic(path, &content)
+        .map_err(|e| format!("保存唤醒任务失败: {}", e))
 }
 
 fn persist_state(enabled: bool, tasks: &[WakeupTaskInput]) -> Result<(), String> {
@@ -167,12 +205,19 @@ fn apply_state(enabled: bool, tasks: Vec<WakeupTaskInput>) {
     guard.enabled = enabled;
     guard.tasks = tasks
         .into_iter()
-        .map(|task| WakeupTask {
-            id: task.id,
-            name: task.name,
-            enabled: task.enabled,
-            last_run_at: task.last_run_at,
-            schedule: normalize_schedule(task.schedule),
+        .map(|task| {
+            let normalized = normalize_schedule(task.schedule);
+            let execution_mode = normalized.execution_mode.clone();
+            let confirm_timeout_minutes = normalized.confirm_timeout_minutes;
+            WakeupTask {
+                id: task.id,
+                name: task.name,
+                enabled: task.enabled,
+                last_run_at: task.last_run_at,
+                schedule: normalized,
+                execution_mode,
+                confirm_timeout_minutes,
+            }
         })
         .collect();
 }
@@ -201,7 +246,7 @@ pub fn restore_state_from_disk() {
     let persisted: PersistedWakeupState = match serde_json::from_str(&content) {
         Ok(state) => state,
         Err(err) => {
-            modules::logger::log_warn(&format!("[WakeupTasks] 解析持久化任务失败: {}", err));
+            quarantine_corrupted_tasks_file(&path, &err);
             return;
         }
     };
@@ -234,6 +279,14 @@ fn normalize_schedule(raw: ScheduleConfig) -> ScheduleConfigNormalized {
     let startup_delay_minutes = raw
         .startup_delay_minutes
         .map(|value| value.clamp(0, 24 * 60));
+    let execution_mode = raw
+        .execution_mode
+        .filter(|mode| mode == "auto" || mode == "confirm")
+        .unwrap_or_else(|| "auto".to_string());
+    let confirm_timeout_minutes = raw
+        .confirm_timeout_minutes
+        .filter(|&v| v >= 1 && v <= 60)
+        .unwrap_or(5);
     ScheduleConfigNormalized {
         repeat_mode: raw.repeat_mode,
         daily_times,
@@ -253,6 +306,8 @@ fn normalize_schedule(raw: ScheduleConfig) -> ScheduleConfigNormalized {
         time_window_end: raw.time_window_end,
         fallback_times,
         startup_delay_minutes,
+        execution_mode,
+        confirm_timeout_minutes,
     }
 }
 
@@ -311,6 +366,10 @@ pub fn ensure_started(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             run_scheduler_once(&app).await;
+            // 检查确认超时，避免因前端未调用导致确认任务堆积
+            if let Err(e) = check_and_handle_timeouts(&app).await {
+                modules::logger::log_warn(&format!("[WakeupTasks] 超时检查失败: {}", e));
+            }
             sleep(Duration::from_secs(30)).await;
         }
     });
@@ -966,6 +1025,32 @@ fn handle_quota_reset_task(app: &AppHandle, task: &WakeupTask, now: DateTime<Loc
 }
 
 async fn run_task(app: &AppHandle, task: &WakeupTask, trigger_source: &str) {
+    // 检查是否需要确认
+    if task.execution_mode == "confirm" {
+        let timeout_minutes = task.confirm_timeout_minutes;
+        let timeout_at = chrono::Local::now().timestamp() + (timeout_minutes as i64 * 60);
+
+        let pending = PendingConfirmation {
+            task: task.clone(),
+            trigger_source: trigger_source.to_string(),
+            scheduled_at: chrono::Local::now().timestamp(),
+            timeout_at,
+        };
+
+        // 发送通知
+        let notification_id = send_confirmation_notification(app, &task.name, &task.schedule).await;
+
+        // 存储到待确认队列并发射事件
+        store_pending_confirmation(app, task.id.clone(), pending, notification_id);
+
+        modules::logger::log_info(&format!(
+            "[WakeupTasks] 任务 {} 需要确认，已发送通知",
+            task.name
+        ));
+        return;
+    }
+
+    // 直接执行模式（现有逻辑）
     run_task_with_models(
         app,
         task,
@@ -973,6 +1058,140 @@ async fn run_task(app: &AppHandle, task: &WakeupTask, trigger_source: &str) {
         task.schedule.selected_models.clone(),
     )
     .await;
+}
+
+async fn send_confirmation_notification(
+    app: &AppHandle,
+    task_name: &str,
+    schedule: &ScheduleConfigNormalized,
+) -> u32 {
+    let account_emails: Vec<String> = schedule.selected_accounts.clone();
+    let models: Vec<String> = schedule.selected_models.clone();
+
+    let body = format!(
+        "任务: {}\n账号: {}\n模型: {}\n点击确认执行唤醒",
+        task_name,
+        account_emails.join(", "),
+        models.join(", ")
+    );
+
+    match app
+        .notification()
+        .builder()
+        .title("唤醒任务待确认")
+        .body(&body)
+        .show()
+    {
+        Ok(()) => 0,
+        Err(e) => {
+            modules::logger::log_warn(&format!("[WakeupTasks] 发送通知失败: {}", e));
+            0
+        }
+    }
+}
+
+fn store_pending_confirmation(
+    app: &AppHandle,
+    task_id: String,
+    pending: PendingConfirmation,
+    notification_id: u32,
+) {
+    let mut lock = lock_or_recover(pending_confirmations(), "pending confirmations lock");
+    lock.insert(task_id.clone(), pending);
+
+    // 发射事件通知前端建立映射
+    #[derive(serde::Serialize, Clone)]
+    struct NotificationMappingPayload {
+        task_id: String,
+        notification_id: u32,
+    }
+
+    let payload = NotificationMappingPayload {
+        task_id,
+        notification_id,
+    };
+
+    if let Err(e) = app.emit("wakeup://notification-mapping", payload) {
+        modules::logger::log_warn(&format!("[WakeupTasks] 发射通知映射事件失败: {}", e));
+    }
+}
+
+pub async fn execute_pending_confirmation(app: &AppHandle, task_id: &str) -> Result<(), String> {
+    let pending = {
+        let mut lock = lock_or_recover(pending_confirmations(), "pending confirmations lock");
+        lock.remove(task_id)
+    };
+
+    if let Some(pending) = pending {
+        // 检查是否超时
+        if chrono::Local::now().timestamp() > pending.timeout_at {
+            record_task_history(
+                app,
+                &pending.task,
+                &pending.trigger_source,
+                "skipped_timeout",
+            )
+            .await;
+            return Ok(());
+        }
+
+        // 执行唤醒
+        run_task_with_models(
+            app,
+            &pending.task,
+            &pending.trigger_source,
+            pending.task.schedule.selected_models.clone(),
+        )
+        .await;
+    }
+
+    Ok(())
+}
+
+pub fn cancel_pending_confirmation(task_id: &str) -> Result<(), String> {
+    let mut lock = lock_or_recover(pending_confirmations(), "pending confirmations lock");
+    lock.remove(task_id);
+    Ok(())
+}
+
+pub async fn check_and_handle_timeouts(app: &AppHandle) -> Result<(), String> {
+    let timed_out_tasks: Vec<(String, PendingConfirmation)> = {
+        let mut lock = lock_or_recover(pending_confirmations(), "pending confirmations lock");
+        let now = chrono::Local::now().timestamp();
+        let expired_ids: Vec<String> = lock
+            .iter()
+            .filter(|(_, pending)| now > pending.timeout_at)
+            .map(|(id, _)| id.clone())
+            .collect();
+
+        expired_ids
+            .into_iter()
+            .filter_map(|id| lock.remove(&id).map(|pending| (id, pending)))
+            .collect()
+    };
+
+    for (_task_id, pending) in timed_out_tasks {
+        record_task_history(
+            app,
+            &pending.task,
+            &pending.trigger_source,
+            "skipped_timeout",
+        )
+        .await;
+    }
+
+    Ok(())
+}
+
+async fn record_task_history(
+    app: &AppHandle,
+    task: &WakeupTask,
+    trigger_source: &str,
+    status: &str,
+) {
+    if let Err(e) = modules::wakeup_history::record_status(app, task, trigger_source, status) {
+        modules::logger::log_warn(&format!("[WakeupTasks] 记录历史失败: {}", e));
+    }
 }
 
 async fn run_task_with_models(
@@ -1067,6 +1286,11 @@ async fn run_task_with_models(
                 model_id: model.clone(),
                 prompt: Some(prompt.clone()),
                 success,
+                status: if success {
+                    Some("success".to_string())
+                } else {
+                    Some("failed".to_string())
+                },
                 message,
                 duration: Some(duration),
             });

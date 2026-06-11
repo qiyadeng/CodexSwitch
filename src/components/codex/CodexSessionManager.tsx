@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { confirm as confirmDialog } from '@tauri-apps/plugin-dialog';
 import { Check, ChevronDown, ChevronRight, Copy, Eye, Folder, RefreshCw, RotateCcw, Trash2, X } from 'lucide-react';
 import { ModalErrorMessage, useModalErrorState } from '../ModalErrorMessage';
+import { useEscClose } from '../../hooks/useEscClose';
 import type { CodexSessionRecord, CodexSessionTokenStats, CodexTrashedSessionRecord } from '../../types/codex';
 import { useCodexInstanceStore } from '../../stores/useCodexInstanceStore';
 import { formatCodexSessionVisibilityRepairMessage } from '../../utils/codexSessionVisibility';
@@ -364,11 +365,10 @@ export function CodexSessionManager() {
   };
 
   const handleCloseSyncTargetModal = () => {
-    if (syncingToInstance) return;
     setShowSyncTargetModal(false);
-    setSyncTargetInstanceId('');
-    setSyncTargetModalError(null);
   };
+
+  useEscClose(showSyncTargetModal, handleCloseSyncTargetModal);
 
   const handleCloseRestoreModal = () => {
     if (restoring) return;
@@ -376,6 +376,8 @@ export function CodexSessionManager() {
     setSelectedTrashIds([]);
     setRestoreModalError(null);
   };
+
+  useEscClose(showRestoreModal, handleCloseRestoreModal);
 
   const handleSyncSessions = async () => {
     setMessage(null);
@@ -392,7 +394,7 @@ export function CodexSessionManager() {
       const confirmed = await confirmDialog(
         t(
           'codex.sessionManager.confirm.syncMessage',
-          '会将缺失的线程与对应会话同步到所有实例中，已有内容不会重复写入，写入前会先备份目标实例关键文件。确认继续？',
+          '会将缺失会话的 rollout、session_index 条目和会话文件时间同步到所有实例，并对同 ID 会话做事件级合并，随后触发官方 Codex 重建会话索引；写入前会备份目标文件。确认继续？',
         ),
         {
           title: t('codex.sessionManager.actions.syncSessions', '同步会话'),
@@ -773,7 +775,7 @@ export function CodexSessionManager() {
               <p className="codex-session-target-modal__hint">
                 {t(
                   'codex.sessionManager.targetModal.hint',
-                  '会把所选会话补到目标实例，已有同 ID 会话会自动跳过；目标实例运行中时可能需要重启后显示。',
+                  '会把所选会话的 rollout、session_index 条目和会话文件时间补到目标实例，并触发官方 Codex 重建会话索引；已有同 ID 会话会自动跳过。',
                 )}
               </p>
               <label className="codex-session-target-modal__field">
@@ -870,7 +872,7 @@ export function CodexSessionManager() {
                   <p className="codex-session-restore-modal__hint">
                     {t(
                       'codex.sessionManager.restoreModal.hint',
-                      '恢复会把 rollout 文件、SQLite 线程记录和 session_index 条目一起放回原实例。',
+                      '恢复会把 rollout 文件、session_index 条目和会话文件时间放回原实例，并触发官方 Codex 重建会话索引。',
                     )}
                   </p>
                   <div className="codex-session-restore-list">

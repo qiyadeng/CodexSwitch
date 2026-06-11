@@ -80,24 +80,40 @@ pub fn data_transfer_apply_user_config(
     config: UserConfig,
 ) -> Result<bool, String> {
     let current = config::get_user_config();
+    let mut next_config = config;
+
+    // 恢复备份配置时，保留当前的 WebDAV 同步配置与同步历史状态，避免被覆盖或重置
+    next_config.webdav_sync_enabled = current.webdav_sync_enabled;
+    next_config.webdav_sync_url = current.webdav_sync_url.clone();
+    next_config.webdav_sync_username = current.webdav_sync_username.clone();
+    next_config.webdav_sync_password = current.webdav_sync_password.clone();
+    next_config.webdav_sync_remote_dir = current.webdav_sync_remote_dir.clone();
+    next_config.webdav_sync_retention_days = current.webdav_sync_retention_days;
+    next_config.webdav_sync_last_upload_at = current.webdav_sync_last_upload_at.clone();
+    next_config.webdav_sync_last_upload_file_name = current.webdav_sync_last_upload_file_name.clone();
+    next_config.webdav_sync_last_download_at = current.webdav_sync_last_download_at.clone();
+    next_config.webdav_sync_last_download_file_name = current.webdav_sync_last_download_file_name.clone();
     let current_app_auto_launch_enabled =
         get_app_auto_launch_enabled(&app).unwrap_or(current.app_auto_launch_enabled);
 
-    let needs_restart = current.ws_port != config.ws_port
-        || current.ws_enabled != config.ws_enabled
-        || current.report_enabled != config.report_enabled
-        || current.report_port != config.report_port
-        || current.report_token != config.report_token;
-    let language_changed = current.language != config.language;
-    let app_auto_launch_changed = current_app_auto_launch_enabled != config.app_auto_launch_enabled;
+    let needs_restart = current.ws_port != next_config.ws_port
+        || current.ws_enabled != next_config.ws_enabled
+        || current.report_enabled != next_config.report_enabled
+        || current.report_port != next_config.report_port
+        || current.report_token != next_config.report_token;
+    let language_changed = current.language != next_config.language;
+    let app_auto_launch_changed =
+        current_app_auto_launch_enabled != next_config.app_auto_launch_enabled;
 
     #[cfg(target_os = "macos")]
-    let hide_dock_icon_changed = current.hide_dock_icon != config.hide_dock_icon;
+    let hide_dock_icon_changed = current.hide_dock_icon != next_config.hide_dock_icon;
+    #[cfg(target_os = "macos")]
+    let tray_icon_style_changed = current.tray_icon_style != next_config.tray_icon_style;
 
-    config::save_user_config(&config)?;
+    config::save_user_config(&next_config)?;
 
     if app_auto_launch_changed {
-        apply_app_auto_launch_enabled(&app, config.app_auto_launch_enabled)?;
+        apply_app_auto_launch_enabled(&app, next_config.app_auto_launch_enabled)?;
     }
 
     if let Err(err) = modules::floating_card_window::apply_floating_card_always_on_top(&app) {
@@ -109,8 +125,18 @@ pub fn data_transfer_apply_user_config(
         crate::apply_macos_activation_policy(&app);
     }
 
+    #[cfg(target_os = "macos")]
+    if tray_icon_style_changed {
+        if let Err(err) = modules::tray::apply_tray_icon_style(&app) {
+            modules::logger::log_warn(&format!(
+                "[DataTransfer] 应用 macOS 菜单栏图标样式失败: {}",
+                err
+            ));
+        }
+    }
+
     if language_changed {
-        let normalized_language = config.language.clone();
+        let normalized_language = next_config.language.clone();
         websocket::broadcast_language_changed(&normalized_language, "desktop");
         modules::sync_settings::write_sync_setting("language", &normalized_language);
         if let Err(err) = modules::tray::update_tray_menu(&app) {

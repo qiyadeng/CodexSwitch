@@ -163,7 +163,6 @@ pub struct AccountInfo {
     pub name: Option<String>,
     pub is_current: bool,
     pub disabled: bool,
-    pub has_fingerprint: bool,
     pub last_used: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subscription_tier: Option<String>,
@@ -177,7 +176,6 @@ pub struct AccountTokenInfo {
     pub name: Option<String>,
     pub is_current: bool,
     pub disabled: bool,
-    pub has_fingerprint: bool,
     pub last_used: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subscription_tier: Option<String>,
@@ -255,12 +253,19 @@ fn push_prefix16(prefixes: &mut Vec<(u8, u8)>, ip_str: &str) {
 }
 
 #[cfg(target_os = "windows")]
+fn hidden_wsl_output(args: &[&str]) -> std::io::Result<std::process::Output> {
+    use std::os::windows::process::CommandExt;
+
+    let mut command = std::process::Command::new("wsl.exe");
+    command.creation_flags(0x08000000);
+    command.args(args).output()
+}
+
+#[cfg(target_os = "windows")]
 fn resolve_wsl_network_prefixes16() -> Vec<(u8, u8)> {
     let mut prefixes = Vec::new();
 
-    let resolv_output = std::process::Command::new("wsl.exe")
-        .args(["-e", "sh", "-c", "cat /etc/resolv.conf"])
-        .output();
+    let resolv_output = hidden_wsl_output(&["-e", "sh", "-c", "cat /etc/resolv.conf"]);
     if let Ok(output) = resolv_output {
         if output.status.success() {
             let content = String::from_utf8_lossy(&output.stdout);
@@ -276,9 +281,7 @@ fn resolve_wsl_network_prefixes16() -> Vec<(u8, u8)> {
         }
     }
 
-    let route_output = std::process::Command::new("wsl.exe")
-        .args(["-e", "sh", "-c", "ip route show default"])
-        .output();
+    let route_output = hidden_wsl_output(&["-e", "sh", "-c", "ip route show default"]);
     if let Ok(output) = route_output {
         if output.status.success() {
             let content = String::from_utf8_lossy(&output.stdout);
@@ -909,7 +912,6 @@ fn get_accounts_info() -> Result<(Vec<AccountInfo>, Option<String>), String> {
                 name: acc.name.clone(),
                 is_current: current_id.as_ref() == Some(&acc.id),
                 disabled: acc.disabled,
-                has_fingerprint: acc.fingerprint_id.is_some(),
                 last_used: acc.last_used,
                 subscription_tier,
             }
@@ -939,7 +941,6 @@ fn get_accounts_with_tokens_info() -> Result<(Vec<AccountTokenInfo>, Option<Stri
                 name: acc.name.clone(),
                 is_current: current_id.as_ref() == Some(&acc.id),
                 disabled: acc.disabled,
-                has_fingerprint: acc.fingerprint_id.is_some(),
                 last_used: acc.last_used,
                 subscription_tier,
                 refresh_token: acc.token.refresh_token.clone(),
@@ -971,7 +972,6 @@ fn get_current_account_info() -> Result<Option<AccountInfo>, String> {
             name: acc.name.clone(),
             is_current: current_id.as_ref() == Some(&acc.id),
             disabled: acc.disabled,
-            has_fingerprint: acc.fingerprint_id.is_some(),
             last_used: acc.last_used,
             subscription_tier,
         }

@@ -49,9 +49,9 @@ import {
   FolderPlus,
   ChevronRight,
   LogOut,
-  Server,
   Wrench,
   Terminal,
+  Link2,
 } from "lucide-react";
 import { useCodexAccountStore } from "../stores/useCodexAccountStore";
 import { useCodexInstanceStore } from "../stores/useCodexInstanceStore";
@@ -67,6 +67,7 @@ import {
   ModalErrorMessage,
   useModalErrorState,
 } from "../components/ModalErrorMessage";
+import { MfaQuickCodeSelect } from "../components/MfaQuickCodeSelect";
 import { PaginationControls } from "../components/PaginationControls";
 import {
   CodexAccountGroupModal,
@@ -90,12 +91,13 @@ import {
   getCodexSubscriptionPresentation,
   hasCodexAccountName,
   isCodexApiKeyAccount,
-  isCodexExplicitFreePlanType,
   isCodexNewApiAccount,
   isCodexTeamLikePlan,
   type CodexApiProviderMode,
   type CodexQuotaErrorInfo,
 } from "../types/codex";
+import { filterCodexLocalAccessAccountIds } from "../utils/codexLocalAccessAccounts";
+import { isBlockingCodexQuotaError } from "../utils/codexQuotaError";
 import { buildCodexAccountPresentation } from "../presentation/platformAccountPresentation";
 
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -113,19 +115,26 @@ import { CodexInstancesContent } from "./CodexInstancesPage";
 import { CodexSessionManager } from "../components/codex/CodexSessionManager";
 import { CodexWakeupContent } from "../components/codex/CodexWakeupContent";
 import { CodexModelProviderManager } from "../components/codex/CodexModelProviderManager";
+import { CodexSpeedSelect } from "../components/codex/CodexSpeedSelect";
 import { QuickSettingsPopover } from "../components/QuickSettingsPopover";
 import { useProviderAccountsPage } from "../hooks/useProviderAccountsPage";
 import {
   MultiSelectFilterDropdown,
   type MultiSelectFilterOption,
 } from "../components/MultiSelectFilterDropdown";
+import { AccountTagFilterDropdown } from "../components/AccountTagFilterDropdown";
 import {
   SingleSelectFilterDropdown,
   type SingleSelectFilterOption,
 } from "../components/SingleSelectFilterDropdown";
-import type { CodexAccount } from "../types/codex";
+import { SingleSelectDropdown } from "../components/SingleSelectDropdown";
+import type { CodexAccount, CodexAppSpeed } from "../types/codex";
 import type {
+  CodexLocalAccessAddressKind,
+  CodexLocalAccessCustomRoutingRule,
+  CodexLocalAccessGatewayMode,
   CodexLocalAccessRoutingStrategy,
+  CodexLocalAccessScope,
   CodexLocalAccessState,
 } from "../types/codexLocalAccess";
 import {
@@ -142,10 +151,18 @@ import { compareCurrentAccountFirst } from "../utils/currentAccountSort";
 import {
   CODEX_API_PROVIDER_CUSTOM_ID,
   CODEX_API_PROVIDER_PRESETS,
+  COCKPIT_API_BASE_URL,
   COCKPIT_API_PROVIDER_ID,
+  COCKPIT_API_PROVIDER_NAME,
   findCodexApiProviderPresetById,
+  isCockpitApiProviderBaseUrl,
   resolveCodexApiProviderPresetId,
 } from "../utils/codexProviderPresets";
+import {
+  normalizeApiKeyFunOfficialUrl,
+  resolveApiKeyFunWireApi,
+} from "../utils/apikeyFunLinks";
+import { resolveCodexProviderCapabilityProfile } from "../utils/codexProviderGateway";
 import {
   formatCodexQuotaPoolPercent,
   summarizeCodexQuotaPool,
@@ -154,9 +171,14 @@ import {
   findCodexModelProviderById,
   findCodexModelProviderByBaseUrl,
   listCodexModelProviders,
+  queryCodexModelProviderUsage,
+  saveCodexModelProviderDetectedIntegrationType,
   type CodexModelProvider,
+  type CodexModelProviderUsageSummary,
   upsertCodexModelProviderFromCredential,
 } from "../services/codexModelProviderService";
+import { useSponsorStore } from "../stores/useSponsorStore";
+import type { Sponsor } from "../types/sponsor";
 import {
   buildValidAccountsFilterOption,
   splitValidityFilterValues,
@@ -195,7 +217,18 @@ const CODEX_TOKEN_SINGLE_EXAMPLE = `{
     "refresh_token": "rt_..."
   }
 }`;
-const CODEX_TOKEN_REFRESH_ONLY_EXAMPLE = `{
+const CODEX_TOKEN_SESSION_EXAMPLE = `{
+  "user": {
+    "email": "user@example.com"
+  },
+  "account": {
+    "id": "account-id"
+  },
+  "accessToken": "eyJ...",
+  "authProvider": "openai"
+}
+
+{
   "refresh_token": "rt_..."
 }`;
 const CODEX_TOKEN_BATCH_EXAMPLE = `[
@@ -212,7 +245,7 @@ const CODEX_TOKEN_BATCH_EXAMPLE = `[
   }
 ]`;
 const OPENAI_OFFICIAL_PRESET_ID = "openai_official";
-const COCKPIT_API_BASE_URL = "https://api.newbeeapi.com";
+const OPENAI_OFFICIAL_BASE_URL = "https://api.openai.com/v1";
 
 function normalizeCodexApiBaseUrl(rawValue?: string | null): string {
   return normalizeHttpBaseUrl(rawValue ?? "") ?? "";
@@ -237,8 +270,14 @@ const CODEX_OVERVIEW_LAYOUT_MODE_KEY =
   "agtools.codex.accounts.overview_layout_mode";
 const CODEX_LOCAL_ACCESS_EXPANDED_KEY =
   "agtools.codex.local_access_entry_expanded.v1";
+const CODEX_LOCAL_ACCESS_ADDRESS_KIND_KEY =
+  "agtools.codex.local_access_address_kind.v1";
+const CODEX_LOCAL_ACCESS_GATEWAY_GUIDE_DISMISSED_KEY =
+  "agtools.codex.api_service.gateway_guide.dismissed.v1";
 const CODEX_CUSTOM_SORT_ORDER_KEY =
   "agtools.codex.accounts.custom_sort_order.v1";
+const CODEX_CUSTOM_SORT_ACTIVE_KEY =
+  "agtools.codex.accounts.custom_sort_active.v1";
 const DEFAULT_CODEX_API_PROVIDER_ID = COCKPIT_API_PROVIDER_ID;
 const DEFAULT_CODEX_API_BASE_URL = COCKPIT_API_BASE_URL;
 const CODEX_LOCAL_ACCESS_FALLBACK_PORT = 54140;
@@ -249,8 +288,157 @@ const FILTER_TYPES_FIELD = "filter_types";
 const EXPIRY_FILTER_FIELD = "expiry_filter";
 const GROUP_FILTER_FIELD = "group_filter";
 const ACTIVE_GROUP_ID_FIELD = "active_group_id";
+const OAUTH_BINDING_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
 type CodexOverviewLayoutMode = "compact" | "list" | "grid";
+type OAuthBindingSortBy = "account" | "created_at" | "last_used" | "plan";
+type OAuthBindingTargetKind = "api_key_account" | "local_access";
+type CodexApiKeyUsageState = {
+  loading: boolean;
+  summary?: CodexModelProviderUsageSummary;
+  error?: string;
+  unavailable?: boolean;
+};
+
+const CODEX_API_KEY_USAGE_CACHE_KEY = "agtools.codex.apiKeyUsage.cache.v1";
+
+function readCodexApiKeyUsageCache(): Record<string, CodexApiKeyUsageState> {
+  try {
+    const raw = localStorage.getItem(CODEX_API_KEY_USAGE_CACHE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object") return {};
+    const next: Record<string, CodexApiKeyUsageState> = {};
+    Object.entries(parsed).forEach(([accountId, value]) => {
+      if (!value || typeof value !== "object") return;
+      const item = value as {
+        summary?: CodexModelProviderUsageSummary;
+        error?: string;
+        unavailable?: boolean;
+      };
+      next[accountId] = {
+        loading: false,
+        summary: item.summary,
+        error: typeof item.error === "string" ? item.error : undefined,
+        unavailable: item.unavailable === true,
+      };
+    });
+    return next;
+  } catch {
+    return {};
+  }
+}
+
+function writeCodexApiKeyUsageCache(
+  value: Record<string, CodexApiKeyUsageState>,
+): void {
+  try {
+    localStorage.setItem(
+      CODEX_API_KEY_USAGE_CACHE_KEY,
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(value).map(([accountId, item]) => [
+            accountId,
+            {
+              summary: item.summary,
+              error: item.error,
+              unavailable: item.unavailable === true,
+            },
+          ]),
+        ),
+      ),
+    );
+  } catch {
+    // ignore persistence failures
+  }
+}
+
+function isSponsorModelProvider(
+  provider: CodexModelProvider | null | undefined,
+  sponsorTemplates: SponsorApiProviderTemplate[],
+): boolean {
+  if (!provider) return false;
+  if (provider.sourceTag) {
+    return sponsorTemplates.some(
+      (template) => template.id === provider.sourceTag,
+    );
+  }
+  const normalizedBaseUrl = normalizeHttpBaseUrl(provider.baseUrl);
+  if (!normalizedBaseUrl) return false;
+  return sponsorTemplates.some(
+    (template) => normalizeHttpBaseUrl(template.baseUrl) === normalizedBaseUrl,
+  );
+}
+
+interface LocalAccessAccountPoolHealthSummary {
+  total: number;
+  available: number;
+  abnormal: number;
+  cooldown: number;
+  missing: number;
+  authError: number;
+  quotaLimited: number;
+}
+
+const BLOCKING_LOCAL_ACCESS_ACCOUNT_FAILURE_CATEGORIES = new Set([
+  "auth_unavailable",
+  "auth_refresh_failed",
+  "account_prepare_failed",
+  "free_account_restricted",
+]);
+
+function isBlockingLocalAccessAccountFailureCategory(
+  category?: string | null,
+): boolean {
+  return Boolean(
+    category && BLOCKING_LOCAL_ACCESS_ACCOUNT_FAILURE_CATEGORIES.has(category),
+  );
+}
+
+function normalizeLocalAccessAddressKind(
+  value: string | null | undefined,
+): CodexLocalAccessAddressKind {
+  return value === "lan" ? "lan" : "local";
+}
+
+function readStoredLocalAccessAddressKind(): CodexLocalAccessAddressKind {
+  try {
+    return normalizeLocalAccessAddressKind(
+      localStorage.getItem(CODEX_LOCAL_ACCESS_ADDRESS_KIND_KEY),
+    );
+  } catch {
+    return "local";
+  }
+}
+
+function persistLocalAccessAddressKind(
+  value: CodexLocalAccessAddressKind,
+): void {
+  try {
+    localStorage.setItem(CODEX_LOCAL_ACCESS_ADDRESS_KIND_KEY, value);
+  } catch {
+    // ignore storage write failures
+  }
+}
+
+function readLocalAccessGatewayGuideDismissed(): boolean {
+  try {
+    return (
+      localStorage.getItem(CODEX_LOCAL_ACCESS_GATEWAY_GUIDE_DISMISSED_KEY) ===
+      "1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function persistLocalAccessGatewayGuideDismissed(): void {
+  try {
+    localStorage.setItem(CODEX_LOCAL_ACCESS_GATEWAY_GUIDE_DISMISSED_KEY, "1");
+  } catch {
+    // ignore storage write failures
+  }
+}
 type CodexLaunchCredentialKind = "api-key" | "api-service" | "account";
 type CodexLaunchCredentialType = "api" | "account";
 type CodexApiSwitchNoticeContext = {
@@ -294,9 +482,39 @@ function readCockpitApiNumber(
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
+function readCockpitApiOptionalNumber(
+  record: CockpitApiJsonRecord | null,
+  key: string,
+): number | null {
+  const value = record?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function isProviderUsageUnavailableError(error: unknown): boolean {
+  const message = String(error).replace(/^Error:\s*/, "");
+  return (
+    message.includes("PROVIDER_USAGE_DETECT_FAILED") ||
+    message.includes("PROVIDER_USAGE_HTTP_404") ||
+    message.includes("PROVIDER_USAGE_TYPE_UNSUPPORTED")
+  );
+}
+
 function formatCockpitApiInteger(value: number): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
     Math.max(0, value),
+  );
+}
+
+function formatCockpitApiTokenCount(value: number): string {
+  const normalized = Math.max(0, value);
+  if (normalized >= 100_000_000) {
+    return `${(normalized / 100_000_000).toFixed(normalized >= 1_000_000_000 ? 1 : 2).replace(/\.?0+$/, "")}亿`;
+  }
+  if (normalized >= 10_000) {
+    return `${(normalized / 10_000).toFixed(normalized >= 100_000 ? 1 : 2).replace(/\.?0+$/, "")}万`;
+  }
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
+    normalized,
   );
 }
 
@@ -313,6 +531,37 @@ function getCockpitApiStatsRecord(
 ): CockpitApiJsonRecord | null {
   const usage = getCockpitApiUsageRecord(account);
   return toCockpitApiRecord(usage?.stats);
+}
+
+function resolveApiKeyUsageMode(
+  summary?: CodexModelProviderUsageSummary,
+): "new_api" | "sub2api" | null {
+  if (!summary) return null;
+  if (summary.mode === "new_api" || summary.mode === "sub2api") {
+    return summary.mode;
+  }
+  if (
+    typeof summary.todayRequests === "number" ||
+    typeof summary.todayTotalTokens === "number"
+  ) {
+    return "sub2api";
+  }
+  const detailKeys = new Set((summary.details ?? []).map((item) => item.key));
+  if (
+    detailKeys.has("todayRequests") ||
+    detailKeys.has("todayTokens") ||
+    detailKeys.has("remaining")
+  ) {
+    return "sub2api";
+  }
+  if (
+    detailKeys.has("totalGranted") ||
+    detailKeys.has("totalAvailable") ||
+    detailKeys.has("expiresAt")
+  ) {
+    return "new_api";
+  }
+  return null;
 }
 
 function readCodexCustomSortOrder(): string[] {
@@ -336,6 +585,22 @@ function writeCodexCustomSortOrder(accountIds: string[]): void {
       CODEX_CUSTOM_SORT_ORDER_KEY,
       JSON.stringify(accountIds),
     );
+  } catch {
+    // ignore persistence failures
+  }
+}
+
+function readCodexCustomSortActive(): boolean {
+  try {
+    return localStorage.getItem(CODEX_CUSTOM_SORT_ACTIVE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeCodexCustomSortActive(active: boolean): void {
+  try {
+    localStorage.setItem(CODEX_CUSTOM_SORT_ACTIVE_KEY, active ? "1" : "0");
   } catch {
     // ignore persistence failures
   }
@@ -421,7 +686,72 @@ function maskCodexApiKey(value: string): string {
   return "••••••••••••••••";
 }
 
+interface SponsorApiProviderTemplate {
+  id: string;
+  sponsor: Sponsor;
+  name: string;
+  baseUrl: string;
+  modelCatalog: string[];
+  supportsVision: boolean;
+  website: string;
+  apiKeyUrl: string;
+  wireApi?: "responses" | "chat_completions" | null;
+  integrationType?: "sub2api" | "new_api" | null;
+}
+
+function normalizeSponsorApiProviderTemplates(
+  sponsors: Sponsor[] | undefined,
+): SponsorApiProviderTemplate[] {
+  const templates: SponsorApiProviderTemplate[] = [];
+  for (const sponsor of sponsors ?? []) {
+    const integration = sponsor.integration;
+    if (
+      !integration?.enabled ||
+      !integration.quickConfigure ||
+      !integration.baseUrl?.trim()
+    ) {
+      continue;
+    }
+    templates.push({
+      id: `relay:${sponsor.id}`,
+      sponsor,
+      name: sponsor.name,
+      baseUrl: integration.baseUrl.trim(),
+      modelCatalog: integration.models ?? [],
+      supportsVision: integration.supportsVision === true,
+      website: normalizeApiKeyFunOfficialUrl(
+        integration.website || sponsor.url,
+      ),
+      apiKeyUrl: normalizeApiKeyFunOfficialUrl(
+        integration.apiKeyUrl || sponsor.url,
+      ),
+      wireApi: resolveApiKeyFunWireApi(
+        integration.baseUrl,
+        integration.wireApi ?? null,
+      ),
+      integrationType: integration.type ?? null,
+    });
+  }
+  return templates.sort((a, b) => {
+    const priority = a.sponsor.priority - b.sponsor.priority;
+    if (priority !== 0) return priority;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function isRelayApiProviderTemplateId(value?: string | null): boolean {
+  return Boolean(value?.startsWith("relay:"));
+}
+
+function getDefaultApiProviderPresetId(
+  sponsorTemplates: SponsorApiProviderTemplate[],
+): string {
+  return sponsorTemplates[0]?.id ?? DEFAULT_CODEX_API_PROVIDER_ID;
+}
+
 export function CodexAccountsPage() {
+  const sponsorModule = useSponsorStore((state) => state.state.sponsorModule);
+  const fetchSponsorState = useSponsorStore((state) => state.fetchState);
   const [activeTab, setActiveTab] = useState<CodexTab>("overview");
   const [wakeupPresetManagerSignal, setWakeupPresetManagerSignal] = useState(0);
   const untaggedKey = "__untagged__";
@@ -502,6 +832,11 @@ export function CodexAccountsPage() {
     set: setGroupDeleteError,
   } = useModalErrorState();
   const [deletingGroup, setDeletingGroup] = useState(false);
+  const [refreshingGroupId, setRefreshingGroupId] = useState<string | null>(
+    null,
+  );
+  const [refreshingSubscriptionAccountId, setRefreshingSubscriptionAccountId] =
+    useState<string | null>(null);
   const [removingGroupAccountIds, setRemovingGroupAccountIds] = useState<
     Set<string>
   >(new Set());
@@ -512,7 +847,6 @@ export function CodexAccountsPage() {
     "panel" | "members"
   >("panel");
   const [localAccessSaving, setLocalAccessSaving] = useState(false);
-  const [localAccessTesting, setLocalAccessTesting] = useState(false);
   const [localAccessStarting, setLocalAccessStarting] = useState(false);
   const [localAccessRefreshing, setLocalAccessRefreshing] = useState(false);
   const [localAccessPortKilling, setLocalAccessPortKilling] = useState(false);
@@ -539,6 +873,10 @@ export function CodexAccountsPage() {
     "baseUrl" | "apiKey" | null
   >(null);
   const [localAccessKeyVisible, setLocalAccessKeyVisible] = useState(false);
+  const [localAccessAddressKind, setLocalAccessAddressKind] =
+    useState<CodexLocalAccessAddressKind>(() =>
+      readStoredLocalAccessAddressKind(),
+    );
   const [localAccessEntryVisible, setLocalAccessEntryVisible] = useState(true);
   const [localAccessLaunchCurrent, setLocalAccessLaunchCurrent] =
     useState(false);
@@ -602,6 +940,11 @@ export function CodexAccountsPage() {
     [],
   );
 
+  const dismissLocalAccessGatewayGuide = useCallback(() => {
+    persistLocalAccessGatewayGuideDismissed();
+    setLocalAccessGatewayGuideDismissed(true);
+  }, []);
+
   const toggleGroupFilterValue = useCallback((groupId: string) => {
     setGroupFilter((prev) => {
       if (prev.includes(groupId)) return prev.filter((id) => id !== groupId);
@@ -629,6 +972,10 @@ export function CodexAccountsPage() {
       }
       return "grid";
     });
+  const [
+    localAccessGatewayGuideDismissed,
+    setLocalAccessGatewayGuideDismissed,
+  ] = useState(readLocalAccessGatewayGuideDismissed);
 
   const store = useCodexAccountStore();
   const codexInstanceStore = useCodexInstanceStore();
@@ -638,11 +985,20 @@ export function CodexAccountsPage() {
   const [cockpitApiPanelAccountId, setCockpitApiPanelAccountId] = useState<
     string | null
   >(null);
+  const [apiKeyUsageDetailAccountId, setApiKeyUsageDetailAccountId] = useState<
+    string | null
+  >(null);
   const [editingAccountNoteId, setEditingAccountNoteId] = useState<
     string | null
   >(null);
   const [editingAccountNoteValue, setEditingAccountNoteValue] = useState("");
   const [savingAccountNote, setSavingAccountNote] = useState(false);
+  const [savingAppSpeedId, setSavingAppSpeedId] = useState<string | null>(null);
+  const [apiServiceAppSpeed, setApiServiceAppSpeed] =
+    useState<CodexAppSpeed>("standard");
+  const [reauthTargetAccount, setReauthTargetAccount] =
+    useState<CodexAccount | null>(null);
+  const [reauthEmailCopied, setReauthEmailCopied] = useState(false);
   const {
     message: accountNoteError,
     scrollKey: accountNoteErrorScrollKey,
@@ -670,6 +1026,7 @@ export function CodexAccountsPage() {
       exportAccounts: codexService.exportCodexAccounts,
     },
     getDisplayEmail: (account) => account.email ?? account.id,
+    defaultSortBy: readCodexCustomSortActive() ? "custom" : undefined,
   });
 
   const {
@@ -716,7 +1073,6 @@ export function CodexAccountsPage() {
     handleRefresh,
     handleRefreshAll,
     handleDelete,
-    handleBatchDelete,
     deleteConfirm,
     deleteConfirmError,
     deleteConfirmErrorScrollKey,
@@ -749,6 +1105,136 @@ export function CodexAccountsPage() {
     normalizeTag,
     saveJsonFile,
   } = page;
+  const [isAllFilteredSelected, setIsAllFilteredSelected] = useState(false);
+
+  const reauthTargetEmail = reauthTargetAccount?.email?.trim() ?? "";
+  const [batchImportOpen, setBatchImportOpen] = useState(false);
+  const [batchImportSessionId, setBatchImportSessionId] = useState<
+    string | null
+  >(null);
+  const [batchImportProgress, setBatchImportProgress] =
+    useState<codexService.CodexBatchImportProgress | null>(null);
+  const [batchImportPreview, setBatchImportPreview] =
+    useState<codexService.CodexBatchImportPreview | null>(null);
+  const [batchImportSelectedIds, setBatchImportSelectedIds] = useState<
+    string[]
+  >([]);
+  const [batchImportFilter, setBatchImportFilter] = useState<"all" | "ready">(
+    "all",
+  );
+  const [batchImportBusy, setBatchImportBusy] = useState(false);
+  const [batchImportError, setBatchImportError] = useState<string | null>(null);
+  const [batchImportResult, setBatchImportResult] =
+    useState<codexService.CodexBatchImportConfirmResult | null>(null);
+  const [batchImportFilePaths, setBatchImportFilePaths] = useState<string[]>(
+    [],
+  );
+  const [batchImportCheckQuota, setBatchImportCheckQuota] = useState(false);
+  const batchImportUnlistenersRef = useRef<UnlistenFn[]>([]);
+  const batchImportSessionIdRef = useRef<string | null>(null);
+
+  const cleanupBatchImportListeners = useCallback(() => {
+    for (const unlisten of batchImportUnlistenersRef.current) {
+      try {
+        unlisten();
+      } catch {
+        // ignore listener cleanup failures
+      }
+    }
+    batchImportUnlistenersRef.current = [];
+  }, []);
+
+  useEffect(() => cleanupBatchImportListeners, [cleanupBatchImportListeners]);
+
+  const resetBatchImportState = useCallback(() => {
+    cleanupBatchImportListeners();
+    batchImportSessionIdRef.current = null;
+    setBatchImportOpen(false);
+    setBatchImportSessionId(null);
+    setBatchImportProgress(null);
+    setBatchImportPreview(null);
+    setBatchImportSelectedIds([]);
+    setBatchImportFilter("all");
+    setBatchImportBusy(false);
+    setBatchImportError(null);
+    setBatchImportResult(null);
+    setBatchImportFilePaths([]);
+    setBatchImportCheckQuota(false);
+  }, [cleanupBatchImportListeners]);
+
+  const batchImportCounts = useMemo(() => {
+    const items = batchImportPreview?.items ?? [];
+    return {
+      ready: items.filter((item) => item.status === "ready").length,
+      quotaFailed: items.filter((item) => item.status === "quota_failed")
+        .length,
+      existing: items.filter((item) => item.status === "existing").length,
+      invalid: items.filter((item) => item.status === "invalid").length,
+    };
+  }, [batchImportPreview]);
+
+  const batchImportVisibleItems = useMemo(() => {
+    const items = batchImportPreview?.items ?? [];
+    return batchImportFilter === "ready"
+      ? items.filter(
+          (item) => item.status === "ready" || item.status === "existing",
+        )
+      : items;
+  }, [batchImportFilter, batchImportPreview]);
+  const batchImportSelectableIds = useMemo(
+    () =>
+      (batchImportPreview?.items ?? [])
+        .filter((item) => item.selectable && item.status !== "invalid")
+        .map((item) => item.itemId),
+    [batchImportPreview],
+  );
+  const batchImportSelectableIdSet = useMemo(
+    () => new Set(batchImportSelectableIds),
+    [batchImportSelectableIds],
+  );
+  const batchImportSelectedSelectableCount = batchImportSelectedIds.filter(
+    (id) => batchImportSelectableIdSet.has(id),
+  ).length;
+  const batchImportSelectedCountLabel = t(
+    "codex.batchImport.selectedCount",
+    "已选 {{count}}/{{total}}",
+  )
+    .replace("{{count}}", String(batchImportSelectedSelectableCount))
+    .replace("{{total}}", String(batchImportSelectableIds.length));
+  const activeBatchImportCheckQuota =
+    batchImportProgress?.checkQuota ??
+    batchImportPreview?.checkQuota ??
+    batchImportCheckQuota;
+
+  const openCodexAddModal = useCallback(
+    (tab: string, targetAccount?: CodexAccount | null) => {
+      setReauthTargetAccount(targetAccount ?? null);
+      setReauthEmailCopied(false);
+      openAddModal(tab);
+    },
+    [openAddModal],
+  );
+
+  const closeCodexAddModal = useCallback(() => {
+    setReauthTargetAccount(null);
+    setReauthEmailCopied(false);
+    closeAddModal();
+  }, [closeAddModal]);
+
+  const handleCopyReauthEmail = useCallback(async () => {
+    if (!reauthTargetEmail) return;
+    try {
+      await navigator.clipboard.writeText(reauthTargetEmail);
+      setReauthEmailCopied(true);
+      window.setTimeout(() => setReauthEmailCopied(false), 1200);
+    } catch {}
+  }, [reauthTargetEmail]);
+
+  useEffect(() => {
+    if (showAddModal) return;
+    setReauthTargetAccount(null);
+    setReauthEmailCopied(false);
+  }, [showAddModal]);
 
   useEffect(() => {
     if (!filterPersistenceEnabled) {
@@ -1460,10 +1946,28 @@ export function CodexAccountsPage() {
     fetchCurrentAccount,
     switchAccount,
     refreshQuota,
+    refreshSubscriptionInfo,
     hydrateAccountProfilesIfNeeded,
     updateAccountName,
     updateApiKeyCredentials,
+    updateApiKeyBoundOAuthAccount,
+    updateAccountAppSpeed,
   } = store;
+  const localAccessCollection = localAccessState?.collection ?? null;
+
+  const handleRefreshSubscriptionInfo = useCallback(
+    async (accountId: string) => {
+      setRefreshingSubscriptionAccountId(accountId);
+      try {
+        await refreshSubscriptionInfo(accountId);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setRefreshingSubscriptionAccountId(null);
+      }
+    },
+    [refreshSubscriptionInfo],
+  );
 
   const editingAccountNoteAccount = useMemo(
     () =>
@@ -1486,6 +1990,85 @@ export function CodexAccountsPage() {
     setEditingAccountNoteValue("");
     setAccountNoteError(null);
   }, [savingAccountNote, setAccountNoteError]);
+
+  const loadApiServiceAppSpeed = useCallback(async () => {
+    try {
+      const config = await codexService.getCodexApiServiceAppSpeedConfig();
+      setApiServiceAppSpeed(config.speed);
+    } catch (error) {
+      console.warn("加载 Codex API 服务速度失败:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadApiServiceAppSpeed();
+  }, [loadApiServiceAppSpeed]);
+
+  const handleAccountAppSpeedChange = useCallback(
+    async (account: CodexAccount, speed: CodexAppSpeed) => {
+      if (savingAppSpeedId) return;
+      setSavingAppSpeedId(account.id);
+      try {
+        await updateAccountAppSpeed(account.id, speed);
+        setMessage({
+          text: t("codex.speed.saveSuccess", "速度已更新"),
+        });
+      } catch (error) {
+        setMessage({
+          text: t("codex.speed.saveFailed", {
+            defaultValue: "保存速度失败：{{error}}",
+            error: String(error),
+          }),
+          tone: "error",
+        });
+      } finally {
+        setSavingAppSpeedId(null);
+      }
+    },
+    [savingAppSpeedId, setMessage, t, updateAccountAppSpeed],
+  );
+
+  const handleApiServiceAppSpeedChange = useCallback(
+    async (speed: CodexAppSpeed) => {
+      if (savingAppSpeedId) return;
+      const previousSpeed = apiServiceAppSpeed;
+      setApiServiceAppSpeed(speed);
+      setSavingAppSpeedId(CODEX_API_SERVICE_BIND_ID);
+      try {
+        const saved = await codexService.saveCodexApiServiceAppSpeed(speed);
+        setApiServiceAppSpeed(saved.speed);
+        setMessage({
+          text: t("codex.speed.saveSuccess", "速度已更新"),
+        });
+      } catch (error) {
+        setApiServiceAppSpeed(previousSpeed);
+        setMessage({
+          text: t("codex.speed.saveFailed", {
+            defaultValue: "保存速度失败：{{error}}",
+            error: String(error),
+          }),
+          tone: "error",
+        });
+      } finally {
+        setSavingAppSpeedId(null);
+      }
+    },
+    [apiServiceAppSpeed, savingAppSpeedId, setMessage, t],
+  );
+
+  const renderAccountSpeedSelect = useCallback(
+    (account: CodexAccount, compact = false) => (
+      <CodexSpeedSelect
+        value={account.app_speed ?? "standard"}
+        onChange={(speed) => handleAccountAppSpeedChange(account, speed)}
+        busy={savingAppSpeedId === account.id}
+        compact={compact}
+        preferredPlacement="top"
+        ariaLabel={t("codex.speed.title", "速度")}
+      />
+    ),
+    [handleAccountAppSpeedChange, savingAppSpeedId, t],
+  );
 
   const handleSubmitAccountNote = useCallback(async () => {
     if (!editingAccountNoteId || savingAccountNote) return;
@@ -1581,6 +2164,9 @@ export function CodexAccountsPage() {
     CodexModelProvider[]
   >([]);
   const [managedProvidersLoading, setManagedProvidersLoading] = useState(false);
+  const [apiKeyUsageMap, setApiKeyUsageMap] = useState<
+    Record<string, CodexApiKeyUsageState>
+  >(() => readCodexApiKeyUsageCache());
   const [managedProviderId, setManagedProviderId] = useState<string>("");
   const [managedProviderApiKeyId, setManagedProviderApiKeyId] =
     useState<string>("");
@@ -1624,6 +2210,32 @@ export function CodexAccountsPage() {
   const [quickSwitchApiKeyId, setQuickSwitchApiKeyId] = useState<string>("");
   const [quickSwitchSubmitting, setQuickSwitchSubmitting] = useState(false);
   const [quickSwitchError, setQuickSwitchError] = useState<string | null>(null);
+  const [oauthBindingTargetKind, setOauthBindingTargetKind] =
+    useState<OAuthBindingTargetKind | null>(null);
+  const [oauthBindingAccountId, setOauthBindingAccountId] = useState<
+    string | null
+  >(null);
+  const [oauthBindingSelectedAccountId, setOauthBindingSelectedAccountId] =
+    useState("");
+  const [oauthBindingSaving, setOauthBindingSaving] = useState(false);
+  const [oauthBindingAutoSwitch, setOauthBindingAutoSwitch] = useState(false);
+  const [oauthBindingSearchQuery, setOauthBindingSearchQuery] = useState("");
+  const [oauthBindingFilterTypes, setOauthBindingFilterTypes] = useState<
+    string[]
+  >([]);
+  const [oauthBindingTagFilter, setOauthBindingTagFilter] = useState<string[]>(
+    [],
+  );
+  const [oauthBindingSortBy, setOauthBindingSortBy] =
+    useState<OAuthBindingSortBy>("last_used");
+  const [oauthBindingSortDirection, setOauthBindingSortDirection] = useState<
+    "asc" | "desc"
+  >("desc");
+  const {
+    message: oauthBindingError,
+    scrollKey: oauthBindingErrorScrollKey,
+    set: setOauthBindingError,
+  } = useModalErrorState();
   const [visibleApiKeyAccountIds, setVisibleApiKeyAccountIds] = useState<
     Set<string>
   >(() => new Set());
@@ -1669,6 +2281,21 @@ export function CodexAccountsPage() {
   const selectedApiProviderPreset = useMemo(
     () => findCodexApiProviderPresetById(apiProviderPresetId),
     [apiProviderPresetId],
+  );
+  const sponsorApiProviderTemplates = useMemo(
+    () => normalizeSponsorApiProviderTemplates(sponsorModule?.sponsors),
+    [sponsorModule?.sponsors],
+  );
+  const selectedSponsorApiProviderTemplate = useMemo(
+    () =>
+      sponsorApiProviderTemplates.find(
+        (template) => template.id === apiProviderPresetId,
+      ) ?? null,
+    [apiProviderPresetId, sponsorApiProviderTemplates],
+  );
+  const defaultApiProviderPresetId = useMemo(
+    () => getDefaultApiProviderPresetId(sponsorApiProviderTemplates),
+    [sponsorApiProviderTemplates],
   );
   const selectedEditingApiProviderPreset = useMemo(
     () => findCodexApiProviderPresetById(editingApiProviderPresetId),
@@ -1719,6 +2346,57 @@ export function CodexAccountsPage() {
       ) ?? null,
     [quickSwitchApiKeyId, selectedQuickSwitchProvider],
   );
+  const oauthAccounts = useMemo(
+    () => accounts.filter((account) => !isCodexApiKeyAccount(account)),
+    [accounts],
+  );
+  const isOAuthBindingEligibleAccount = useCallback((account: CodexAccount) => {
+    return Boolean(account.tokens.refresh_token?.trim());
+  }, []);
+  const oauthBindingEligibleAccounts = useMemo(
+    () => oauthAccounts.filter(isOAuthBindingEligibleAccount),
+    [isOAuthBindingEligibleAccount, oauthAccounts],
+  );
+  const oauthBindingAccount = useMemo(
+    () =>
+      oauthBindingAccountId
+        ? (accounts.find((item) => item.id === oauthBindingAccountId) ?? null)
+        : null,
+    [accounts, oauthBindingAccountId],
+  );
+  const selectedOAuthBindingAccount = useMemo(
+    () =>
+      oauthBindingEligibleAccounts.find(
+        (item) => item.id === oauthBindingSelectedAccountId,
+      ) ?? null,
+    [oauthBindingEligibleAccounts, oauthBindingSelectedAccountId],
+  );
+  const boundLocalAccessOAuthAccount = useMemo(
+    () =>
+      localAccessCollection?.boundOauthAccountId
+        ? (oauthAccounts.find(
+            (item) => item.id === localAccessCollection.boundOauthAccountId,
+          ) ?? null)
+        : null,
+    [localAccessCollection?.boundOauthAccountId, oauthAccounts],
+  );
+  const oauthBindingHasExistingBinding = useMemo(() => {
+    if (oauthBindingTargetKind === "local_access") {
+      return Boolean(localAccessCollection?.boundOauthAccountId);
+    }
+    if (oauthBindingTargetKind === "api_key_account") {
+      return Boolean(oauthBindingAccount?.bound_oauth_account_id?.trim());
+    }
+    return false;
+  }, [
+    localAccessCollection?.boundOauthAccountId,
+    oauthBindingAccount?.bound_oauth_account_id,
+    oauthBindingTargetKind,
+  ]);
+  const oauthBindingTargetActive =
+    oauthBindingTargetKind === "local_access" ||
+    (oauthBindingTargetKind === "api_key_account" &&
+      Boolean(oauthBindingAccount));
   const cockpitApiPanelAccount = useMemo(
     () =>
       cockpitApiPanelAccountId
@@ -1727,12 +2405,59 @@ export function CodexAccountsPage() {
         : null,
     [accounts, cockpitApiPanelAccountId],
   );
+  const apiKeyUsageDetailAccount = useMemo(
+    () =>
+      apiKeyUsageDetailAccountId
+        ? (accounts.find((item) => item.id === apiKeyUsageDetailAccountId) ??
+          null)
+        : null,
+    [accounts, apiKeyUsageDetailAccountId],
+  );
 
   useEffect(() => {
     if (cockpitApiPanelAccountId && !cockpitApiPanelAccount) {
       setCockpitApiPanelAccountId(null);
     }
   }, [cockpitApiPanelAccount, cockpitApiPanelAccountId]);
+
+  useEffect(() => {
+    if (apiKeyUsageDetailAccountId && !apiKeyUsageDetailAccount) {
+      setApiKeyUsageDetailAccountId(null);
+    }
+  }, [apiKeyUsageDetailAccount, apiKeyUsageDetailAccountId]);
+
+  useEffect(() => {
+    if (
+      oauthBindingTargetKind === "api_key_account" &&
+      oauthBindingAccountId &&
+      !oauthBindingAccount
+    ) {
+      setOauthBindingTargetKind(null);
+      setOauthBindingAccountId(null);
+      setOauthBindingSelectedAccountId("");
+      setOauthBindingAutoSwitch(false);
+      setOauthBindingSearchQuery("");
+      setOauthBindingFilterTypes([]);
+      setOauthBindingTagFilter([]);
+      setOauthBindingError(null);
+    }
+    if (oauthBindingTargetKind === "local_access" && !localAccessCollection) {
+      setOauthBindingTargetKind(null);
+      setOauthBindingAccountId(null);
+      setOauthBindingSelectedAccountId("");
+      setOauthBindingAutoSwitch(false);
+      setOauthBindingSearchQuery("");
+      setOauthBindingFilterTypes([]);
+      setOauthBindingTagFilter([]);
+      setOauthBindingError(null);
+    }
+  }, [
+    localAccessCollection,
+    oauthBindingAccount,
+    oauthBindingAccountId,
+    oauthBindingTargetKind,
+    setOauthBindingError,
+  ]);
 
   const oauthLog = useCallback((...args: unknown[]) => {
     console.info("[CodexOAuth]", ...args);
@@ -1760,13 +2485,43 @@ export function CodexAccountsPage() {
       apiProviderMode: CodexApiProviderMode;
       apiProviderId?: string;
       apiProviderName?: string;
+      apiModelCatalog?: string[];
+      apiWireApi?: "responses" | "chat_completions";
+      apiSupportsVision?: boolean;
+      apiModelVisionSupport?: Record<string, boolean>;
+      apiVisionRoutingModel?: string;
+      accountName?: string;
+      sponsorTemplate?: SponsorApiProviderTemplate;
     } => {
       const normalizedBaseUrl = normalizeHttpBaseUrl(apiBaseUrl);
-      if (
-        providerPresetId === OPENAI_OFFICIAL_PRESET_ID ||
-        !normalizedBaseUrl
-      ) {
+      if (!normalizedBaseUrl) {
         return { apiProviderMode: "openai_builtin" };
+      }
+      if (isCockpitApiProviderBaseUrl(normalizedBaseUrl)) {
+        return {
+          apiProviderMode: "custom",
+          apiProviderId: COCKPIT_API_PROVIDER_ID,
+          apiProviderName: COCKPIT_API_PROVIDER_NAME,
+        };
+      }
+      if (providerPresetId === OPENAI_OFFICIAL_PRESET_ID) {
+        return { apiProviderMode: "openai_builtin" };
+      }
+
+      const sponsorTemplate = sponsorApiProviderTemplates.find(
+        (template) => template.id === providerPresetId,
+      );
+      if (sponsorTemplate) {
+        return {
+          apiProviderMode: "custom",
+          apiProviderId: sponsorTemplate.id,
+          apiProviderName: sponsorTemplate.name,
+          apiModelCatalog: sponsorTemplate.modelCatalog,
+          apiWireApi: sponsorTemplate.wireApi ?? undefined,
+          apiSupportsVision: sponsorTemplate.supportsVision,
+          accountName: sponsorTemplate.name,
+          sponsorTemplate,
+        };
       }
 
       const managedProvider = findCodexModelProviderById(
@@ -1778,6 +2533,19 @@ export function CodexAccountsPage() {
           apiProviderMode: "custom",
           apiProviderId: managedProvider.id,
           apiProviderName: managedProvider.name,
+          apiModelCatalog: managedProvider.modelCatalog,
+          apiWireApi: managedProvider.wireApi ?? undefined,
+          apiSupportsVision: managedProvider.supportsVision,
+          apiModelVisionSupport: Object.fromEntries(
+            Object.entries(managedProvider.modelCapabilities ?? {}).map(
+              ([model, capability]) => [
+                model,
+                capability.supportsVision === true,
+              ],
+            ),
+          ),
+          apiVisionRoutingModel: managedProvider.visionRoutingModel,
+          accountName: managedProvider.name,
         };
       }
 
@@ -1787,6 +2555,13 @@ export function CodexAccountsPage() {
           apiProviderMode: "custom",
           apiProviderId: preset.id,
           apiProviderName: preset.name,
+          apiModelCatalog: preset.modelCatalog,
+          apiWireApi: resolveCodexProviderCapabilityProfile({
+            presetId: preset.id,
+            baseUrl: normalizedBaseUrl,
+            wireApi: null,
+          }).wireApi,
+          accountName: preset.name,
         };
       }
 
@@ -1794,9 +2569,10 @@ export function CodexAccountsPage() {
       return {
         apiProviderMode: "custom",
         apiProviderName: trimmedName || undefined,
+        accountName: trimmedName || undefined,
       };
     },
-    [managedProviders],
+    [managedProviders, sponsorApiProviderTemplates],
   );
 
   useEffect(() => {
@@ -1827,6 +2603,9 @@ export function CodexAccountsPage() {
   }, [accounts]);
 
   useEffect(() => {
+    if (accounts.length === 0) {
+      return;
+    }
     const accountIds = accounts.map((account) => account.id);
     const accountIdSet = new Set(accountIds);
     setCustomSortOrder((prev) => {
@@ -1850,6 +2629,10 @@ export function CodexAccountsPage() {
   }, [customSortOrder]);
 
   useEffect(() => {
+    writeCodexCustomSortActive(sortBy === "custom");
+  }, [sortBy]);
+
+  useEffect(() => {
     if (!showCustomSortModal || !draggedCustomSortAccountId) return;
     const handleMouseUp = () => {
       setDraggedCustomSortAccountId(null);
@@ -1871,22 +2654,46 @@ export function CodexAccountsPage() {
   }, [reloadManagedProviders]);
 
   useEffect(() => {
+    void fetchSponsorState();
+  }, [fetchSponsorState]);
+
+  useEffect(() => {
     if (!showAddModal) {
       setApiKeyInput("");
       setApiKeyInputVisible(false);
       setApiBaseUrlInput(DEFAULT_CODEX_API_BASE_URL);
-      setApiProviderPresetId(DEFAULT_CODEX_API_PROVIDER_ID);
+      setApiProviderPresetId(defaultApiProviderPresetId);
       setManagedProviderId("");
       setManagedProviderApiKeyId("");
       setNewManagedProviderNameInput("");
     }
-  }, [showAddModal]);
+  }, [defaultApiProviderPresetId, showAddModal]);
 
   useEffect(() => {
     if (showAddModal && addTab === "apikey") {
       setApiKeyInputVisible(false);
     }
   }, [addTab, showAddModal]);
+
+  useEffect(() => {
+    if (!showAddModal || addTab !== "apikey") {
+      return;
+    }
+    setApiProviderPresetId((current) => {
+      if (sponsorApiProviderTemplates.length === 0) {
+        return current;
+      }
+      if (current === DEFAULT_CODEX_API_PROVIDER_ID || !current.trim()) {
+        return defaultApiProviderPresetId;
+      }
+      return current;
+    });
+  }, [
+    addTab,
+    defaultApiProviderPresetId,
+    showAddModal,
+    sponsorApiProviderTemplates.length,
+  ]);
 
   useEffect(() => {
     if (apiProviderPresetId === OPENAI_OFFICIAL_PRESET_ID) {
@@ -2423,6 +3230,78 @@ export function CodexAccountsPage() {
     [],
   );
 
+  const resolveBoundOAuthAccount = useCallback(
+    (account: CodexAccount) => {
+      const boundId = (account.bound_oauth_account_id || "").trim();
+      if (!boundId) return null;
+      return oauthAccounts.find((item) => item.id === boundId) ?? null;
+    },
+    [oauthAccounts],
+  );
+
+  const resetOAuthBindingModal = useCallback(() => {
+    setOauthBindingTargetKind(null);
+    setOauthBindingAccountId(null);
+    setOauthBindingSelectedAccountId("");
+    setOauthBindingAutoSwitch(false);
+    setOauthBindingSearchQuery("");
+    setOauthBindingFilterTypes([]);
+    setOauthBindingTagFilter([]);
+    setOauthBindingError(null);
+  }, [setOauthBindingError]);
+
+  const closeOAuthBindingModal = useCallback(() => {
+    if (oauthBindingSaving) return;
+    resetOAuthBindingModal();
+  }, [oauthBindingSaving, resetOAuthBindingModal]);
+
+  const openOAuthBindingModal = useCallback(
+    (account: CodexAccount, options?: { autoSwitch?: boolean }) => {
+      if (!isCodexApiKeyAccount(account)) return;
+      const boundAccount = resolveBoundOAuthAccount(account);
+      setOauthBindingTargetKind("api_key_account");
+      setOauthBindingAccountId(account.id);
+      setOauthBindingSelectedAccountId(
+        boundAccount && isOAuthBindingEligibleAccount(boundAccount)
+          ? boundAccount.id
+          : "",
+      );
+      setOauthBindingAutoSwitch(options?.autoSwitch ?? false);
+      setOauthBindingSearchQuery("");
+      setOauthBindingFilterTypes([]);
+      setOauthBindingTagFilter([]);
+      setOauthBindingError(null);
+    },
+    [
+      isOAuthBindingEligibleAccount,
+      resolveBoundOAuthAccount,
+      setOauthBindingError,
+    ],
+  );
+
+  const openLocalAccessOAuthBindingModal = useCallback(
+    (options?: { autoSwitch?: boolean }) => {
+      setOauthBindingTargetKind("local_access");
+      setOauthBindingAccountId(null);
+      setOauthBindingSelectedAccountId(
+        boundLocalAccessOAuthAccount &&
+          isOAuthBindingEligibleAccount(boundLocalAccessOAuthAccount)
+          ? boundLocalAccessOAuthAccount.id
+          : "",
+      );
+      setOauthBindingAutoSwitch(options?.autoSwitch ?? false);
+      setOauthBindingSearchQuery("");
+      setOauthBindingFilterTypes([]);
+      setOauthBindingTagFilter([]);
+      setOauthBindingError(null);
+    },
+    [
+      boundLocalAccessOAuthAccount,
+      isOAuthBindingEligibleAccount,
+      setOauthBindingError,
+    ],
+  );
+
   const closeApiSwitchVisibilityNotice = useCallback(() => {
     apiSwitchNoticeRepairSeqRef.current += 1;
     if (apiSwitchNoticeAutoCloseTimerRef.current != null) {
@@ -2506,6 +3385,12 @@ export function CodexAccountsPage() {
         .replace(/^Error:\s*/, "")
         .trim();
       const lower = raw.toLowerCase();
+      if (raw === "CODEX_STALE_ACCOUNT") {
+        return t(
+          "codex.authError.staleAccount",
+          "该账号已不在本地账号库中，账号列表已刷新。请重新导入或重新登录该 Codex 账号。",
+        );
+      }
       if (
         lower.includes("unsupported_country_region_territory") ||
         raw.includes("当前网络地区不支持刷新 Codex 授权")
@@ -2610,6 +3495,118 @@ export function CodexAccountsPage() {
       });
     }
   };
+
+  const handleSubmitOAuthBinding = useCallback(async () => {
+    if (oauthBindingTargetKind === "api_key_account" && !oauthBindingAccount) {
+      return;
+    }
+    if (!oauthBindingTargetKind) return;
+    if (!selectedOAuthBindingAccount) {
+      setOauthBindingError(
+        t("codex.api.oauthBinding.validationRequired", "请选择 OAuth 账号"),
+      );
+      return;
+    }
+    if (!isOAuthBindingEligibleAccount(selectedOAuthBindingAccount)) {
+      setOauthBindingError(
+        t(
+          "codex.api.oauthBinding.validationSubscriptionRequired",
+          "只能绑定带 refresh_token 的 OAuth 账号",
+        ),
+      );
+      return;
+    }
+
+    setOauthBindingSaving(true);
+    setOauthBindingError(null);
+    try {
+      if (oauthBindingTargetKind === "local_access") {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessBoundOAuthAccount(
+            selectedOAuthBindingAccount.id,
+          );
+        setLocalAccessState(nextState);
+      } else if (oauthBindingAccount) {
+        await updateApiKeyBoundOAuthAccount(
+          oauthBindingAccount.id,
+          selectedOAuthBindingAccount.id,
+        );
+      }
+      setMessage({
+        text: t("codex.api.oauthBinding.saveSuccess", "OAuth 绑定已更新"),
+      });
+      const shouldSwitch =
+        oauthBindingTargetKind === "api_key_account" && oauthBindingAutoSwitch;
+      const accountId = oauthBindingAccount?.id ?? "";
+      resetOAuthBindingModal();
+      if (shouldSwitch) {
+        await executeCodexAccountSwitch(accountId);
+      }
+    } catch (err) {
+      setOauthBindingError(
+        t("codex.api.oauthBinding.saveFailed", {
+          defaultValue: "OAuth 绑定失败：{{error}}",
+          error: String(err).replace(/^Error:\s*/, ""),
+        }),
+      );
+    } finally {
+      setOauthBindingSaving(false);
+    }
+  }, [
+    executeCodexAccountSwitch,
+    oauthBindingAccount,
+    oauthBindingAutoSwitch,
+    oauthBindingTargetKind,
+    isOAuthBindingEligibleAccount,
+    selectedOAuthBindingAccount,
+    setMessage,
+    setOauthBindingError,
+    t,
+    updateApiKeyBoundOAuthAccount,
+    resetOAuthBindingModal,
+  ]);
+
+  const handleClearOAuthBinding = useCallback(async () => {
+    if (!oauthBindingTargetKind) return;
+    if (oauthBindingTargetKind === "api_key_account" && !oauthBindingAccount) {
+      return;
+    }
+
+    setOauthBindingSaving(true);
+    setOauthBindingError(null);
+    try {
+      if (oauthBindingTargetKind === "local_access") {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessBoundOAuthAccount(
+            null,
+          );
+        setLocalAccessState(nextState);
+      } else if (oauthBindingAccount) {
+        await updateApiKeyBoundOAuthAccount(oauthBindingAccount.id, null);
+      }
+      setMessage({
+        text: t("codex.api.oauthBinding.clearSuccess", "OAuth 绑定已解除"),
+      });
+      resetOAuthBindingModal();
+    } catch (err) {
+      setOauthBindingError(
+        t("codex.api.oauthBinding.clearFailed", {
+          defaultValue: "解除 OAuth 绑定失败：{{error}}",
+          error: String(err).replace(/^Error:\s*/, ""),
+        }),
+      );
+    } finally {
+      setOauthBindingSaving(false);
+    }
+  }, [
+    oauthBindingAccount,
+    oauthBindingTargetKind,
+    resetOAuthBindingModal,
+    setMessage,
+    setOauthBindingError,
+    t,
+    updateApiKeyBoundOAuthAccount,
+  ]);
 
   const resolveCodexCliInstanceForAccount = async (
     account: CodexAccount,
@@ -2809,8 +3806,117 @@ export function CodexAccountsPage() {
     }
   };
 
+  const startBatchImportFromPaths = async (
+    paths: string[],
+    checkQuota: boolean,
+  ) => {
+    cleanupBatchImportListeners();
+    setBatchImportOpen(true);
+    setBatchImportSessionId(null);
+    setBatchImportProgress(null);
+    setBatchImportPreview(null);
+    setBatchImportSelectedIds([]);
+    setBatchImportFilter("all");
+    setBatchImportResult(null);
+    setBatchImportError(null);
+    setBatchImportFilePaths(paths);
+    setBatchImportCheckQuota(checkQuota);
+    setBatchImportBusy(true);
+    batchImportSessionIdRef.current = "__pending__";
+
+    try {
+      const progressUnlisten =
+        await listen<codexService.CodexBatchImportProgress>(
+          "codex:batch-import-progress",
+          (event) => {
+            if (event.payload.sessionId !== batchImportSessionIdRef.current) {
+              return;
+            }
+            setBatchImportProgress(event.payload);
+            setBatchImportCheckQuota(event.payload.checkQuota);
+          },
+        );
+      const completedUnlisten =
+        await listen<codexService.CodexBatchImportPreview>(
+          "codex:batch-import-completed",
+          (event) => {
+            if (event.payload.sessionId !== batchImportSessionIdRef.current) {
+              return;
+            }
+            setBatchImportPreview(event.payload);
+            setBatchImportCheckQuota(event.payload.checkQuota);
+            setBatchImportProgress((current) =>
+              current
+                ? {
+                    ...current,
+                    phase: event.payload.status,
+                    checkQuota: event.payload.checkQuota,
+                    current: event.payload.items.length,
+                    total: event.payload.total,
+                  }
+                : current,
+            );
+            setBatchImportSelectedIds((prev) => {
+              const next = new Set(prev);
+              for (const item of event.payload.items) {
+                if (
+                  item.defaultSelected &&
+                  item.selectable &&
+                  (item.status === "ready" || item.status === "existing")
+                ) {
+                  next.add(item.itemId);
+                }
+              }
+              return Array.from(next);
+            });
+            setBatchImportBusy(false);
+          },
+        );
+      const previewUnlisten =
+        await listen<codexService.CodexBatchImportPreview>(
+          "codex:batch-import-preview",
+          (event) => {
+            if (event.payload.sessionId !== batchImportSessionIdRef.current) {
+              return;
+            }
+            setBatchImportPreview(event.payload);
+            setBatchImportCheckQuota(event.payload.checkQuota);
+            setBatchImportSelectedIds((prev) => {
+              const next = new Set(prev);
+              for (const item of event.payload.items) {
+                if (
+                  item.defaultSelected &&
+                  item.selectable &&
+                  (item.status === "ready" || item.status === "existing")
+                ) {
+                  next.add(item.itemId);
+                }
+              }
+              return Array.from(next);
+            });
+          },
+        );
+      batchImportUnlistenersRef.current = [
+        progressUnlisten,
+        previewUnlisten,
+        completedUnlisten,
+      ];
+
+      const started = await codexService.startCodexBatchImportFromFiles(
+        paths,
+        checkQuota,
+      );
+      batchImportSessionIdRef.current = started.sessionId;
+      setBatchImportSessionId(started.sessionId);
+    } catch (e) {
+      cleanupBatchImportListeners();
+      batchImportSessionIdRef.current = null;
+      setBatchImportBusy(false);
+      setBatchImportError(String(e).replace(/^Error:\s*/, ""));
+    }
+  };
+
   const handleImportFromFiles = async () => {
-    let unlistenProgress: UnlistenFn | undefined;
     try {
       const selected = await openFileDialog({
         multiple: true,
@@ -2819,63 +3925,164 @@ export function CodexAccountsPage() {
       if (!selected || (Array.isArray(selected) && selected.length === 0))
         return;
       const paths = Array.isArray(selected) ? selected : [selected];
-      page.setAddStatus("loading");
-      page.setAddMessage(
-        t("modals.import.importingFiles", { count: paths.length }),
+      closeAddModal();
+      await startBatchImportFromPaths(paths, false);
+    } catch (e) {
+      setBatchImportBusy(false);
+      setBatchImportError(String(e).replace(/^Error:\s*/, ""));
+    }
+  };
+
+  const handleBatchImportCheckQuotaChange = async (checkQuota: boolean) => {
+    if (
+      batchImportBusy ||
+      batchImportResult ||
+      checkQuota === batchImportCheckQuota
+    ) {
+      return;
+    }
+    setBatchImportCheckQuota(checkQuota);
+    if (batchImportFilePaths.length === 0) {
+      return;
+    }
+    await startBatchImportFromPaths(batchImportFilePaths, checkQuota);
+  };
+
+  const handleCancelBatchImport = async () => {
+    if (!batchImportSessionId) {
+      return;
+    }
+    if (batchImportBusy) {
+      try {
+        await codexService.cancelCodexBatchImport(batchImportSessionId);
+        setBatchImportProgress((current) =>
+          current ? { ...current, phase: "cancelling" } : current,
+        );
+      } catch (e) {
+        setBatchImportError(String(e).replace(/^Error:\s*/, ""));
+      }
+      return;
+    }
+  };
+
+  const handleCloseBatchImport = async () => {
+    const sessionId = batchImportSessionId;
+    if (batchImportBusy && sessionId) {
+      try {
+        await codexService.cancelCodexBatchImport(sessionId);
+      } catch {
+        // Closing is an explicit discard action; ignore cancellation failures.
+      }
+    }
+    resetBatchImportState();
+  };
+
+  const toggleBatchImportItem = (itemId: string) => {
+    if (!batchImportSelectableIdSet.has(itemId)) return;
+    setBatchImportSelectedIds((prev) =>
+      prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId],
+    );
+  };
+
+  const selectAllBatchImportAccounts = () => {
+    const items = batchImportPreview?.items ?? [];
+    const ids = items
+      .filter((item) => item.selectable && item.status !== "invalid")
+      .map((item) => item.itemId);
+    setBatchImportFilter("all");
+    setBatchImportSelectedIds(ids);
+  };
+
+  const selectReadyBatchImportAccounts = () => {
+    const items = batchImportPreview?.items ?? [];
+    const ids = items
+      .filter(
+        (item) =>
+          item.selectable &&
+          (item.status === "ready" || item.status === "existing"),
+      )
+      .map((item) => item.itemId);
+    setBatchImportFilter("ready");
+    setBatchImportSelectedIds(ids);
+  };
+
+  const clearBatchImportSelection = () => {
+    setBatchImportFilter("all");
+    setBatchImportSelectedIds([]);
+  };
+
+  const handleConfirmBatchImport = async () => {
+    const selectedSelectableIds = batchImportSelectedIds.filter((id) =>
+      batchImportSelectableIdSet.has(id),
+    );
+    if (!batchImportSessionId || selectedSelectableIds.length === 0) {
+      setBatchImportError(
+        t("codex.batchImport.noSelection", "请先选择要导入的账号"),
       );
-
-      unlistenProgress = await listen<{
-        current: number;
-        total: number;
-        email: string;
-      }>("codex:file-import-progress", (event) => {
-        const { current, total, email } = event.payload ?? {};
-        if (current > 0 && total > 0) {
-          const label = email ? ` ${email}` : "";
-          page.setAddMessage(
-            `${t("modals.import.importingFiles", { count: total })} ${current}/${total}${label}`,
-          );
-        }
-      });
-
-      const result = await codexService.importCodexFromFiles(paths);
-      const { imported, failed } = result;
+      return;
+    }
+    setBatchImportBusy(true);
+    setBatchImportError(null);
+    try {
+      const result = await codexService.confirmCodexBatchImport(
+        batchImportSessionId,
+        selectedSelectableIds,
+      );
+      setBatchImportResult(result);
       await fetchAccounts();
-      if (imported.length > 0) {
+      if (result.imported.length > 0) {
         await emitAccountsChanged({
           platformId: "codex",
           reason: "import",
         });
       }
-      if (imported.length === 0 && failed.length === 0) {
-        page.setAddStatus("error");
-        page.setAddMessage(t("modals.import.noAccountsFound"));
-      } else if (failed.length > 0) {
-        const failedList = failed.map((f) => f.email).join(", ");
-        page.setAddStatus(imported.length > 0 ? "success" : "error");
-        page.setAddMessage(
-          `${t("messages.importSuccess", { count: imported.length })}，${t("messages.importPartialFailed", { failCount: failed.length, failList: failedList })}`,
-        );
-      } else {
-        page.setAddStatus("success");
-        page.setAddMessage(
-          t("messages.importSuccess", { count: imported.length }),
-        );
-      }
+      cleanupBatchImportListeners();
     } catch (e) {
-      page.setAddStatus("error");
-      page.setAddMessage(t("messages.importFailed", { error: String(e) }));
+      setBatchImportError(String(e).replace(/^Error:\s*/, ""));
     } finally {
-      if (unlistenProgress) unlistenProgress();
+      setBatchImportBusy(false);
     }
   };
 
-  const handleSelectApiProviderPreset = useCallback((providerId: string) => {
-    setApiProviderPresetId(providerId);
-    const preset = findCodexApiProviderPresetById(providerId);
-    if (!preset || preset.baseUrls.length === 0) return;
-    setApiBaseUrlInput(preset.baseUrls[0]);
-  }, []);
+  const handleResumeBatchImport = async () => {
+    if (!batchImportSessionId || batchImportBusy) return;
+    setBatchImportBusy(true);
+    setBatchImportError(null);
+    setBatchImportResult(null);
+    try {
+      await codexService.resumeCodexBatchImport(batchImportSessionId);
+      setBatchImportProgress((current) =>
+        current ? { ...current, phase: "scanning" } : current,
+      );
+      setBatchImportPreview((current) =>
+        current ? { ...current, status: "scanning" } : current,
+      );
+    } catch (e) {
+      setBatchImportBusy(false);
+      setBatchImportError(String(e).replace(/^Error:\s*/, ""));
+    }
+  };
+
+  const handleSelectApiProviderPreset = useCallback(
+    (providerId: string) => {
+      setApiProviderPresetId(providerId);
+      const sponsorTemplate = sponsorApiProviderTemplates.find(
+        (template) => template.id === providerId,
+      );
+      if (sponsorTemplate) {
+        setApiBaseUrlInput(sponsorTemplate.baseUrl);
+        setNewManagedProviderNameInput(sponsorTemplate.name);
+        return;
+      }
+      const preset = findCodexApiProviderPresetById(providerId);
+      if (!preset || preset.baseUrls.length === 0) return;
+      setApiBaseUrlInput(preset.baseUrls[0]);
+      setNewManagedProviderNameInput("");
+    },
+    [sponsorApiProviderTemplates],
+  );
 
   const handleSelectManagedProvider = useCallback(
     (providerId: string) => {
@@ -3026,12 +4233,29 @@ export function CodexAccountsPage() {
         "custom",
         selectedQuickSwitchProvider.id,
         selectedQuickSwitchProvider.name,
+        selectedQuickSwitchProvider.modelCatalog,
+        selectedQuickSwitchProvider.supportsVision,
+        Object.fromEntries(
+          Object.entries(
+            selectedQuickSwitchProvider.modelCapabilities ?? {},
+          ).map(([model, capability]) => [
+            model,
+            capability.supportsVision === true,
+          ]),
+        ),
+        selectedQuickSwitchProvider.visionRoutingModel,
+        selectedQuickSwitchProvider.wireApi ?? undefined,
       );
       setMessage({
         text: t("codex.quickSwitch.success", {
           defaultValue: "已切换到供应商：{{provider}}",
           provider: selectedQuickSwitchProvider.name,
         }),
+      });
+      setApiKeyUsageMap((previous) => {
+        const next = { ...previous };
+        delete next[quickSwitchAccount.id];
+        return next;
       });
       setQuickSwitchAccountId(null);
       setQuickSwitchProviderId("");
@@ -3084,33 +4308,81 @@ export function CodexAccountsPage() {
     page.setAddStatus("loading");
     page.setAddMessage(t("common.shared.token.importing", "正在导入..."));
     try {
-      const account = await codexService.addCodexAccountWithApiKey(
-        validation.apiKey,
-        validation.apiBaseUrl,
-        providerPayload.apiProviderMode,
-        providerPayload.apiProviderId,
-        providerPayload.apiProviderName,
-      );
+      let finalProviderPayload = providerPayload;
       if (
         validation.apiBaseUrl &&
         providerPayload.apiProviderMode === "custom" &&
         providerPayload.apiProviderId !== COCKPIT_API_PROVIDER_ID
       ) {
         try {
-          await upsertCodexModelProviderFromCredential({
-            providerId: providerPayload.apiProviderId ?? null,
+          const savedProvider = await upsertCodexModelProviderFromCredential({
+            providerId: isRelayApiProviderTemplateId(
+              providerPayload.apiProviderId,
+            )
+              ? null
+              : (providerPayload.apiProviderId ?? null),
             providerName: providerPayload.apiProviderName ?? null,
             apiBaseUrl: validation.apiBaseUrl,
             apiKey: validation.apiKey,
+            apiKeyName: providerPayload.accountName,
+            sourceTag: providerPayload.sponsorTemplate?.id ?? null,
+            modelCatalog: providerPayload.sponsorTemplate?.modelCatalog,
+            supportsVision: providerPayload.sponsorTemplate?.supportsVision,
+            website: providerPayload.sponsorTemplate?.website,
+            apiKeyUrl: providerPayload.sponsorTemplate?.apiKeyUrl,
+            wireApi: providerPayload.sponsorTemplate?.wireApi,
+            integrationType: providerPayload.sponsorTemplate?.integrationType,
           });
+          finalProviderPayload = {
+            ...providerPayload,
+            apiProviderId: savedProvider.id,
+            apiProviderName: savedProvider.name,
+            apiModelCatalog: savedProvider.modelCatalog,
+            apiSupportsVision: savedProvider.supportsVision,
+            apiWireApi: savedProvider.wireApi ?? undefined,
+            accountName: savedProvider.name,
+          };
+          try {
+            const usageSummary = await queryCodexModelProviderUsage({
+              baseUrl: savedProvider.baseUrl,
+              apiKey: validation.apiKey,
+              integrationType: savedProvider.integrationType ?? null,
+            });
+            if (
+              (usageSummary.mode === "sub2api" ||
+                usageSummary.mode === "new_api") &&
+              usageSummary.mode !== savedProvider.integrationType
+            ) {
+              await saveCodexModelProviderDetectedIntegrationType(
+                savedProvider.id,
+                usageSummary.mode,
+              );
+            }
+          } catch (usageErr) {
+            console.warn("[CodexModelProviders] 额度类型探测失败", usageErr);
+          }
           await reloadManagedProviders();
         } catch (providerErr) {
           console.warn(
-            "[CodexModelProviders] 添加账号后写入供应商失败",
+            "[CodexModelProviders] 添加账号前写入供应商失败",
             providerErr,
           );
+          throw providerErr;
         }
       }
+      const account = await codexService.addCodexAccountWithApiKey(
+        validation.apiKey,
+        validation.apiBaseUrl,
+        finalProviderPayload.apiProviderMode,
+        finalProviderPayload.apiProviderId,
+        finalProviderPayload.apiProviderName,
+        finalProviderPayload.apiModelCatalog,
+        finalProviderPayload.apiSupportsVision,
+        finalProviderPayload.apiModelVisionSupport,
+        finalProviderPayload.apiVisionRoutingModel,
+        finalProviderPayload.accountName,
+        finalProviderPayload.apiWireApi,
+      );
       await fetchAccounts();
       await fetchCurrentAccount();
       await emitAccountsChanged({
@@ -3126,7 +4398,7 @@ export function CodexAccountsPage() {
       );
       setApiKeyInput("");
       setApiBaseUrlInput(DEFAULT_CODEX_API_BASE_URL);
-      setApiProviderPresetId(DEFAULT_CODEX_API_PROVIDER_ID);
+      setApiProviderPresetId(defaultApiProviderPresetId);
       setManagedProviderId("");
       setManagedProviderApiKeyId("");
       setNewManagedProviderNameInput("");
@@ -3221,10 +4493,10 @@ export function CodexAccountsPage() {
       setSavingApiKeyNameId(account.id);
       try {
         await updateAccountName(account.id, nextName);
-        setMessage({ text: t("fingerprints.messages.renamed", "已重命名") });
+        setMessage({ text: t("codex.apiKey.renameSuccess", "已重命名") });
       } catch (e) {
         setMessage({
-          text: `${t("fingerprints.messages.renameFailed", "重命名失败")}: ${String(e)}`,
+          text: `${t("codex.apiKey.renameFailed", "重命名失败")}: ${String(e)}`,
           tone: "error",
         });
       } finally {
@@ -3297,6 +4569,39 @@ export function CodexAccountsPage() {
     ],
   );
 
+  const renderOAuthBindingLine = useCallback(
+    (account: CodexAccount): ReactElement => {
+      const boundAccount = resolveBoundOAuthAccount(account);
+      const label = t("codex.api.oauthBinding.label", "OAuth 绑定");
+      const value = boundAccount
+        ? maskAccountText(
+            boundAccount.account_name || boundAccount.email || boundAccount.id,
+          )
+        : t("codex.api.oauthBinding.unbound", "未绑定");
+      const line = `${label}：${value}`;
+      return (
+        <div className="account-sub-line codex-provider-inline-line codex-oauth-binding-line">
+          <span
+            className="codex-login-subline codex-provider-inline-text"
+            title={line}
+          >
+            {line}
+          </span>
+          <button
+            type="button"
+            className="codex-provider-inline-switch codex-oauth-binding-action"
+            onClick={() => openOAuthBindingModal(account)}
+            title={t("codex.api.oauthBinding.action", "绑定 OAuth")}
+          >
+            <Link2 size={11} />
+            {t("codex.api.oauthBinding.actionShort", "绑定")}
+          </button>
+        </div>
+      );
+    },
+    [maskAccountText, openOAuthBindingModal, resolveBoundOAuthAccount, t],
+  );
+
   const resolveApiProviderDisplayName = useCallback(
     (account: CodexAccount): string => {
       const providerMode = inferCodexAccountProviderMode(account);
@@ -3325,6 +4630,705 @@ export function CodexAccountsPage() {
       return t("codex.api.provider.custom", "自定义");
     },
     [managedProviders, t],
+  );
+
+  const resolveUsageProviderForApiKeyAccount = useCallback(
+    (account: CodexAccount): CodexModelProvider | null => {
+      if (!isCodexApiKeyAccount(account) || isCodexNewApiAccount(account)) {
+        return null;
+      }
+      const provider =
+        findCodexModelProviderById(managedProviders, account.api_provider_id) ??
+        findCodexModelProviderByBaseUrl(
+          managedProviders,
+          (account.api_base_url || "").trim(),
+        );
+      return provider ?? null;
+    },
+    [managedProviders],
+  );
+
+  const refreshApiKeyUsage = useCallback(
+    async (account: CodexAccount, provider?: CodexModelProvider | null) => {
+      const targetProvider =
+        provider ?? resolveUsageProviderForApiKeyAccount(account);
+      const apiKey = (account.openai_api_key || "").trim();
+      const baseUrl =
+        targetProvider?.baseUrl.trim() || (account.api_base_url || "").trim();
+      if (!baseUrl || !apiKey) return;
+      setApiKeyUsageMap((previous) => ({
+        ...previous,
+        [account.id]: {
+          ...previous[account.id],
+          loading: true,
+          error: undefined,
+          unavailable: false,
+        },
+      }));
+      try {
+        const summary = await queryCodexModelProviderUsage({
+          baseUrl,
+          apiKey,
+          integrationType: targetProvider?.integrationType ?? null,
+        });
+        if (
+          targetProvider &&
+          (summary.mode === "sub2api" || summary.mode === "new_api") &&
+          summary.mode !== targetProvider.integrationType
+        ) {
+          await saveCodexModelProviderDetectedIntegrationType(
+            targetProvider.id,
+            summary.mode,
+          );
+          await reloadManagedProviders();
+        }
+        setApiKeyUsageMap((previous) => ({
+          ...previous,
+          [account.id]: { loading: false, summary },
+        }));
+      } catch (error) {
+        setApiKeyUsageMap((previous) => ({
+          ...previous,
+          [account.id]: {
+            loading: false,
+            summary: previous[account.id]?.summary,
+            error: isProviderUsageUnavailableError(error)
+              ? undefined
+              : String(error).replace(/^Error:\s*/, ""),
+            unavailable: isProviderUsageUnavailableError(error),
+          },
+        }));
+      }
+    },
+    [reloadManagedProviders, resolveUsageProviderForApiKeyAccount],
+  );
+
+  const refreshApiKeyUsageByAccountId = useCallback(
+    async (accountId: string) => {
+      const account = accounts.find((item) => item.id === accountId);
+      if (!account) return;
+      const provider = resolveUsageProviderForApiKeyAccount(account);
+      await refreshApiKeyUsage(account, provider);
+    },
+    [accounts, refreshApiKeyUsage, resolveUsageProviderForApiKeyAccount],
+  );
+
+  const canRefreshApiKeyUsage = useCallback(
+    (account: CodexAccount, provider?: CodexModelProvider | null): boolean => {
+      if (!isCodexApiKeyAccount(account) || isCodexNewApiAccount(account)) {
+        return false;
+      }
+      const targetProvider =
+        provider ?? resolveUsageProviderForApiKeyAccount(account);
+      const apiKey = (account.openai_api_key || "").trim();
+      const baseUrl =
+        targetProvider?.baseUrl.trim() || (account.api_base_url || "").trim();
+      return Boolean(apiKey && baseUrl);
+    },
+    [resolveUsageProviderForApiKeyAccount],
+  );
+
+  const refreshApiKeyUsageForAccounts = useCallback(
+    async (targetAccounts: CodexAccount[]) => {
+      const apiKeyAccounts = targetAccounts.filter((account) => {
+        const provider = resolveUsageProviderForApiKeyAccount(account);
+        const baseUrl =
+          provider?.baseUrl.trim() || (account.api_base_url || "").trim();
+        return Boolean(baseUrl && (account.openai_api_key || "").trim());
+      });
+      await Promise.all(
+        apiKeyAccounts.map((account) =>
+          refreshApiKeyUsage(
+            account,
+            resolveUsageProviderForApiKeyAccount(account),
+          ),
+        ),
+      );
+    },
+    [refreshApiKeyUsage, resolveUsageProviderForApiKeyAccount],
+  );
+
+  useEffect(() => {
+    writeCodexApiKeyUsageCache(apiKeyUsageMap);
+  }, [apiKeyUsageMap]);
+
+  useEffect(() => {
+    const accountIds = new Set(accounts.map((account) => account.id));
+    setApiKeyUsageMap((previous) => {
+      let changed = false;
+      const next: Record<string, CodexApiKeyUsageState> = {};
+      for (const [accountId, state] of Object.entries(previous)) {
+        if (accountIds.has(accountId)) {
+          next[accountId] = state;
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : previous;
+    });
+  }, [accounts]);
+
+  useEffect(() => {
+    const refreshOnQuotaChanged = async () => {
+      await refreshApiKeyUsageForAccounts(accounts);
+    };
+    const refreshOnAccountsChanged = async () => {
+      await refreshApiKeyUsageForAccounts(accounts);
+    };
+
+    let unlistenAccountsChanged: UnlistenFn | null = null;
+    let unlistenCurrentChanged: UnlistenFn | null = null;
+
+    void listen("accounts:changed", async (event) => {
+      const payload = event.payload as {
+        platformId?: string;
+        accountId?: string | null;
+        reason?: string;
+      } | null;
+      if (payload?.platformId !== "codex") return;
+      if (payload.accountId) {
+        await refreshApiKeyUsageByAccountId(payload.accountId);
+        return;
+      }
+      await refreshOnAccountsChanged();
+    }).then((fn) => {
+      unlistenAccountsChanged = fn;
+    });
+
+    void listen("accounts:current-changed", async (event) => {
+      const payload = event.payload as {
+        platformId?: string;
+        accountId?: string | null;
+      } | null;
+      if (payload?.platformId !== "codex") return;
+      if (payload.accountId) {
+        await refreshApiKeyUsageByAccountId(payload.accountId);
+      }
+    }).then((fn) => {
+      unlistenCurrentChanged = fn;
+    });
+
+    void refreshOnQuotaChanged();
+
+    return () => {
+      unlistenAccountsChanged?.();
+      unlistenCurrentChanged?.();
+    };
+  }, [accounts, refreshApiKeyUsageByAccountId, refreshApiKeyUsageForAccounts]);
+
+  const formatApiKeyUsageMoney = useCallback(
+    (value?: number | null, unit?: string | null): string => {
+      if (typeof value !== "number" || !Number.isFinite(value)) return "-";
+      const normalizedUnit = unit?.trim() || "USD";
+      const formatted = value.toFixed(value >= 100 ? 0 : 2);
+      return normalizedUnit === "USD"
+        ? `$${formatted}`
+        : `${formatted} ${normalizedUnit}`;
+    },
+    [],
+  );
+
+  const formatApiKeyUsageBalance = useCallback(
+    (summary?: CodexModelProviderUsageSummary): string | null => {
+      if (
+        typeof summary?.balance !== "number" ||
+        !Number.isFinite(summary.balance)
+      ) {
+        return null;
+      }
+      return formatApiKeyUsageMoney(summary.balance, summary.unit);
+    },
+    [formatApiKeyUsageMoney],
+  );
+
+  const formatApiKeyUsageQuotaValue = useCallback(
+    (
+      summary: CodexModelProviderUsageSummary | undefined,
+      value?: number | null,
+    ): string => {
+      if (summary?.quotaUnlimited === true) {
+        return t("codex.modelProviders.usage.unlimitedQuota", "无限额度");
+      }
+      return formatApiKeyUsageMoney(value, summary?.unit);
+    },
+    [formatApiKeyUsageMoney, t],
+  );
+
+  const resolveCockpitApiAccountBalanceText = useCallback(
+    (account: CodexAccount): string | null => {
+      const usage = getCockpitApiUsageRecord(account);
+      const stats = getCockpitApiStatsRecord(account);
+      const total = toCockpitApiRecord(stats?.total);
+      const profile = toCockpitApiRecord(
+        toCockpitApiRecord(account.quota?.raw_data)?.profile,
+      );
+      const records = [usage, total, profile].filter(
+        (record): record is CockpitApiJsonRecord => Boolean(record),
+      );
+      const displayKeys = [
+        "balance_display",
+        "account_balance_display",
+        "wallet_balance_display",
+      ];
+      for (const record of records) {
+        for (const key of displayKeys) {
+          const value = readCockpitApiString(record, key);
+          if (value) return value;
+        }
+      }
+      const numberKeys = ["balance", "account_balance", "wallet_balance"];
+      for (const record of records) {
+        for (const key of numberKeys) {
+          const value = readCockpitApiOptionalNumber(record, key);
+          if (value != null) return formatApiKeyUsageMoney(value, "USD");
+        }
+      }
+      return null;
+    },
+    [formatApiKeyUsageMoney],
+  );
+
+  const formatApiKeyUsagePercent = useCallback(
+    (summary?: CodexModelProviderUsageSummary): number => {
+      if (summary?.mode === "new_api") {
+        const granted = Number(
+          summary.details?.find((item) => item.key === "totalGranted")?.value,
+        );
+        const available = Number(
+          summary.details?.find((item) => item.key === "totalAvailable")?.value,
+        );
+        if (
+          Number.isFinite(granted) &&
+          Number.isFinite(available) &&
+          granted > 0
+        ) {
+          return Math.max(
+            0,
+            Math.min(100, Math.round(((granted - available) / granted) * 100)),
+          );
+        }
+      }
+      const used = summary?.quotaUsed ?? summary?.totalCost;
+      const limit = summary?.quotaLimit;
+      if (
+        typeof used !== "number" ||
+        typeof limit !== "number" ||
+        !Number.isFinite(used) ||
+        !Number.isFinite(limit) ||
+        limit <= 0
+      ) {
+        return 0;
+      }
+      return Math.max(0, Math.min(100, Math.round((used / limit) * 100)));
+    },
+    [],
+  );
+
+  const formatApiKeyUsageDetailLabel = useCallback(
+    (key: string, fallback: string): string => {
+      const labels: Record<string, string> = {
+        status: t("codex.modelProviders.usage.fields.status", "状态"),
+        planName: t("codex.modelProviders.usage.fields.planName", "订阅"),
+        remaining: t("codex.modelProviders.usage.fields.remaining", "剩余额度"),
+        balance: t("codex.modelProviders.usage.fields.balance", "余额"),
+        quotaUnlimited: t(
+          "codex.modelProviders.usage.fields.quotaUnlimited",
+          "无限额度",
+        ),
+        todayRequests: t(
+          "codex.modelProviders.usage.fields.todayRequests",
+          "今日请求",
+        ),
+        todayTokens: t(
+          "codex.modelProviders.usage.fields.todayTokens",
+          "今日 Token",
+        ),
+        todayCost: t("codex.modelProviders.usage.fields.todayCost", "今日消耗"),
+        totalRequests: t(
+          "codex.modelProviders.usage.fields.totalRequests",
+          "累计请求",
+        ),
+        totalTokens: t(
+          "codex.modelProviders.usage.fields.totalTokens",
+          "累计 Token",
+        ),
+        totalCost: t("codex.modelProviders.usage.fields.totalCost", "累计消耗"),
+        hardLimitUsd: t(
+          "codex.modelProviders.usage.fields.hardLimitUsd",
+          "硬额度",
+        ),
+        softLimitUsd: t(
+          "codex.modelProviders.usage.fields.softLimitUsd",
+          "软额度",
+        ),
+        systemHardLimitUsd: t(
+          "codex.modelProviders.usage.fields.systemHardLimitUsd",
+          "系统额度",
+        ),
+        accessUntil: t(
+          "codex.modelProviders.usage.fields.accessUntil",
+          "可用至",
+        ),
+        expiresAt: t("codex.modelProviders.usage.fields.expiresAt", "过期时间"),
+        totalGranted: t(
+          "codex.modelProviders.usage.fields.totalGranted",
+          "授予额度",
+        ),
+        totalAvailable: t(
+          "codex.modelProviders.usage.fields.totalAvailable",
+          "可用额度",
+        ),
+        modelLimitsEnabled: t(
+          "codex.modelProviders.usage.fields.modelLimitsEnabled",
+          "模型限制",
+        ),
+        totalUsage: t(
+          "codex.modelProviders.usage.fields.totalUsage",
+          "累计消耗",
+        ),
+      };
+      return labels[key] ?? fallback;
+    },
+    [t],
+  );
+
+  const formatApiKeyUsageDetailValue = useCallback(
+    (item: { key: string; value: string }, unit?: string | null): string => {
+      const raw = item.value.trim();
+      const numeric = Number(raw);
+      if (
+        Number.isFinite(numeric) &&
+        (item.key.includes("Tokens") ||
+          item.key === "todayTokens" ||
+          item.key === "totalTokens")
+      ) {
+        return formatCockpitApiTokenCount(numeric);
+      }
+      if (Number.isFinite(numeric) && item.key === "accessUntil") {
+        return numeric > 0 ? formatDate(numeric * 1000) : "-";
+      }
+      if (Number.isFinite(numeric) && item.key === "expiresAt") {
+        return numeric > 0 ? formatDate(numeric * 1000) : "-";
+      }
+      if (item.key === "quotaUnlimited" || item.key === "modelLimitsEnabled") {
+        if (raw === "true")
+          return t("codex.modelProviders.usage.booleanTrue", "是");
+        if (raw === "false")
+          return t("codex.modelProviders.usage.booleanFalse", "否");
+      }
+      if (
+        Number.isFinite(numeric) &&
+        [
+          "remaining",
+          "balance",
+          "todayCost",
+          "totalCost",
+          "hardLimitUsd",
+          "softLimitUsd",
+          "systemHardLimitUsd",
+        ].includes(item.key)
+      ) {
+        return formatApiKeyUsageMoney(numeric, unit);
+      }
+      if (
+        Number.isFinite(numeric) &&
+        ["totalGranted", "totalAvailable"].includes(item.key)
+      ) {
+        return formatCockpitApiInteger(numeric);
+      }
+      if (Number.isFinite(numeric) && item.key === "totalUsage") {
+        return formatApiKeyUsageMoney(numeric / 100, unit);
+      }
+      if (
+        Number.isFinite(numeric) &&
+        (item.key.includes("Requests") ||
+          item.key === "todayRequests" ||
+          item.key === "totalRequests")
+      ) {
+        return formatCockpitApiInteger(numeric);
+      }
+      return raw || "-";
+    },
+    [formatApiKeyUsageMoney, t],
+  );
+
+  const findApiKeyUsageDetail = useCallback(
+    (summary: CodexModelProviderUsageSummary | undefined, key: string) =>
+      summary?.details?.find((item) => item.key === key),
+    [],
+  );
+
+  const formatApiKeyUsageDetailByKey = useCallback(
+    (
+      summary: CodexModelProviderUsageSummary | undefined,
+      key: string,
+    ): string => {
+      const detail = findApiKeyUsageDetail(summary, key);
+      if (!detail) return "-";
+      return formatApiKeyUsageDetailValue(detail, summary?.unit);
+    },
+    [findApiKeyUsageDetail, formatApiKeyUsageDetailValue],
+  );
+
+  const renderApiKeyUsagePanel = useCallback(
+    (
+      account: CodexAccount,
+      provider: CodexModelProvider | null,
+      variant: "card" | "table" = "card",
+    ): ReactElement => {
+      const usageState = apiKeyUsageMap[account.id];
+      const summary = usageState?.summary;
+      const loading = usageState?.loading === true;
+      const apiKey = (account.openai_api_key || "").trim();
+      const baseUrl =
+        provider?.baseUrl.trim() || (account.api_base_url || "").trim();
+      const canRefresh = Boolean(apiKey && baseUrl);
+      const usageMode = resolveApiKeyUsageMode(summary);
+      const isNewApiUsage = usageMode === "new_api";
+      const isSub2ApiUsage = usageMode === "sub2api";
+      const usedPercent = formatApiKeyUsagePercent(summary);
+      if (variant === "card" && summary && isNewApiUsage) {
+        const grantedRaw = Number(
+          findApiKeyUsageDetail(summary, "totalGranted")?.value ?? NaN,
+        );
+        const availableRaw = Number(
+          findApiKeyUsageDetail(summary, "totalAvailable")?.value ?? NaN,
+        );
+        const grantedText = Number.isFinite(grantedRaw)
+          ? formatApiKeyUsageMoney(grantedRaw, summary.unit)
+          : formatApiKeyUsageDetailByKey(summary, "totalGranted");
+        const availableText = Number.isFinite(availableRaw)
+          ? formatApiKeyUsageMoney(availableRaw, summary.unit)
+          : formatApiKeyUsageDetailByKey(summary, "totalAvailable");
+        const expiresText = formatApiKeyUsageDetailByKey(summary, "expiresAt");
+        const unlimitedText = t("codex.newApi.quota.unlimited", "不限量");
+        const quotaValueText =
+          summary.quotaUnlimited === true
+            ? unlimitedText
+            : `${availableText} / ${grantedText}`;
+        const quotaBarWidth =
+          summary.quotaUnlimited === true ? 100 : usedPercent;
+        return (
+          <div
+            className="quota-item codex-api-key-quota-item new-api"
+            title={`${t("codex.cockpitApi.balance", "额度")}：${quotaValueText}`}
+          >
+            <div className="quota-header">
+              <Database size={14} />
+              <span className="quota-label">
+                {t("codex.cockpitApi.balance", "额度")}
+              </span>
+              <span className="quota-pct high">{quotaValueText}</span>
+            </div>
+            <div className="quota-bar-track">
+              <div
+                className="quota-bar high"
+                style={{ width: `${quotaBarWidth}%` }}
+              />
+            </div>
+            {expiresText !== "-" && (
+              <span className="quota-reset">
+                {t("codex.modelProviders.usage.fields.expiresAt", "过期时间")}：
+                {expiresText}
+              </span>
+            )}
+          </div>
+        );
+      }
+      if (variant === "card" && summary && isSub2ApiUsage) {
+        return (
+          <div className="codex-api-key-usage-panel sub2api">
+            <div className="codex-api-key-usage-grid">
+              <div>
+                <span>
+                  {t("codex.modelProviders.usage.accountBalance", "账户余额")}
+                </span>
+                <strong>
+                  {formatApiKeyUsageQuotaValue(
+                    summary,
+                    summary.remaining ??
+                      summary.balance ??
+                      summary.quotaRemaining,
+                  )}
+                </strong>
+              </div>
+              <div>
+                <span>
+                  {t(
+                    "codex.modelProviders.usage.fields.todayRequests",
+                    "今日请求",
+                  )}
+                </span>
+                <strong>
+                  {formatCockpitApiInteger(summary.todayRequests ?? 0)}
+                </strong>
+              </div>
+              <div>
+                <span>
+                  {t(
+                    "codex.modelProviders.usage.fields.todayTokens",
+                    "今日 Token",
+                  )}
+                </span>
+                <strong>
+                  {formatCockpitApiTokenCount(summary.todayTotalTokens ?? 0)}
+                </strong>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      if (summary && !usageMode) {
+        return <></>;
+      }
+      return (
+        <div
+          className={`codex-api-key-usage-panel ${variant} ${summary ? "" : "empty"}`}
+        >
+          {summary ? (
+            <>
+              <div className="codex-api-key-usage-grid">
+                {isNewApiUsage ? (
+                  <>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.fields.totalGranted",
+                          "授予额度",
+                        )}
+                      </span>
+                      <strong>
+                        {(() => {
+                          const raw = Number(
+                            findApiKeyUsageDetail(summary, "totalGranted")
+                              ?.value ?? NaN,
+                          );
+                          return Number.isFinite(raw)
+                            ? formatApiKeyUsageMoney(raw, summary.unit)
+                            : formatApiKeyUsageDetailByKey(
+                                summary,
+                                "totalGranted",
+                              );
+                        })()}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.fields.totalAvailable",
+                          "可用额度",
+                        )}
+                      </span>
+                      <strong>
+                        {(() => {
+                          const raw = Number(
+                            findApiKeyUsageDetail(summary, "totalAvailable")
+                              ?.value ?? NaN,
+                          );
+                          return Number.isFinite(raw)
+                            ? formatApiKeyUsageMoney(raw, summary.unit)
+                            : formatApiKeyUsageDetailByKey(
+                                summary,
+                                "totalAvailable",
+                              );
+                        })()}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.fields.expiresAt",
+                          "过期时间",
+                        )}
+                      </span>
+                      <strong>
+                        {formatApiKeyUsageDetailByKey(summary, "expiresAt")}
+                      </strong>
+                    </div>
+                  </>
+                ) : isSub2ApiUsage ? (
+                  <>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.accountBalance",
+                          "账户余额",
+                        )}
+                      </span>
+                      <strong>
+                        {formatApiKeyUsageQuotaValue(
+                          summary,
+                          summary.remaining ??
+                            summary.balance ??
+                            summary.quotaRemaining,
+                        )}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.fields.todayRequests",
+                          "今日请求",
+                        )}
+                      </span>
+                      <strong>
+                        {formatCockpitApiInteger(summary.todayRequests ?? 0)}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.fields.todayTokens",
+                          "今日 Token",
+                        )}
+                      </span>
+                      <strong>
+                        {formatCockpitApiTokenCount(
+                          summary.todayTotalTokens ?? 0,
+                        )}
+                      </strong>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              {isNewApiUsage ? (
+                <div className="codex-api-key-usage-progress">
+                  <div className="cockpit-api-progress-track">
+                    <div
+                      className="cockpit-api-progress-bar"
+                      style={{ width: `${usedPercent}%` }}
+                    />
+                  </div>
+                  <span>{usedPercent}%</span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="codex-api-key-usage-empty">
+              {loading
+                ? t("codex.modelProviders.usage.loading", "正在查询额度...")
+                : usageState?.error
+                  ? null
+                  : canRefresh
+                    ? t("codex.modelProviders.usage.pending", "等待查询额度")
+                    : t("codex.modelProviders.usage.noKey", "暂无可查询额度")}
+            </div>
+          )}
+        </div>
+      );
+    },
+    [
+      apiKeyUsageMap,
+      formatApiKeyUsagePercent,
+      formatApiKeyUsageMoney,
+      formatApiKeyUsageBalance,
+      formatApiKeyUsageQuotaValue,
+      formatApiKeyUsageDetailByKey,
+      canRefreshApiKeyUsage,
+      refreshApiKeyUsage,
+      setApiKeyUsageDetailAccountId,
+      t,
+    ],
   );
 
   const closeApiKeyCredentialsModal = useCallback(() => {
@@ -3401,6 +5405,11 @@ export function CodexAccountsPage() {
         providerPayload.apiProviderMode,
         providerPayload.apiProviderId,
         providerPayload.apiProviderName,
+        providerPayload.apiModelCatalog,
+        providerPayload.apiSupportsVision,
+        providerPayload.apiModelVisionSupport,
+        providerPayload.apiVisionRoutingModel,
+        providerPayload.apiWireApi,
       );
       if (
         validation.apiBaseUrl &&
@@ -3408,12 +5417,43 @@ export function CodexAccountsPage() {
         providerPayload.apiProviderId !== COCKPIT_API_PROVIDER_ID
       ) {
         try {
-          await upsertCodexModelProviderFromCredential({
-            providerId: providerPayload.apiProviderId ?? null,
+          const savedProvider = await upsertCodexModelProviderFromCredential({
+            providerId: isRelayApiProviderTemplateId(
+              providerPayload.apiProviderId,
+            )
+              ? null
+              : (providerPayload.apiProviderId ?? null),
             providerName: providerPayload.apiProviderName ?? null,
             apiBaseUrl: validation.apiBaseUrl,
             apiKey: validation.apiKey,
+            apiKeyName: providerPayload.accountName,
+            sourceTag: providerPayload.sponsorTemplate?.id ?? null,
+            modelCatalog: providerPayload.sponsorTemplate?.modelCatalog,
+            supportsVision: providerPayload.sponsorTemplate?.supportsVision,
+            website: providerPayload.sponsorTemplate?.website,
+            apiKeyUrl: providerPayload.sponsorTemplate?.apiKeyUrl,
+            wireApi: providerPayload.apiWireApi,
+            integrationType: providerPayload.sponsorTemplate?.integrationType,
           });
+          try {
+            const usageSummary = await queryCodexModelProviderUsage({
+              baseUrl: savedProvider.baseUrl,
+              apiKey: validation.apiKey,
+              integrationType: savedProvider.integrationType ?? null,
+            });
+            if (
+              (usageSummary.mode === "sub2api" ||
+                usageSummary.mode === "new_api") &&
+              usageSummary.mode !== savedProvider.integrationType
+            ) {
+              await saveCodexModelProviderDetectedIntegrationType(
+                savedProvider.id,
+                usageSummary.mode,
+              );
+            }
+          } catch (usageErr) {
+            console.warn("[CodexModelProviders] 额度类型探测失败", usageErr);
+          }
           await reloadManagedProviders();
         } catch (providerErr) {
           console.warn(
@@ -3423,6 +5463,11 @@ export function CodexAccountsPage() {
         }
       }
       setMessage({ text: t("instances.messages.updated", "实例已更新") });
+      setApiKeyUsageMap((previous) => {
+        const next = { ...previous };
+        delete next[accountId];
+        return next;
+      });
       setEditingApiKeyCredentialsId(null);
       setEditingApiKeyCredentialsValue("");
       setEditingApiKeyCredentialsVisible(false);
@@ -3678,7 +5723,6 @@ export function CodexAccountsPage() {
     [],
   );
 
-  const localAccessCollection = localAccessState?.collection ?? null;
   const localAccessAccountIdSet = useMemo(
     () => new Set(localAccessCollection?.accountIds ?? []),
     [localAccessCollection?.accountIds],
@@ -3696,6 +5740,69 @@ export function CodexAccountsPage() {
     () => summarizeCodexQuotaPool(localAccessAccounts),
     [localAccessAccounts],
   );
+  const localAccessAccountPoolHealthSummary =
+    useMemo<LocalAccessAccountPoolHealthSummary>(() => {
+      const accountById = new Map(
+        accounts.map((account) => [account.id, account]),
+      );
+      const healthById = new Map(
+        (localAccessState?.accountHealth ?? []).map((health) => [
+          health.accountId,
+          health,
+        ]),
+      );
+      const summary: LocalAccessAccountPoolHealthSummary = {
+        total: localAccessCollection?.accountIds.length ?? 0,
+        available: 0,
+        abnormal: 0,
+        cooldown: 0,
+        missing: 0,
+        authError: 0,
+        quotaLimited: 0,
+      };
+
+      (localAccessCollection?.accountIds ?? []).forEach((accountId) => {
+        const account = accountById.get(accountId);
+        const health = healthById.get(accountId);
+        if (!account) {
+          summary.missing += 1;
+          summary.abnormal += 1;
+          return;
+        }
+        if (health?.cooldowns?.length) {
+          summary.cooldown += 1;
+          return;
+        }
+        if (isBlockingCodexQuotaError(account.quota_error)) {
+          summary.quotaLimited += 1;
+          summary.abnormal += 1;
+          return;
+        }
+        if (
+          isBlockingLocalAccessAccountFailureCategory(
+            health?.lastFailureCategory,
+          )
+        ) {
+          summary.authError += 1;
+          summary.abnormal += 1;
+          return;
+        }
+        if (health && !health.available) {
+          summary.abnormal += 1;
+          return;
+        }
+        summary.available += 1;
+      });
+
+      return summary;
+    }, [
+      accounts,
+      localAccessCollection?.accountIds,
+      localAccessState?.accountHealth,
+    ]);
+  const localAccessAccountPoolHealthHasIssue =
+    localAccessAccountPoolHealthSummary.abnormal > 0 ||
+    localAccessAccountPoolHealthSummary.cooldown > 0;
   const localAccessQuotaPoolLabels = useMemo(
     () => ({
       hourly: t("codex.localAccess.quotaPool.hourlyShort", "5h"),
@@ -3714,21 +5821,62 @@ export function CodexAccountsPage() {
       localAccessQuotaPreviewItems.length,
   );
   const overviewAccounts = accounts;
+  const localAccessScope = localAccessCollection?.accessScope ?? "localhost";
+  const localAccessScopeLabel =
+    localAccessScope === "lan"
+      ? t("codex.localAccess.accessScopeLanShort", "本机+局域网")
+      : t("codex.localAccess.accessScopeLocalhostShort", "仅本机");
   const localAccessBusy =
     localAccessSaving ||
-    localAccessTesting ||
     localAccessStarting ||
     localAccessRefreshing ||
     localAccessPortKilling;
+  const selectedLocalAccessAddressKind: CodexLocalAccessAddressKind =
+    localAccessAddressKind === "lan" && localAccessState?.lanBaseUrl
+      ? "lan"
+      : "local";
+  const localAccessAddressOptions = useMemo(
+    () => [
+      {
+        value: "local",
+        label: t("codex.localAccess.addressLocal", "本机"),
+      },
+      ...(localAccessState?.lanBaseUrl
+        ? [
+            {
+              value: "lan",
+              label: t("codex.localAccess.addressLan", "局域网"),
+            },
+          ]
+        : []),
+    ],
+    [localAccessState?.lanBaseUrl, t],
+  );
+  const handleLocalAccessAddressKindChange = useCallback((value: string) => {
+    const next = normalizeLocalAccessAddressKind(value);
+    setLocalAccessAddressKind(next);
+    persistLocalAccessAddressKind(next);
+  }, []);
 
   const resolveLocalAccessBaseUrl = useCallback(() => {
+    if (
+      selectedLocalAccessAddressKind === "lan" &&
+      localAccessState?.lanBaseUrl
+    ) {
+      return localAccessState.lanBaseUrl;
+    }
     if (!localAccessCollection)
       return localAccessState?.baseUrl || CODEX_LOCAL_ACCESS_FALLBACK_BASE_URL;
     return (
       localAccessState?.baseUrl ||
       `http://127.0.0.1:${localAccessCollection.port}/v1`
     );
-  }, [localAccessCollection, localAccessState?.baseUrl]);
+  }, [
+    localAccessCollection,
+    localAccessState?.baseUrl,
+    localAccessState?.lanBaseUrl,
+    selectedLocalAccessAddressKind,
+  ]);
 
   const handleCopyLocalAccessValue = useCallback(
     async (field: "baseUrl" | "apiKey", value: string) => {
@@ -3754,6 +5902,15 @@ export function CodexAccountsPage() {
   const openLocalAccessPanel = useCallback(() => {
     setLocalAccessModalMode("panel");
     setShowLocalAccessModal(true);
+  }, []);
+
+  const openCodexApiServicePage = useCallback(() => {
+    setShowLocalAccessModal(false);
+    window.dispatchEvent(
+      new CustomEvent("app-request-navigate", {
+        detail: "codex-api-service",
+      }),
+    );
   }, []);
 
   const openLocalAccessMemberPicker = useCallback(() => {
@@ -3815,21 +5972,22 @@ export function CodexAccountsPage() {
       setLocalAccessSaving(true);
       try {
         const restrictFreeAccounts = options?.restrictFreeAccounts ?? true;
-        const accountById = new Map(
-          accounts.map((account) => [account.id, account]),
-        );
-        const filteredAccountIds = accountIds.filter((accountId) => {
-          const account = accountById.get(accountId);
-          if (!account) return false;
-          if (isCodexApiKeyAccount(account)) return false;
-          if (
-            restrictFreeAccounts &&
-            isCodexExplicitFreePlanType(account.plan_type)
-          ) {
-            return false;
-          }
-          return true;
-        });
+        const filteredAccountIds =
+          accountIds.length === 0
+            ? []
+            : filterCodexLocalAccessAccountIds(
+                accountIds,
+                accounts,
+                restrictFreeAccounts,
+              );
+        if (accountIds.length > 0 && filteredAccountIds.length === 0) {
+          throw new Error(
+            t(
+              "codex.localAccess.noEligibleAccountsSelected",
+              "所选账号不在当前环境中，或不符合 API 服务条件。请先在当前环境导入可用 Codex 账号后再添加。",
+            ),
+          );
+        }
         const nextState =
           await codexLocalAccessService.saveCodexLocalAccessAccounts(
             filteredAccountIds,
@@ -3908,6 +6066,171 @@ export function CodexAccountsPage() {
     ],
     [t, tierCounts],
   );
+
+  const oauthBindingTierCounts = useMemo(() => {
+    const counts = {
+      all: oauthBindingEligibleAccounts.length,
+      VALID: 0,
+      FREE: 0,
+      PLUS: 0,
+      PRO: 0,
+      TEAM: 0,
+      ENTERPRISE: 0,
+      ERROR: 0,
+    };
+    oauthBindingEligibleAccounts.forEach((account) => {
+      if (!isAbnormalAccount(account)) {
+        counts.VALID += 1;
+      }
+      const tier = resolvePlanKey(account);
+      if (tier in counts) counts[tier as keyof typeof counts] += 1;
+      if (account.quota_error) counts.ERROR += 1;
+    });
+    return counts;
+  }, [isAbnormalAccount, oauthBindingEligibleAccounts, resolvePlanKey]);
+
+  const oauthBindingTierFilterOptions = useMemo<MultiSelectFilterOption[]>(
+    () => [
+      { value: "FREE", label: `FREE (${oauthBindingTierCounts.FREE})` },
+      { value: "PLUS", label: `PLUS (${oauthBindingTierCounts.PLUS})` },
+      { value: "PRO", label: `PRO (${oauthBindingTierCounts.PRO})` },
+      { value: "TEAM", label: `TEAM (${oauthBindingTierCounts.TEAM})` },
+      {
+        value: "ENTERPRISE",
+        label: `ENTERPRISE (${oauthBindingTierCounts.ENTERPRISE})`,
+      },
+      { value: "ERROR", label: `ERROR (${oauthBindingTierCounts.ERROR})` },
+    ],
+    [oauthBindingTierCounts],
+  );
+
+  const oauthBindingAvailableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    oauthBindingEligibleAccounts.forEach((account) => {
+      (account.tags || []).forEach((tag) => {
+        const normalized = normalizeTag(tag);
+        if (normalized) {
+          tagSet.add(normalized);
+        }
+      });
+    });
+    return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+  }, [normalizeTag, oauthBindingEligibleAccounts]);
+
+  const toggleOAuthBindingFilterTypeValue = useCallback((value: string) => {
+    setOauthBindingFilterTypes((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
+    );
+  }, []);
+
+  const toggleOAuthBindingTagFilterValue = useCallback((tag: string) => {
+    setOauthBindingTagFilter((prev) =>
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+    );
+  }, []);
+
+  const oauthBindingFilteredAccounts = useMemo(() => {
+    let result = [...oauthBindingEligibleAccounts];
+    const query = oauthBindingSearchQuery.trim().toLowerCase();
+    if (query) {
+      result = result.filter((account) => {
+        const presentation = resolvePresentation(account);
+        const searchable = [
+          presentation.displayName,
+          account.email,
+          account.account_name,
+          account.account_id,
+          account.organization_id,
+          account.plan_type,
+          ...(account.tags || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return searchable.includes(query);
+      });
+    }
+
+    if (oauthBindingFilterTypes.length > 0) {
+      const { selectedTypes } = splitValidityFilterValues(
+        oauthBindingFilterTypes,
+      );
+      if (selectedTypes.size > 0) {
+        result = result.filter((account) => {
+          if (selectedTypes.has("ERROR") && account.quota_error) {
+            return true;
+          }
+          return selectedTypes.has(resolvePlanKey(account));
+        });
+      }
+    }
+
+    if (oauthBindingTagFilter.length > 0) {
+      const selectedTags = new Set(oauthBindingTagFilter.map(normalizeTag));
+      result = result.filter((account) =>
+        (account.tags || [])
+          .map(normalizeTag)
+          .some((tag) => selectedTags.has(tag)),
+      );
+    }
+
+    result.sort((a, b) => {
+      if (oauthBindingSortBy === "created_at") {
+        const diff = b.created_at - a.created_at;
+        return oauthBindingSortDirection === "desc" ? diff : -diff;
+      }
+      if (oauthBindingSortBy === "last_used") {
+        const diff = b.last_used - a.last_used;
+        return oauthBindingSortDirection === "desc" ? diff : -diff;
+      }
+      if (oauthBindingSortBy === "plan") {
+        const diff = resolvePresentation(a).planLabel.localeCompare(
+          resolvePresentation(b).planLabel,
+        );
+        return oauthBindingSortDirection === "desc" ? -diff : diff;
+      }
+
+      const diff = resolvePresentation(a).displayName.localeCompare(
+        resolvePresentation(b).displayName,
+      );
+      return oauthBindingSortDirection === "desc" ? -diff : diff;
+    });
+
+    return result;
+  }, [
+    normalizeTag,
+    oauthBindingEligibleAccounts,
+    oauthBindingFilterTypes,
+    oauthBindingSearchQuery,
+    oauthBindingSortBy,
+    oauthBindingSortDirection,
+    oauthBindingTagFilter,
+    resolvePlanKey,
+    resolvePresentation,
+  ]);
+
+  const oauthBindingPagination = usePagination({
+    items: oauthBindingFilteredAccounts,
+    storageKey: buildPaginationPageSizeStorageKey("CodexOAuthBinding"),
+    pageSizeOptions: OAUTH_BINDING_PAGE_SIZE_OPTIONS,
+    defaultPageSize: OAUTH_BINDING_PAGE_SIZE_OPTIONS[0],
+  });
+
+  useEffect(() => {
+    if (!oauthBindingTargetActive) return;
+    oauthBindingPagination.setCurrentPage(1);
+  }, [
+    oauthBindingAccountId,
+    oauthBindingFilterTypes,
+    oauthBindingPagination.setCurrentPage,
+    oauthBindingSearchQuery,
+    oauthBindingSortBy,
+    oauthBindingSortDirection,
+    oauthBindingTagFilter,
+    oauthBindingTargetActive,
+  ]);
 
   const activeGroup = useMemo(() => {
     if (!activeGroupId) return null;
@@ -4198,6 +6521,120 @@ export function CodexAccountsPage() {
     [setMessage, t],
   );
 
+  const handleUpdateLocalAccessCustomRouting = useCallback(
+    async (rules: CodexLocalAccessCustomRoutingRule[]) => {
+      setLocalAccessSaving(true);
+      try {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessCustomRouting(
+            rules,
+          );
+        setLocalAccessState(nextState);
+        setMessage({
+          text: t(
+            "codex.localAccess.customRoutingSaveSuccess",
+            "API 服务自定义调度已更新",
+          ),
+        });
+        return nextState;
+      } catch (error) {
+        console.error("Failed to update local access custom routing:", error);
+        throw new Error(String(error).replace(/^Error:\s*/, ""));
+      } finally {
+        setLocalAccessSaving(false);
+      }
+    },
+    [setMessage, t],
+  );
+
+  const handleUpdateLocalAccessUpstreamProxyConfig = useCallback(
+    async (upstreamProxyUrl: string | null) => {
+      setLocalAccessSaving(true);
+      try {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessUpstreamProxyConfig(
+            upstreamProxyUrl,
+          );
+        setLocalAccessState(nextState);
+        setMessage({
+          text: t(
+            "codex.localAccess.upstreamProxySaveSuccess",
+            "API 代理地址已更新",
+          ),
+        });
+        return nextState;
+      } catch (error) {
+        console.error(
+          "Failed to update local access upstream proxy config:",
+          error,
+        );
+        throw new Error(String(error).replace(/^Error:\s*/, ""));
+      } finally {
+        setLocalAccessSaving(false);
+      }
+    },
+    [setMessage, t],
+  );
+
+  const handleUpdateLocalAccessAccessScope = useCallback(
+    async (accessScope: CodexLocalAccessScope) => {
+      setLocalAccessSaving(true);
+      try {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessAccessScope(
+            accessScope,
+          );
+        setLocalAccessState(nextState);
+        setMessage({
+          text: t(
+            "codex.localAccess.accessScopeSaveSuccess",
+            "API 服务访问范围已更新",
+          ),
+        });
+        return nextState;
+      } catch (error) {
+        console.error("Failed to update local access scope:", error);
+        throw new Error(String(error).replace(/^Error:\s*/, ""));
+      } finally {
+        setLocalAccessSaving(false);
+      }
+    },
+    [setMessage, t],
+  );
+
+  const handleUpdateLocalAccessGatewayMode = useCallback(
+    async (gatewayMode: CodexLocalAccessGatewayMode) => {
+      if (
+        !localAccessCollection ||
+        localAccessCollection.gatewayMode === gatewayMode
+      ) {
+        return;
+      }
+      setLocalAccessSaving(true);
+      try {
+        const nextState =
+          await codexLocalAccessService.updateCodexLocalAccessGatewayMode(
+            gatewayMode,
+          );
+        setLocalAccessState(nextState);
+        setMessage({
+          text: t(
+            "codex.localAccess.gatewayModeSaveSuccess",
+            "API 服务网关模式已更新",
+          ),
+        });
+        dismissLocalAccessGatewayGuide();
+        return nextState;
+      } catch (error) {
+        console.error("Failed to update local access gateway mode:", error);
+        throw new Error(String(error).replace(/^Error:\s*/, ""));
+      } finally {
+        setLocalAccessSaving(false);
+      }
+    },
+    [dismissLocalAccessGatewayGuide, localAccessCollection, setMessage, t],
+  );
+
   const handleToggleLocalAccessEnabled = useCallback(async () => {
     if (!localAccessCollection) return;
     if (!localAccessCollection.enabled) {
@@ -4224,69 +6661,6 @@ export function CodexAccountsPage() {
       setLocalAccessSaving(false);
     }
   }, [localAccessCollection, requestLocalAccessRiskNotice, setMessage, t]);
-
-  const handleTestLocalAccess = useCallback(async () => {
-    if (!localAccessCollection) {
-      throw new Error(
-        t("codex.localAccess.testUnavailable", "当前 API 服务地址不可用"),
-      );
-    }
-
-    const baseUrl = resolveLocalAccessBaseUrl();
-    if (!baseUrl) {
-      throw new Error(
-        t("codex.localAccess.testUnavailable", "当前 API 服务地址不可用"),
-      );
-    }
-
-    setLocalAccessTesting(true);
-    let timeoutId: number | null = null;
-
-    try {
-      const controller = new AbortController();
-      timeoutId = window.setTimeout(() => controller.abort(), 10000);
-      const response = await fetch(`${baseUrl}/models`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localAccessCollection.apiKey}`,
-        },
-        signal: controller.signal,
-      });
-      const rawText = await response.text();
-      let payload: Record<string, unknown> | null = null;
-      if (rawText) {
-        try {
-          payload = JSON.parse(rawText) as Record<string, unknown>;
-        } catch {
-          payload = null;
-        }
-      }
-
-      if (!response.ok) {
-        const errorText =
-          (typeof payload?.error === "string" && payload.error) ||
-          rawText ||
-          response.statusText ||
-          `HTTP ${response.status}`;
-        throw new Error(errorText);
-      }
-
-      const modelCount = Array.isArray(payload?.data) ? payload.data.length : 0;
-      return modelCount;
-    } catch (error) {
-      const rawError = String(error).replace(/^Error:\s*/, "");
-      const normalizedError =
-        rawError === "AbortError"
-          ? t("codex.localAccess.testTimeout", "测试超时，请确认本地服务已启动")
-          : rawError;
-      throw new Error(normalizedError);
-    } finally {
-      if (timeoutId != null) {
-        window.clearTimeout(timeoutId);
-      }
-      setLocalAccessTesting(false);
-    }
-  }, [localAccessCollection, resolveLocalAccessBaseUrl, t]);
 
   const handleActivateLocalAccess = useCallback(
     async (options?: { showSuccessMessage?: boolean }) => {
@@ -4489,6 +6863,12 @@ export function CodexAccountsPage() {
         return b.created_at - a.created_at;
       }
 
+      const cockpitApiPriority =
+        Number(!isCodexNewApiAccount(a)) - Number(!isCodexNewApiAccount(b));
+      if (cockpitApiPriority !== 0) {
+        return cockpitApiPriority;
+      }
+
       const currentFirstDiff = compareCurrentAccountFirst(
         a.id,
         b.id,
@@ -4627,6 +7007,24 @@ export function CodexAccountsPage() {
     () => filteredAccounts.map((account) => account.id),
     [filteredAccounts],
   );
+  const errorAccountIds = useMemo(
+    () =>
+      filteredAccounts
+        .filter((account) => account.quota_error)
+        .map((account) => account.id),
+    [filteredAccounts],
+  );
+  const handleClearErrorAccounts = useCallback(() => {
+    if (errorAccountIds.length === 0) return;
+    setDeleteConfirm({
+      ids: errorAccountIds,
+      message: t("messages.cleanErrorAccountsConfirm", {
+        count: errorAccountIds.length,
+        defaultValue:
+          "确定要删除当前范围内的 {{count}} 条 ERROR 账号吗？",
+      }),
+    });
+  }, [errorAccountIds, setDeleteConfirm, t]);
   const exportSelectionCount = getScopedSelectedCount(filteredIds);
   const pagination = usePagination({
     items: filteredAccounts,
@@ -4728,6 +7126,71 @@ export function CodexAccountsPage() {
     () => isEveryIdSelected(selected, paginatedIds),
     [paginatedIds, selected],
   );
+  const isAllFilteredSelectionActive = useMemo(
+    () =>
+      isAllFilteredSelected &&
+      filteredIds.length > 0 &&
+      selected.size === filteredIds.length &&
+      filteredIds.every((id) => selected.has(id)),
+    [filteredIds, isAllFilteredSelected, selected],
+  );
+  const canSelectAllFilteredAccounts =
+    !isAllFilteredSelectionActive &&
+    isAllPaginatedSelected &&
+    filteredIds.length > paginatedIds.length;
+
+  useEffect(() => {
+    if (isAllFilteredSelected && !isAllFilteredSelectionActive) {
+      setIsAllFilteredSelected(false);
+    }
+  }, [isAllFilteredSelected, isAllFilteredSelectionActive]);
+
+  const handleToggleOverviewAccount = useCallback(
+    (accountId: string) => {
+      setIsAllFilteredSelected(false);
+      toggleSelect(accountId);
+    },
+    [toggleSelect],
+  );
+
+  const handleToggleSelectAllPaginated = useCallback(() => {
+    setIsAllFilteredSelected(false);
+    toggleSelectAll(paginatedIds);
+  }, [paginatedIds, toggleSelectAll]);
+
+  const handleSelectAllFilteredAccounts = useCallback(() => {
+    if (filteredIds.length === 0) return;
+    setSelected(new Set(filteredIds));
+    setIsAllFilteredSelected(true);
+  }, [filteredIds, setSelected]);
+
+  const handleClearOverviewSelection = useCallback(() => {
+    setSelected(new Set());
+    setIsAllFilteredSelected(false);
+  }, [setSelected]);
+
+  const handleCodexBatchDelete = useCallback(() => {
+    const ids = isAllFilteredSelectionActive
+      ? filteredIds
+      : Array.from(selected);
+    if (ids.length === 0) return;
+    setDeleteConfirm({
+      ids,
+      message: isAllFilteredSelectionActive
+        ? t("messages.deleteFilteredAccountsConfirm", {
+            count: ids.length,
+            defaultValue:
+              "将删除当前筛选条件下的 {{count}} 个 Codex 账号。此操作不会只删除当前页，确认继续？",
+          })
+        : t("messages.batchDeleteConfirm", { count: ids.length }),
+    });
+  }, [
+    filteredIds,
+    isAllFilteredSelectionActive,
+    selected,
+    setDeleteConfirm,
+    t,
+  ]);
 
   const groupedAccounts = useMemo(() => {
     if (!groupByTag) return [] as Array<[string, typeof filteredAccounts]>;
@@ -4775,8 +7238,75 @@ export function CodexAccountsPage() {
     [accountsById, compareAccountsBySort],
   );
 
+  const handleRefreshGroup = useCallback(
+    async (group: CodexAccountGroup) => {
+      const groupAccounts = resolveGroupAccounts(group);
+      const targetIds = groupAccounts
+        .filter(
+          (account) =>
+            !isCodexApiKeyAccount(account) || isCodexNewApiAccount(account),
+        )
+        .map((account) => account.id);
+
+      if (targetIds.length === 0) {
+        setMessage({
+          text: t("accounts.groups.refreshEmpty", "当前分组没有可刷新的账号"),
+          tone: "error",
+        });
+        return;
+      }
+
+      setRefreshingGroupId(group.id);
+      try {
+        const results = await Promise.allSettled(
+          targetIds.map((accountId) =>
+            codexService.refreshCodexQuota(accountId),
+          ),
+        );
+        const successCount = results.filter(
+          (result) => result.status === "fulfilled",
+        ).length;
+
+        await fetchAccounts();
+        await fetchCurrentAccount();
+
+        if (successCount === targetIds.length) {
+          setMessage({
+            text: t("codex.refreshAllSuccess", { count: successCount }),
+          });
+          return;
+        }
+
+        if (successCount > 0) {
+          setMessage({
+            text: t("codex.refreshAllPartialFailed", {
+              success: successCount,
+              total: targetIds.length,
+            }),
+            tone: "error",
+          });
+          return;
+        }
+
+        const firstFailure = results.find(
+          (result): result is PromiseRejectedResult =>
+            result.status === "rejected",
+        );
+        setMessage({
+          text: t("codex.refreshFailed", {
+            error: String(firstFailure?.reason ?? "").replace(/^Error:\s*/, ""),
+          }),
+          tone: "error",
+        });
+      } finally {
+        setRefreshingGroupId(null);
+      }
+    },
+    [fetchAccounts, fetchCurrentAccount, resolveGroupAccounts, setMessage, t],
+  );
+
   useEffect(() => {
-    const teamAccountIds = filteredAccounts
+    const teamAccountIds = paginatedAccounts
       .filter(
         (account) =>
           !hasCodexAccountStructure(account) ||
@@ -4786,7 +7316,7 @@ export function CodexAccountsPage() {
       .map((account) => account.id);
     if (teamAccountIds.length === 0) return;
     void hydrateAccountProfilesIfNeeded(teamAccountIds);
-  }, [filteredAccounts, hydrateAccountProfilesIfNeeded]);
+  }, [hydrateAccountProfilesIfNeeded, paginatedAccounts]);
 
   const resolveGroupLabel = (groupKey: string) =>
     groupKey === untaggedKey
@@ -4838,6 +7368,13 @@ export function CodexAccountsPage() {
       const subscriptionInfo = resolveSubscriptionPresentation(account);
       const showCompactExpiry =
         !isApiKeyAccount && subscriptionInfo.bucket !== "active";
+      const showSubscriptionRefreshAction =
+        !isApiKeyAccount &&
+        (subscriptionInfo.bucket === "missing" ||
+          subscriptionInfo.bucket === "expired");
+      const isSubscriptionRefreshPending =
+        refreshingSubscriptionAccountId === account.id ||
+        refreshing === account.id;
       return (
         <div
           key={groupKey ? `${groupKey}-${account.id}` : account.id}
@@ -4847,7 +7384,7 @@ export function CodexAccountsPage() {
             <input
               type="checkbox"
               checked={isSelected}
-              onChange={() => toggleSelect(account.id)}
+              onChange={() => handleToggleOverviewAccount(account.id)}
             />
           </div>
           <span
@@ -4872,25 +7409,44 @@ export function CodexAccountsPage() {
               </span>
             ))}
             {showCompactExpiry && (
-              <span
-                className={`codex-compact-expiry ${subscriptionInfo.tone}`}
-                title={subscriptionInfo.titleText}
-              >
-                {subscriptionInfo.valueText}
+              <span className="codex-compact-expiry-wrap">
+                <span
+                  className={`codex-compact-expiry ${subscriptionInfo.tone}`}
+                  title={subscriptionInfo.titleText}
+                >
+                  {subscriptionInfo.valueText}
+                </span>
+                {showSubscriptionRefreshAction && (
+                  <button
+                    type="button"
+                    className="codex-subscription-refresh-btn"
+                    onClick={() =>
+                      void handleRefreshSubscriptionInfo(account.id)
+                    }
+                    disabled={isSubscriptionRefreshPending}
+                    title={t("common.refresh", "刷新")}
+                    aria-label={t("common.refresh", "刷新")}
+                  >
+                    {t("common.refresh", "刷新")}
+                  </button>
+                )}
               </span>
             )}
           </div>
-          <button
-            className={`codex-compact-note-btn ${account.account_note?.trim() ? "has-note" : ""}`}
-            onClick={() => openAccountNoteModal(account)}
-            title={
-              account.account_note?.trim() ||
-              t("codex.accountNote.emptyTitle", "填写账号备注")
-            }
-            aria-label={t("codex.accountNote.title", "账号备注")}
-          >
-            <FileText size={13} />
-          </button>
+          {renderAccountSpeedSelect(account, true)}
+          {!isApiKeyAccount && (
+            <button
+              className={`codex-compact-note-btn ${account.account_note?.trim() ? "has-note" : ""}`}
+              onClick={() => openAccountNoteModal(account)}
+              title={
+                account.account_note?.trim() ||
+                t("codex.accountNote.emptyTitle", "填写账号备注")
+              }
+              aria-label={t("codex.accountNote.title", "账号备注")}
+            >
+              <FileText size={13} />
+            </button>
+          )}
           <button
             className={`codex-compact-switch-btn ${!isCurrent ? "success" : ""}`}
             onClick={() => handleSwitch(account.id)}
@@ -4965,6 +7521,34 @@ export function CodexAccountsPage() {
       const apiProviderLine = `${t("codex.api.provider.label", "供应商")}：${apiProviderName}`;
       const apiBaseUrlText = (account.api_base_url || "").trim() || "-";
       const apiBaseUrlLine = `${t("codex.api.baseUrl", "Base URL")}：${apiBaseUrlText}`;
+      const apiKeyUsageProvider = resolveUsageProviderForApiKeyAccount(account);
+      const isSponsorApiKeyAccount =
+        isApiKeyAccount &&
+        isSponsorModelProvider(
+          apiKeyUsageProvider,
+          sponsorApiProviderTemplates,
+        );
+      const apiKeyUsageMode = resolveApiKeyUsageMode(
+        apiKeyUsageMap[account.id]?.summary,
+      );
+      const isQuotaAwareApiKeyAccount =
+        isApiKeyAccount &&
+        !isNewApiAccount &&
+        !isSponsorApiKeyAccount &&
+        (apiKeyUsageMode !== null ||
+          apiKeyUsageProvider?.integrationType === "new_api" ||
+          apiKeyUsageProvider?.integrationType === "sub2api");
+      const displayPlanClass = isSponsorApiKeyAccount
+        ? "sponsor-api"
+        : isQuotaAwareApiKeyAccount
+          ? "new-api-exclusive"
+          : planClass;
+      const displayPlanLabel = isSponsorApiKeyAccount
+        ? apiProviderName
+        : presentation.planLabel;
+      const cockpitApiAccountBalanceText = isNewApiAccount
+        ? resolveCockpitApiAccountBalanceText(account)
+        : null;
       const accountTags = (account.tags || [])
         .map((tag) => tag.trim())
         .filter(Boolean);
@@ -4973,17 +7557,24 @@ export function CodexAccountsPage() {
       const isInLocalAccess = localAccessAccountIdSet.has(account.id);
       const subscriptionInfo = resolveSubscriptionPresentation(account);
       const isSubscriptionInfoMissing = subscriptionInfo.bucket === "missing";
+      const showSubscriptionRefreshAction =
+        !isApiKeyAccount &&
+        (subscriptionInfo.bucket === "missing" ||
+          subscriptionInfo.bucket === "expired");
+      const isSubscriptionRefreshPending =
+        refreshingSubscriptionAccountId === account.id ||
+        refreshing === account.id;
       return (
         <div
           key={groupKey ? `${groupKey}-${account.id}` : account.id}
-          className={`codex-account-card ${isCurrent ? "current" : ""} ${isSelected ? "selected" : ""} ${isNewApiAccount ? "new-api-exclusive" : ""}`}
+          className={`codex-account-card ${isCurrent ? "current" : ""} ${isSelected ? "selected" : ""} ${isNewApiAccount ? "new-api-exclusive" : ""} ${isQuotaAwareApiKeyAccount ? "api-key-usage-account" : ""} ${isSponsorApiKeyAccount ? "sponsor-api-account" : ""}`}
         >
           <div className="card-top">
             <div className="card-select">
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={() => toggleSelect(account.id)}
+                onChange={() => handleToggleOverviewAccount(account.id)}
               />
             </div>
             {isEditingApiKeyName ? (
@@ -5032,13 +7623,13 @@ export function CodexAccountsPage() {
                 {accountIssueBadge}
               </span>
             )}
-            <span className={`tier-badge ${planClass}`}>
-              {presentation.planLabel}
+            <span className={`tier-badge ${displayPlanClass}`}>
+              {displayPlanLabel}
             </span>
           </div>
           {(meta.accountContextText ||
             isInLocalAccess ||
-            account.account_note?.trim()) && (
+            (!isApiKeyAccount && account.account_note?.trim())) && (
             <div className="account-sub-line">
               {meta.accountContextText && (
                 <span
@@ -5053,7 +7644,7 @@ export function CodexAccountsPage() {
                   {t("codex.localAccess.modal.selected", "已加入 API 服务")}
                 </span>
               )}
-              {renderAccountNoteButton(account)}
+              {!isApiKeyAccount && renderAccountNoteButton(account)}
             </div>
           )}
           {!isApiKeyAccount && (
@@ -5069,6 +7660,7 @@ export function CodexAccountsPage() {
               <div className="account-sub-line">
                 {renderApiKeyRevealLine(account)}
               </div>
+              {renderOAuthBindingLine(account)}
               <div className="account-sub-line codex-provider-inline-line">
                 <span
                   className="codex-login-subline codex-provider-inline-text"
@@ -5108,9 +7700,7 @@ export function CodexAccountsPage() {
           )}
           <div className="codex-quota-section">
             {isApiKeyAccount && !isNewApiAccount ? (
-              <div className="quota-empty">
-                <span>{t("common.shared.quota.noData", "暂无配额数据")}</span>
-              </div>
+              renderApiKeyUsagePanel(account, apiKeyUsageProvider)
             ) : (
               <>
                 {hasQuotaError && (
@@ -5127,12 +7717,24 @@ export function CodexAccountsPage() {
                     {showReauthorizeAction && (
                       <button
                         className="btn btn-sm btn-outline"
-                        onClick={() => openAddModal("oauth")}
+                        onClick={() => openCodexAddModal("oauth", account)}
                         title={t("common.shared.addModal.oauth", "OAuth 授权")}
                       >
                         {t("common.shared.addModal.oauth", "OAuth 授权")}
                       </button>
                     )}
+                  </div>
+                )}
+                {cockpitApiAccountBalanceText && (
+                  <div className="codex-account-balance-line">
+                    <span>
+                      {t(
+                        "codex.modelProviders.usage.accountBalance",
+                        "账户余额",
+                      )}
+                      ：
+                    </span>
+                    <strong>{cockpitApiAccountBalanceText}</strong>
                   </div>
                 )}
                 {quotaItems.map((item) => {
@@ -5141,7 +7743,7 @@ export function CodexAccountsPage() {
                       ? Calendar
                       : item.key === "code_review"
                         ? BookOpen
-                        : item.key.startsWith("new_api_")
+                        : item.key === "new_api_quota"
                           ? Database
                           : Clock;
                   return (
@@ -5169,7 +7771,7 @@ export function CodexAccountsPage() {
                     </div>
                   );
                 })}
-                {quotaItems.length === 0 && (
+                {quotaItems.length === 0 && !cockpitApiAccountBalanceText && (
                   <div className="quota-empty">
                     {t("common.shared.quota.noData", "暂无配额数据")}
                   </div>
@@ -5193,15 +7795,35 @@ export function CodexAccountsPage() {
                   </>
                 )}
               </div>
-              {subscriptionInfo.timestampMs != null && (
-                <span className="codex-subscription-footer-date">
-                  {subscriptionInfo.detailText}
-                </span>
+              {(subscriptionInfo.timestampMs != null ||
+                showSubscriptionRefreshAction) && (
+                <div className="codex-subscription-footer-side">
+                  {subscriptionInfo.timestampMs != null && (
+                    <span className="codex-subscription-footer-date">
+                      {subscriptionInfo.detailText}
+                    </span>
+                  )}
+                  {showSubscriptionRefreshAction && (
+                    <button
+                      type="button"
+                      className="codex-subscription-refresh-btn"
+                      onClick={() =>
+                        void handleRefreshSubscriptionInfo(account.id)
+                      }
+                      disabled={isSubscriptionRefreshPending}
+                      title={t("common.refresh", "刷新")}
+                      aria-label={t("common.refresh", "刷新")}
+                    >
+                      {t("common.refresh", "刷新")}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
           <div className="codex-card-bottom">
             <span className="card-date">{formatDate(account.created_at)}</span>
+            {renderAccountSpeedSelect(account)}
             <div className="card-footer">
               <div className="card-actions">
                 <button
@@ -5225,7 +7847,16 @@ export function CodexAccountsPage() {
                     <Database size={14} />
                   </button>
                 )}
-                {!isNewApiAccount && (
+                {isSponsorApiKeyAccount && (
+                  <button
+                    className="card-action-btn"
+                    onClick={() => setApiKeyUsageDetailAccountId(account.id)}
+                    title={t("codex.cockpitApi.servicePanel", "服务面板")}
+                  >
+                    <Database size={14} />
+                  </button>
+                )}
+                {!isApiKeyAccount && !isNewApiAccount && (
                   <button
                     className="card-action-btn"
                     onClick={() => openTagModal(account.id)}
@@ -5234,7 +7865,7 @@ export function CodexAccountsPage() {
                     <Tag size={14} />
                   </button>
                 )}
-                {!isNewApiAccount && (
+                {!isApiKeyAccount && !isNewApiAccount && (
                   <button
                     className={`card-action-btn ${account.account_note?.trim() ? "active" : ""}`}
                     onClick={() => openAccountNoteModal(account)}
@@ -5247,7 +7878,7 @@ export function CodexAccountsPage() {
                     <FileText size={14} />
                   </button>
                 )}
-                {isApiKeyAccount && !isNewApiAccount && (
+                {isSponsorApiKeyAccount && (
                   <button
                     className="card-action-btn"
                     onClick={() => openQuickSwitchProviderModal(account)}
@@ -5277,35 +7908,49 @@ export function CodexAccountsPage() {
                     <Play size={14} />
                   )}
                 </button>
-                {(!isApiKeyAccount || isNewApiAccount) && (
+                {(!isApiKeyAccount ||
+                  isNewApiAccount ||
+                  canRefreshApiKeyUsage(account, apiKeyUsageProvider)) && (
                   <button
                     className="card-action-btn"
-                    onClick={() => handleRefresh(account.id)}
-                    disabled={refreshing === account.id}
+                    onClick={() =>
+                      canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                        ? void refreshApiKeyUsage(account, apiKeyUsageProvider)
+                        : handleRefresh(account.id)
+                    }
+                    disabled={
+                      canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                        ? apiKeyUsageMap[account.id]?.loading === true
+                        : refreshing === account.id
+                    }
                     title={t("common.shared.refreshQuota", "刷新配额")}
                   >
                     <RotateCw
                       size={14}
                       className={
-                        refreshing === account.id ? "loading-spinner" : ""
+                        canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                          ? apiKeyUsageMap[account.id]?.loading === true
+                            ? "loading-spinner"
+                            : ""
+                          : refreshing === account.id
+                            ? "loading-spinner"
+                            : ""
                       }
                     />
                   </button>
                 )}
-                {!isNewApiAccount && (
-                  <button
-                    className="card-action-btn export-btn"
-                    onClick={() =>
-                      handleExportByIds(
-                        [account.id],
-                        resolveSingleExportBaseName(account),
-                      )
-                    }
-                    title={t("common.shared.export.title", "导出")}
-                  >
-                    <Upload size={14} />
-                  </button>
-                )}
+                <button
+                  className="card-action-btn export-btn"
+                  onClick={() =>
+                    handleExportByIds(
+                      [account.id],
+                      resolveSingleExportBaseName(account),
+                    )
+                  }
+                  title={t("common.shared.export.title", "导出")}
+                >
+                  <Upload size={14} />
+                </button>
                 <button
                   className="card-action-btn danger"
                   onClick={() => handleDelete(account.id)}
@@ -5335,7 +7980,19 @@ export function CodexAccountsPage() {
       : localAccessKeyVisible
         ? localAccessCollection.apiKey
         : `${localAccessCollection.apiKey.slice(0, 10)}••••••••••••`;
-    const previewAccounts = localAccessAccounts.slice(0, 3);
+    const previewAccounts = localAccessAccounts.slice(0, 2);
+    const localAccessOAuthBindingLabel = t(
+      "codex.api.oauthBinding.label",
+      "OAuth 绑定",
+    );
+    const localAccessOAuthBindingValue = boundLocalAccessOAuthAccount
+      ? maskAccountText(
+          boundLocalAccessOAuthAccount.account_name ||
+            boundLocalAccessOAuthAccount.email ||
+            boundLocalAccessOAuthAccount.id,
+        )
+      : t("codex.api.oauthBinding.unbound", "未绑定");
+    const localAccessOAuthBindingLine = `${localAccessOAuthBindingLabel}：${localAccessOAuthBindingValue}`;
     const hiddenCount = Math.max(
       0,
       localAccessAccounts.length - previewAccounts.length,
@@ -5356,14 +8013,64 @@ export function CodexAccountsPage() {
           ? t("codex.localAccess.statusStopped", "未运行")
           : t("codex.localAccess.statusDisabled", "已停用");
     const isLocalAccessCurrent = localAccessLaunchCurrent;
-    const localAccessSummaryMeta = t("codex.localAccess.summaryMeta", {
+    const localAccessMemberCountLabel = t("codex.localAccess.accountCount", {
       count: localAccessState?.memberCount ?? 0,
-      defaultValue: "{{count}} 个账号 · 本机/局域网",
+      defaultValue: "{{count}} 个账号",
     });
+    const localAccessGatewayMode =
+      localAccessCollection?.gatewayMode ?? "sidecar";
+    const localAccessGatewayModeOptions = [
+      {
+        value: "sidecar",
+        label: t("codex.localAccess.gatewayModeNewLabel", "API 服务-新"),
+      },
+      {
+        value: "legacy",
+        label: t("codex.localAccess.gatewayModeOldLabel", "API 服务-旧"),
+      },
+    ];
     const localAccessEmptyMessage = t(
       "codex.localAccess.emptyMembers",
       "当前集合暂无账号",
     );
+    const showLocalAccessGatewayGuide = !localAccessGatewayGuideDismissed;
+    const renderLocalAccessGatewayGuide = () =>
+      showLocalAccessGatewayGuide ? (
+        <div
+          className="codex-local-access-gateway-guide"
+          role="dialog"
+          aria-label={t(
+            "codex.localAccess.gatewayGuideTitle",
+            "这里可以切换网关",
+          )}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="codex-local-access-gateway-guide-close"
+            onClick={dismissLocalAccessGatewayGuide}
+            aria-label={t("common.close", "关闭")}
+          >
+            <X size={12} />
+          </button>
+          <div className="codex-local-access-gateway-guide-title">
+            {t("codex.localAccess.gatewayGuideTitle", "这里可以切换网关")}
+          </div>
+          <p>
+            {t(
+              "codex.localAccess.gatewayGuideDesc",
+              "默认使用新网关。如果遇到兼容性问题或客户端请求异常，可以在这里切换到旧网关。",
+            )}
+          </p>
+          <button
+            type="button"
+            className="codex-local-access-gateway-guide-action"
+            onClick={dismissLocalAccessGatewayGuide}
+          >
+            {t("codex.localAccess.gatewayGuideAction", "我知道了")}
+          </button>
+        </div>
+      ) : null;
 
     return (
       <div
@@ -5375,50 +8082,84 @@ export function CodexAccountsPage() {
         <div className="folder-inline-header codex-local-access-header">
           {isGridLocalAccessCard ? (
             <>
-              <div className="folder-inline-icon codex-local-access-icon">
-                <Server size={24} />
-              </div>
               <div className="folder-inline-info">
                 <div className="codex-local-access-title-row">
-                  <span className="folder-inline-name">
-                    {t("codex.localAccess.title", "API 服务")}
-                  </span>
+                  <div
+                    className="codex-local-access-title-mode-select"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <SingleSelectDropdown
+                      value={localAccessGatewayMode}
+                      options={localAccessGatewayModeOptions}
+                      onChange={(value) =>
+                        void handleUpdateLocalAccessGatewayMode(
+                          value as CodexLocalAccessGatewayMode,
+                        )
+                      }
+                      disabled={!localAccessCollection || localAccessBusy}
+                      menuClassName="codex-local-access-title-mode-menu"
+                      menuWidth={116}
+                      menuMaxHeight={120}
+                      ariaLabel={t(
+                        "codex.localAccess.gatewayModeLabel",
+                        "网关模式",
+                      )}
+                    />
+                    {renderLocalAccessGatewayGuide()}
+                  </div>
                 </div>
-                <span className="folder-inline-count">
-                  {t("codex.localAccess.memberOnlyLocal", "本机/局域网")}
-                </span>
               </div>
             </>
           ) : (
-            <button
-              type="button"
+            <div
               className="codex-local-access-summary-trigger"
+              role="button"
+              tabIndex={0}
               onClick={() =>
                 setLocalAccessDetailsExpanded((current) => !current)
               }
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                setLocalAccessDetailsExpanded((current) => !current);
+              }}
               title={
                 showLocalAccessDetails
                   ? t("codex.localAccess.collapseDetails", "收起详情")
                   : t("codex.localAccess.expandDetails", "展开详情")
               }
             >
-              <div className="folder-inline-icon codex-local-access-icon">
-                <Server size={24} />
-              </div>
               <div className="folder-inline-info">
                 <div className="codex-local-access-title-row">
-                  <span className="folder-inline-name">
-                    {t("codex.localAccess.title", "API 服务")}
-                  </span>
+                  <div
+                    className="codex-local-access-title-mode-select"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <SingleSelectDropdown
+                      value={localAccessGatewayMode}
+                      options={localAccessGatewayModeOptions}
+                      onChange={(value) =>
+                        void handleUpdateLocalAccessGatewayMode(
+                          value as CodexLocalAccessGatewayMode,
+                        )
+                      }
+                      disabled={!localAccessCollection || localAccessBusy}
+                      menuClassName="codex-local-access-title-mode-menu"
+                      menuWidth={116}
+                      menuMaxHeight={120}
+                      ariaLabel={t(
+                        "codex.localAccess.gatewayModeLabel",
+                        "网关模式",
+                      )}
+                    />
+                    {renderLocalAccessGatewayGuide()}
+                  </div>
                   <span className="codex-local-access-summary-text">
-                    {localAccessSummaryMeta}
+                    {localAccessMemberCountLabel}
                   </span>
                 </div>
-                <span className="folder-inline-count">
-                  {t("codex.localAccess.memberOnlyLocal", "本机/局域网")}
-                </span>
               </div>
-            </button>
+            </div>
           )}
           <div className="codex-local-access-header-actions">
             {isLocalAccessCurrent && (
@@ -5477,9 +8218,18 @@ export function CodexAccountsPage() {
           <>
             <div className="codex-local-access-meta">
               <div className="codex-local-access-row">
-                <span className="codex-local-access-label">
-                  {t("codex.localAccess.baseUrl", "地址")}
-                </span>
+                <div className="codex-local-access-label codex-local-access-address-select">
+                  <SingleSelectDropdown
+                    value={selectedLocalAccessAddressKind}
+                    options={localAccessAddressOptions}
+                    onChange={handleLocalAccessAddressKindChange}
+                    menuClassName="codex-local-access-address-menu"
+                    menuWidth={92}
+                    menuMaxHeight={120}
+                    disabled={localAccessAddressOptions.length < 2}
+                    ariaLabel={t("codex.localAccess.addressKind", "地址类型")}
+                  />
+                </div>
                 <code className="codex-local-access-code" title={baseUrl}>
                   {baseUrl || "-"}
                 </code>
@@ -5550,6 +8300,24 @@ export function CodexAccountsPage() {
                     )}
                   </button>
                 </div>
+              </div>
+              <div className="account-sub-line codex-provider-inline-line codex-oauth-binding-line codex-local-access-oauth-line">
+                <span
+                  className="codex-login-subline codex-provider-inline-text"
+                  title={localAccessOAuthBindingLine}
+                >
+                  {localAccessOAuthBindingLine}
+                </span>
+                <button
+                  type="button"
+                  className="codex-provider-inline-switch codex-oauth-binding-action"
+                  onClick={() => openLocalAccessOAuthBindingModal()}
+                  title={t("codex.api.oauthBinding.action", "绑定 OAuth")}
+                  disabled={localAccessBusy}
+                >
+                  <Link2 size={11} />
+                  {t("codex.api.oauthBinding.actionShort", "绑定")}
+                </button>
               </div>
             </div>
 
@@ -5684,6 +8452,44 @@ export function CodexAccountsPage() {
               </div>
             )}
 
+            {localAccessAccountPoolHealthSummary.total > 0 && (
+              <div
+                className={`codex-local-access-health-summary${
+                  localAccessAccountPoolHealthHasIssue ? " has-issue" : ""
+                }`}
+                title={t("codex.localAccess.accountPoolHealth.detail", {
+                  available: localAccessAccountPoolHealthSummary.available,
+                  total: localAccessAccountPoolHealthSummary.total,
+                  abnormal: localAccessAccountPoolHealthSummary.abnormal,
+                  cooldown: localAccessAccountPoolHealthSummary.cooldown,
+                  missing: localAccessAccountPoolHealthSummary.missing,
+                  authError: localAccessAccountPoolHealthSummary.authError,
+                  quotaLimited:
+                    localAccessAccountPoolHealthSummary.quotaLimited,
+                  defaultValue:
+                    "可用 {{available}}/{{total}}，异常 {{abnormal}}，冷却 {{cooldown}}，缺失 {{missing}}，鉴权 {{authError}}，额度 {{quotaLimited}}",
+                })}
+              >
+                <span className="codex-local-access-health-summary-title">
+                  {t("codex.localAccess.accountPoolHealth.title", "账号池")}
+                </span>
+                <span className="codex-local-access-health-summary-value">
+                  {t("codex.localAccess.accountPoolHealth.availableRatio", {
+                    available: localAccessAccountPoolHealthSummary.available,
+                    total: localAccessAccountPoolHealthSummary.total,
+                    defaultValue: "可用 {{available}}/{{total}}",
+                  })}
+                </span>
+                <span className="codex-local-access-health-summary-value">
+                  {t("codex.localAccess.accountPoolHealth.issueSummary", {
+                    abnormal: localAccessAccountPoolHealthSummary.abnormal,
+                    cooldown: localAccessAccountPoolHealthSummary.cooldown,
+                    defaultValue: "异常 {{abnormal}} · 冷却 {{cooldown}}",
+                  })}
+                </span>
+              </div>
+            )}
+
             {localAccessState?.lastError && (
               <div className="quota-error-inline">
                 <CircleAlert size={14} />
@@ -5707,8 +8513,18 @@ export function CodexAccountsPage() {
 
             <div className="codex-card-bottom codex-local-access-card-bottom">
               <span className="card-date">
-                {t("codex.localAccess.footerHint", "监听本机与局域网")}
+                {t("codex.localAccess.footerHint", {
+                  scope: localAccessScopeLabel,
+                  defaultValue: "监听范围：{{scope}}",
+                })}
               </span>
+              <CodexSpeedSelect
+                value={apiServiceAppSpeed}
+                onChange={handleApiServiceAppSpeedChange}
+                busy={savingAppSpeedId === CODEX_API_SERVICE_BIND_ID}
+                preferredPlacement="top"
+                ariaLabel={t("codex.speed.title", "速度")}
+              />
               <div className="card-footer codex-local-access-footer">
                 <div className="card-actions">
                   <button
@@ -5742,6 +8558,14 @@ export function CodexAccountsPage() {
                     disabled={localAccessBusy}
                   >
                     <Database size={14} />
+                  </button>
+                  <button
+                    className="card-action-btn"
+                    onClick={openCodexApiServicePage}
+                    title={t("codex.apiService.openPage", "进入 API 服务")}
+                    disabled={localAccessBusy}
+                  >
+                    <ExternalLink size={14} />
                   </button>
                   <button
                     className="card-action-btn"
@@ -5806,6 +8630,15 @@ export function CodexAccountsPage() {
             0,
             groupAccounts.length - previewAccounts.length,
           );
+          const refreshableCount = groupAccounts.filter(
+            (account) =>
+              !isCodexApiKeyAccount(account) || isCodexNewApiAccount(account),
+          ).length;
+          const isGroupRefreshing = refreshingGroupId === group.id;
+          const groupRefreshDisabled =
+            refreshingAll ||
+            Boolean(refreshingGroupId) ||
+            refreshableCount === 0;
 
           return (
             <div
@@ -5825,6 +8658,28 @@ export function CodexAccountsPage() {
                     })}
                   </span>
                 </div>
+                <button
+                  className="folder-icon-btn"
+                  title={
+                    refreshableCount === 0
+                      ? t(
+                          "accounts.groups.refreshEmpty",
+                          "当前分组没有可刷新的账号",
+                        )
+                      : t("accounts.groups.refresh", "刷新分组")
+                  }
+                  aria-label={t("accounts.groups.refresh", "刷新分组")}
+                  disabled={groupRefreshDisabled}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void handleRefreshGroup(group);
+                  }}
+                >
+                  <RefreshCw
+                    size={14}
+                    className={isGroupRefreshing ? "loading-spinner" : ""}
+                  />
+                </button>
                 <button
                   className="folder-icon-btn"
                   title={t("accounts.groups.addAccounts")}
@@ -5970,18 +8825,53 @@ export function CodexAccountsPage() {
       const apiProviderLine = `${t("codex.api.provider.label", "供应商")}：${apiProviderName}`;
       const apiBaseUrlText = (account.api_base_url || "").trim() || "-";
       const apiBaseUrlLine = `${t("codex.api.baseUrl", "Base URL")}：${apiBaseUrlText}`;
+      const apiKeyUsageProvider = resolveUsageProviderForApiKeyAccount(account);
+      const isSponsorApiKeyAccount =
+        isApiKeyAccount &&
+        isSponsorModelProvider(
+          apiKeyUsageProvider,
+          sponsorApiProviderTemplates,
+        );
+      const apiKeyUsageMode = resolveApiKeyUsageMode(
+        apiKeyUsageMap[account.id]?.summary,
+      );
+      const isQuotaAwareApiKeyAccount =
+        isApiKeyAccount &&
+        !isNewApiAccount &&
+        !isSponsorApiKeyAccount &&
+        (apiKeyUsageMode !== null ||
+          apiKeyUsageProvider?.integrationType === "new_api" ||
+          apiKeyUsageProvider?.integrationType === "sub2api");
+      const displayPlanClass = isSponsorApiKeyAccount
+        ? "sponsor-api"
+        : isQuotaAwareApiKeyAccount
+          ? "new-api-exclusive"
+          : planClass;
+      const displayPlanLabel = isSponsorApiKeyAccount
+        ? apiProviderName
+        : presentation.planLabel;
+      const cockpitApiAccountBalanceText = isNewApiAccount
+        ? resolveCockpitApiAccountBalanceText(account)
+        : null;
       const isInLocalAccess = localAccessAccountIdSet.has(account.id);
       const subscriptionInfo = resolveSubscriptionPresentation(account);
+      const showSubscriptionRefreshAction =
+        !isApiKeyAccount &&
+        (subscriptionInfo.bucket === "missing" ||
+          subscriptionInfo.bucket === "expired");
+      const isSubscriptionRefreshPending =
+        refreshingSubscriptionAccountId === account.id ||
+        refreshing === account.id;
       return (
         <tr
           key={groupKey ? `${groupKey}-${account.id}` : account.id}
-          className={`${isCurrent ? "current" : ""} ${isNewApiAccount ? "new-api-exclusive" : ""}`}
+          className={`${isCurrent ? "current" : ""} ${isNewApiAccount ? "new-api-exclusive" : ""} ${isQuotaAwareApiKeyAccount ? "api-key-usage-account" : ""} ${isSponsorApiKeyAccount ? "sponsor-api-account" : ""}`}
         >
           <td>
             <input
               type="checkbox"
               checked={selected.has(account.id)}
-              onChange={() => toggleSelect(account.id)}
+              onChange={() => handleToggleOverviewAccount(account.id)}
             />
           </td>
           <td>
@@ -6022,10 +8912,11 @@ export function CodexAccountsPage() {
                     {t("codex.current", "当前")}
                   </span>
                 )}
+                {renderAccountSpeedSelect(account, true)}
               </div>
               {(meta.accountContextText ||
                 isInLocalAccess ||
-                account.account_note?.trim()) && (
+                (!isApiKeyAccount && account.account_note?.trim())) && (
                 <div className="account-sub-line codex-account-meta-inline">
                   {meta.accountContextText && (
                     <span
@@ -6040,7 +8931,7 @@ export function CodexAccountsPage() {
                       {t("codex.localAccess.modal.selected", "已加入 API 服务")}
                     </span>
                   )}
-                  {renderAccountNoteButton(account)}
+                  {!isApiKeyAccount && renderAccountNoteButton(account)}
                 </div>
               )}
               {!isApiKeyAccount && (
@@ -6056,6 +8947,7 @@ export function CodexAccountsPage() {
                   <div className="account-sub-line codex-account-meta-inline">
                     {renderApiKeyRevealLine(account)}
                   </div>
+                  {renderOAuthBindingLine(account)}
                   <div className="account-sub-line codex-account-meta-inline codex-provider-inline-line">
                     <span
                       className="codex-login-subline codex-provider-inline-text"
@@ -6102,8 +8994,8 @@ export function CodexAccountsPage() {
             </div>
           </td>
           <td>
-            <span className={`tier-badge ${planClass}`}>
-              {presentation.planLabel}
+            <span className={`tier-badge ${displayPlanClass}`}>
+              {displayPlanLabel}
             </span>
           </td>
           <td>
@@ -6125,11 +9017,27 @@ export function CodexAccountsPage() {
                 className="codex-subscription-table-cell"
                 title={subscriptionInfo.titleText}
               >
-                <span
-                  className={`codex-subscription-badge ${subscriptionInfo.tone}`}
-                >
-                  {subscriptionInfo.valueText}
-                </span>
+                <div className="codex-subscription-table-head">
+                  <span
+                    className={`codex-subscription-badge ${subscriptionInfo.tone}`}
+                  >
+                    {subscriptionInfo.valueText}
+                  </span>
+                  {showSubscriptionRefreshAction && (
+                    <button
+                      type="button"
+                      className="codex-subscription-refresh-btn"
+                      onClick={() =>
+                        void handleRefreshSubscriptionInfo(account.id)
+                      }
+                      disabled={isSubscriptionRefreshPending}
+                      title={t("common.refresh", "刷新")}
+                      aria-label={t("common.refresh", "刷新")}
+                    >
+                      {t("common.refresh", "刷新")}
+                    </button>
+                  )}
+                </div>
                 {subscriptionInfo.timestampMs != null && (
                   <span className="codex-subscription-date">
                     {subscriptionInfo.detailText}
@@ -6140,10 +9048,22 @@ export function CodexAccountsPage() {
           </td>
           <td>
             {isApiKeyAccount && !isNewApiAccount ? (
-              <span className="codex-subscription-table-empty">-</span>
+              renderApiKeyUsagePanel(account, apiKeyUsageProvider, "table")
             ) : (
               <>
                 <div className="quota-grid">
+                  {cockpitApiAccountBalanceText && (
+                    <div className="codex-account-balance-line table">
+                      <span>
+                        {t(
+                          "codex.modelProviders.usage.accountBalance",
+                          "账户余额",
+                        )}
+                        ：
+                      </span>
+                      <strong>{cockpitApiAccountBalanceText}</strong>
+                    </div>
+                  )}
                   {quotaItems.map((item) => (
                     <div
                       key={item.key}
@@ -6169,7 +9089,7 @@ export function CodexAccountsPage() {
                       )}
                     </div>
                   ))}
-                  {quotaItems.length === 0 && (
+                  {quotaItems.length === 0 && !cockpitApiAccountBalanceText && (
                     <span style={{ color: "var(--text-muted)", fontSize: 13 }}>
                       {t("common.shared.quota.noData", "暂无配额数据")}
                     </span>
@@ -6189,7 +9109,7 @@ export function CodexAccountsPage() {
                     {showReauthorizeAction && (
                       <button
                         className="btn btn-sm btn-outline"
-                        onClick={() => openAddModal("oauth")}
+                        onClick={() => openCodexAddModal("oauth", account)}
                         title={t("common.shared.addModal.oauth", "OAuth 授权")}
                       >
                         {t("common.shared.addModal.oauth", "OAuth 授权")}
@@ -6223,7 +9143,16 @@ export function CodexAccountsPage() {
                   <Database size={14} />
                 </button>
               )}
-              {!isNewApiAccount && (
+              {isSponsorApiKeyAccount && (
+                <button
+                  className="action-btn"
+                  onClick={() => setApiKeyUsageDetailAccountId(account.id)}
+                  title={t("codex.cockpitApi.servicePanel", "服务面板")}
+                >
+                  <Database size={14} />
+                </button>
+              )}
+              {!isApiKeyAccount && !isNewApiAccount && (
                 <button
                   className="action-btn"
                   onClick={() => openTagModal(account.id)}
@@ -6232,7 +9161,7 @@ export function CodexAccountsPage() {
                   <Tag size={14} />
                 </button>
               )}
-              {!isNewApiAccount && (
+              {!isApiKeyAccount && !isNewApiAccount && (
                 <button
                   className={`action-btn ${account.account_note?.trim() ? "active" : ""}`}
                   onClick={() => openAccountNoteModal(account)}
@@ -6245,7 +9174,7 @@ export function CodexAccountsPage() {
                   <FileText size={14} />
                 </button>
               )}
-              {isApiKeyAccount && !isNewApiAccount && (
+              {isSponsorApiKeyAccount && (
                 <button
                   className="action-btn"
                   onClick={() => openQuickSwitchProviderModal(account)}
@@ -6275,35 +9204,49 @@ export function CodexAccountsPage() {
                   <Play size={14} />
                 )}
               </button>
-              {(!isApiKeyAccount || isNewApiAccount) && (
+              {(!isApiKeyAccount ||
+                isNewApiAccount ||
+                canRefreshApiKeyUsage(account, apiKeyUsageProvider)) && (
                 <button
                   className="action-btn"
-                  onClick={() => handleRefresh(account.id)}
-                  disabled={refreshing === account.id}
+                  onClick={() =>
+                    canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                      ? void refreshApiKeyUsage(account, apiKeyUsageProvider)
+                      : handleRefresh(account.id)
+                  }
+                  disabled={
+                    canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                      ? apiKeyUsageMap[account.id]?.loading === true
+                      : refreshing === account.id
+                  }
                   title={t("common.shared.refreshQuota", "刷新配额")}
                 >
                   <RotateCw
                     size={14}
                     className={
-                      refreshing === account.id ? "loading-spinner" : ""
+                      canRefreshApiKeyUsage(account, apiKeyUsageProvider)
+                        ? apiKeyUsageMap[account.id]?.loading === true
+                          ? "loading-spinner"
+                          : ""
+                        : refreshing === account.id
+                          ? "loading-spinner"
+                          : ""
                     }
                   />
                 </button>
               )}
-              {!isNewApiAccount && (
-                <button
-                  className="action-btn"
-                  onClick={() =>
-                    handleExportByIds(
-                      [account.id],
-                      resolveSingleExportBaseName(account),
-                    )
-                  }
-                  title={t("common.shared.export.title", "导出")}
-                >
-                  <Upload size={14} />
-                </button>
-              )}
+              <button
+                className="action-btn"
+                onClick={() =>
+                  handleExportByIds(
+                    [account.id],
+                    resolveSingleExportBaseName(account),
+                  )
+                }
+                title={t("common.shared.export.title", "导出")}
+              >
+                <Upload size={14} />
+              </button>
               <button
                 className="action-btn danger"
                 onClick={() => handleDelete(account.id)}
@@ -6322,6 +9265,13 @@ export function CodexAccountsPage() {
 
     const rows: ReactElement[] = codexGroups.map((group) => {
       const groupAccounts = resolveGroupAccounts(group);
+      const refreshableCount = groupAccounts.filter(
+        (account) =>
+          !isCodexApiKeyAccount(account) || isCodexNewApiAccount(account),
+      ).length;
+      const isGroupRefreshing = refreshingGroupId === group.id;
+      const groupRefreshDisabled =
+        refreshingAll || Boolean(refreshingGroupId) || refreshableCount === 0;
       return (
         <tr
           key={`folder-row-${group.id}`}
@@ -6343,6 +9293,28 @@ export function CodexAccountsPage() {
           </td>
           <td>
             <div className="folder-table-actions">
+              <button
+                className="folder-icon-btn"
+                title={
+                  refreshableCount === 0
+                    ? t(
+                        "accounts.groups.refreshEmpty",
+                        "当前分组没有可刷新的账号",
+                      )
+                    : t("accounts.groups.refresh", "刷新分组")
+                }
+                aria-label={t("accounts.groups.refresh", "刷新分组")}
+                disabled={groupRefreshDisabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void handleRefreshGroup(group);
+                }}
+              >
+                <RefreshCw
+                  size={14}
+                  className={isGroupRefreshing ? "loading-spinner" : ""}
+                />
+              </button>
               <button
                 className="folder-icon-btn"
                 title={t("accounts.groups.addAccounts")}
@@ -6386,8 +9358,7 @@ export function CodexAccountsPage() {
   const hasGroupEntryCards = Boolean(
     inlineFolderCards && inlineFolderCards.length > 0,
   );
-  const showOverviewSelectionBar =
-    !groupByTag && !activeGroupId && paginatedAccounts.length > 0;
+  const showOverviewSelectionBar = paginatedAccounts.length > 0;
   const externalImportRunning = [
     "receiving",
     "fetching",
@@ -6442,6 +9413,278 @@ export function CodexAccountsPage() {
     closeExternalImportProgressModal();
   };
 
+  const renderApiKeyUsageDetailModal = () => {
+    const account = apiKeyUsageDetailAccount;
+    if (!account) return null;
+    const state = apiKeyUsageMap[account.id];
+    const summary = state?.summary;
+    if (!summary) return null;
+    const usageMode = resolveApiKeyUsageMode(summary);
+    if (!usageMode) return null;
+    const provider = resolveUsageProviderForApiKeyAccount(account);
+    const coreDetailKeys =
+      usageMode === "new_api"
+        ? new Set(["mode", "totalGranted", "totalAvailable", "expiresAt"])
+        : usageMode === "sub2api"
+          ? new Set(["mode", "remaining", "todayRequests", "todayTokens"])
+          : new Set<string>();
+    const details = (summary.details ?? []).filter(
+      (item) => !coreDetailKeys.has(item.key),
+    );
+    const visible = visibleApiKeyAccountIds.has(account.id);
+    const apiKeyDisplay = resolveApiKeyDisplayText(account, visible);
+    const baseUrl =
+      provider?.baseUrl.trim() || (account.api_base_url || "").trim() || "-";
+    const usedPercent = formatApiKeyUsagePercent(summary);
+    const summaryDetails =
+      usageMode === "new_api"
+        ? [
+            {
+              key: "totalGranted",
+              label: t(
+                "codex.modelProviders.usage.fields.totalGranted",
+                "授予额度",
+              ),
+              value: (() => {
+                const raw = Number(
+                  findApiKeyUsageDetail(summary, "totalGranted")?.value ?? NaN,
+                );
+                return Number.isFinite(raw)
+                  ? formatApiKeyUsageMoney(raw, summary.unit)
+                  : formatApiKeyUsageDetailByKey(summary, "totalGranted");
+              })(),
+            },
+            {
+              key: "totalAvailable",
+              label: t(
+                "codex.modelProviders.usage.fields.totalAvailable",
+                "可用额度",
+              ),
+              value: (() => {
+                const raw = Number(
+                  findApiKeyUsageDetail(summary, "totalAvailable")?.value ??
+                    NaN,
+                );
+                return Number.isFinite(raw)
+                  ? formatApiKeyUsageMoney(raw, summary.unit)
+                  : formatApiKeyUsageDetailByKey(summary, "totalAvailable");
+              })(),
+            },
+            {
+              key: "expiresAt",
+              label: t(
+                "codex.modelProviders.usage.fields.expiresAt",
+                "过期时间",
+              ),
+              value: formatApiKeyUsageDetailByKey(summary, "expiresAt"),
+            },
+          ]
+        : usageMode === "sub2api"
+          ? [
+              {
+                key: "accountBalance",
+                label: t(
+                  "codex.modelProviders.usage.accountBalance",
+                  "账户余额",
+                ),
+                value: formatApiKeyUsageQuotaValue(
+                  summary,
+                  summary.remaining ??
+                    summary.balance ??
+                    summary.quotaRemaining,
+                ),
+              },
+              {
+                key: "todayRequests",
+                label: t(
+                  "codex.modelProviders.usage.fields.todayRequests",
+                  "今日请求",
+                ),
+                value: formatCockpitApiInteger(summary.todayRequests ?? 0),
+              },
+              {
+                key: "todayTokens",
+                label: t(
+                  "codex.modelProviders.usage.fields.todayTokens",
+                  "今日 Token",
+                ),
+                value: formatCockpitApiTokenCount(
+                  summary.todayTotalTokens ?? 0,
+                ),
+              },
+            ]
+          : [];
+    const summaryGridClassName =
+      usageMode === "sub2api" || usageMode === "new_api"
+        ? "cockpit-api-summary-grid compact"
+        : "cockpit-api-summary-grid";
+
+    return (
+      <div
+        className="modal-overlay"
+        onClick={() => setApiKeyUsageDetailAccountId(null)}
+      >
+        <div
+          className="modal-content cockpit-api-panel-modal codex-api-key-usage-detail-modal"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="modal-header cockpit-api-panel-header">
+            <div>
+              <h2>{t("codex.modelProviders.usage.detailTitle", "服务面板")}</h2>
+              <span className="cockpit-api-panel-subtitle">
+                {maskAccountText(resolvePresentation(account).displayName)}
+                {provider ? ` · ${provider.name}` : ""}
+              </span>
+            </div>
+            <button
+              className="modal-close"
+              onClick={() => setApiKeyUsageDetailAccountId(null)}
+              aria-label={t("common.close", "关闭")}
+            >
+              <X />
+            </button>
+          </div>
+          <div className="cockpit-api-panel-body">
+            <section className="cockpit-api-connection-card">
+              <div className="cockpit-api-connection-row">
+                <span>{t("codex.localAccess.baseUrl", "地址")}</span>
+                <code title={baseUrl}>{baseUrl}</code>
+                <button
+                  type="button"
+                  className="folder-icon-btn cockpit-api-icon-btn"
+                  onClick={() =>
+                    void navigator.clipboard.writeText(baseUrl).catch(() => {})
+                  }
+                  title={t("common.copy", "复制")}
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+              <div className="cockpit-api-connection-row">
+                <span>{t("codex.localAccess.apiKey", "密钥")}</span>
+                <code title={visible ? account.openai_api_key || "" : ""}>
+                  {apiKeyDisplay}
+                </code>
+                <div className="cockpit-api-connection-actions">
+                  <button
+                    type="button"
+                    className="folder-icon-btn cockpit-api-icon-btn"
+                    onClick={() => toggleAccountApiKeyVisible(account.id)}
+                    title={
+                      visible
+                        ? t("codex.localAccess.hideKey", "隐藏密钥")
+                        : t("codex.localAccess.showKey", "显示密钥")
+                    }
+                  >
+                    {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                  <button
+                    type="button"
+                    className="folder-icon-btn cockpit-api-icon-btn"
+                    onClick={() =>
+                      void navigator.clipboard
+                        .writeText(account.openai_api_key || "")
+                        .catch(() => {})
+                    }
+                    title={t("common.copy", "复制")}
+                    disabled={!account.openai_api_key}
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            </section>
+            <section className={summaryGridClassName}>
+              {summaryDetails.map((item) => (
+                <div
+                  className="cockpit-api-stat-card cockpit-api-stat-card-center"
+                  key={item.key}
+                >
+                  <span className="cockpit-api-card-label">{item.label}</span>
+                  <strong>{item.value}</strong>
+                  {(item.key === "remaining" ||
+                    item.key === "totalAvailable") &&
+                    usageMode !== "new_api" &&
+                    usageMode !== "sub2api" && (
+                      <div>
+                        <div className="cockpit-api-progress-row">
+                          <div className="cockpit-api-progress-track">
+                            <div
+                              className="cockpit-api-progress-bar"
+                              style={{ width: `${usedPercent}%` }}
+                            />
+                          </div>
+                          <span>{usedPercent}%</span>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              ))}
+            </section>
+            <section className="cockpit-api-panel-section">
+              <div className="cockpit-api-section-head">
+                <strong>
+                  {t("codex.modelProviders.usage.rawFields", "服务数据")}
+                </strong>
+              </div>
+              <div className="cockpit-api-usage-card-grid">
+                {details.length > 0 ? (
+                  details.map((item) => (
+                    <div className="cockpit-api-usage-card" key={item.key}>
+                      <span className="cockpit-api-card-label">
+                        {formatApiKeyUsageDetailLabel(item.key, item.label)}
+                      </span>
+                      <strong>
+                        {formatApiKeyUsageDetailValue(item, summary.unit)}
+                      </strong>
+                      <small>{item.key}</small>
+                    </div>
+                  ))
+                ) : (
+                  <div className="cockpit-api-empty-row">
+                    {t("codex.cockpitApi.noStats", "暂无统计")}
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+          <div className="modal-footer cockpit-api-panel-footer">
+            <button
+              className="btn btn-secondary"
+              onClick={() => void refreshApiKeyUsageByAccountId(account.id)}
+              disabled={state?.loading}
+            >
+              <RotateCw
+                size={14}
+                className={state?.loading ? "loading-spinner" : ""}
+              />
+              {t("common.shared.refreshQuota", "刷新配额")}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => openApiKeyCredentialsModal(account)}
+            >
+              <Pencil size={14} />
+              {t("instances.actions.edit", "编辑")}
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => void handleLaunchCodexCli(account)}
+              disabled={cliLaunchingAccountId === account.id}
+            >
+              {cliLaunchingAccountId === account.id ? (
+                <RefreshCw size={14} className="loading-spinner" />
+              ) : (
+                <Terminal size={14} />
+              )}
+              {t("codex.cli.quickLaunch", "CLI 快速启动")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCockpitApiServicePanel = () => {
     const account = cockpitApiPanelAccount;
     if (!account) return null;
@@ -6462,6 +9705,8 @@ export function CodexAccountsPage() {
     const apiKeyDisplay = resolveApiKeyDisplayText(account, visible);
     const baseUrl = (account.api_base_url || "").trim() || COCKPIT_API_BASE_URL;
     const quotaText = readCockpitApiString(usage, "summary_display") || "-";
+    const cockpitApiAccountBalanceText =
+      resolveCockpitApiAccountBalanceText(account);
     const usedPercent = readCockpitApiNumber(usage, "used_percent");
     const requestCount = readCockpitApiNumber(requests, "total");
     const todayCount = readCockpitApiNumber(requests, "today");
@@ -6469,6 +9714,7 @@ export function CodexAccountsPage() {
     const last30Count = readCockpitApiNumber(requests, "last_30_days");
     const totalTokens = readCockpitApiNumber(tokens, "total");
     const totalQuotaDisplay = readCockpitApiString(total, "quota_display");
+    const panelDisplayName = resolvePresentation(account).displayName;
     const hasStats = Boolean(stats);
     const usedPercentText = `${formatCockpitApiInteger(usedPercent)}%`;
     const summaryItems = [
@@ -6487,7 +9733,7 @@ export function CodexAccountsPage() {
       {
         key: "tokens",
         label: t("codex.cockpitApi.tokens", "Tokens"),
-        value: formatCockpitApiInteger(totalTokens),
+        value: formatCockpitApiTokenCount(totalTokens),
         meta: `${t("codex.cockpitApi.quotaUsed", "消耗")} ${totalQuotaDisplay || "-"}`,
       },
     ];
@@ -6507,7 +9753,7 @@ export function CodexAccountsPage() {
                 {t("codex.cockpitApi.panelTitle", "Newbee API 服务面板")}
               </h2>
               <span className="cockpit-api-panel-subtitle">
-                {maskAccountText(account.account_name || account.email)}
+                {maskAccountText(panelDisplayName)}
               </span>
             </div>
             <button
@@ -6576,6 +9822,12 @@ export function CodexAccountsPage() {
                   {t("codex.cockpitApi.balance", "额度")}
                 </span>
                 <strong>{quotaText}</strong>
+                {cockpitApiAccountBalanceText && (
+                  <small className="cockpit-api-balance-meta">
+                    {t("codex.modelProviders.usage.accountBalance", "账户余额")}
+                    ：{cockpitApiAccountBalanceText}
+                  </small>
+                )}
                 <div className="cockpit-api-progress-row">
                   <div className="cockpit-api-progress-track">
                     <div
@@ -6621,7 +9873,10 @@ export function CodexAccountsPage() {
                           "quota_display",
                         );
                         return (
-                          <div className="cockpit-api-usage-row" key={modelName}>
+                          <div
+                            className="cockpit-api-usage-row"
+                            key={modelName}
+                          >
                             <div>
                               <span className="cockpit-api-usage-name">
                                 {modelName}
@@ -6633,7 +9888,8 @@ export function CodexAccountsPage() {
                             </div>
                             <div className="cockpit-api-usage-values">
                               <span>
-                                Tokens {formatCockpitApiInteger(modelTokens)}
+                                {t("codex.cockpitApi.tokens", "Tokens")}{" "}
+                                {formatCockpitApiTokenCount(modelTokens)}
                               </span>
                               <strong>{quotaDisplay || "-"}</strong>
                             </div>
@@ -6683,7 +9939,8 @@ export function CodexAccountsPage() {
                             </div>
                             <div className="cockpit-api-usage-values">
                               <span>
-                                Tokens {formatCockpitApiInteger(dayTokens)}
+                                {t("codex.cockpitApi.tokens", "Tokens")}{" "}
+                                {formatCockpitApiTokenCount(dayTokens)}
                               </span>
                               <strong>{quotaDisplay || "-"}</strong>
                             </div>
@@ -6747,6 +10004,381 @@ export function CodexAccountsPage() {
         onTabChange={setActiveTab}
         tabs={["overview", "providers", "wakeup", "instances", "sessions"]}
       />
+
+      {batchImportOpen && (
+        <div className="modal-overlay codex-batch-import-overlay">
+          <div
+            className="modal-content codex-batch-import-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div>
+                <h2>{t("codex.batchImport.title", "Codex 批量导入")}</h2>
+                <p className="codex-batch-import-subtitle">
+                  {batchImportResult
+                    ? t("codex.batchImport.resultSubtitle", "导入结果")
+                    : batchImportBusy
+                      ? activeBatchImportCheckQuota
+                        ? t(
+                            "codex.batchImport.scanSubtitle",
+                            "正在逐条解析并检查账号",
+                          )
+                        : t(
+                            "codex.batchImport.parseSubtitle",
+                            "正在解析账号文件",
+                          )
+                      : batchImportPreview
+                        ? t(
+                            "codex.batchImport.previewSubtitle",
+                            "选择要写入的账号",
+                          )
+                        : activeBatchImportCheckQuota
+                          ? t(
+                              "codex.batchImport.scanSubtitle",
+                              "正在逐条解析并检查账号",
+                            )
+                          : t(
+                              "codex.batchImport.parseSubtitle",
+                              "正在解析账号文件",
+                            )}
+                </p>
+              </div>
+              <button
+                className="modal-close"
+                onClick={() => void handleCloseBatchImport()}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="codex-batch-import-body">
+              {batchImportError && (
+                <div className="codex-batch-import-error">
+                  <CircleAlert size={16} />
+                  <span>{batchImportError}</span>
+                </div>
+              )}
+
+              {!batchImportResult && (
+                <div className="codex-batch-import-progress-panel">
+                  <div className="codex-batch-import-progress-head">
+                    <span>
+                      {batchImportProgress?.phase === "cancelling"
+                        ? t("codex.batchImport.cancelling", "正在取消...")
+                        : batchImportBusy
+                          ? activeBatchImportCheckQuota
+                            ? t("codex.batchImport.scanning", "扫描中")
+                            : t("codex.batchImport.parsing", "解析中")
+                          : batchImportPreview?.status === "cancelled"
+                            ? t("codex.batchImport.cancelled", "已取消")
+                            : batchImportPreview
+                              ? activeBatchImportCheckQuota
+                                ? t("codex.batchImport.scanDone", "扫描完成")
+                                : t("codex.batchImport.parseDone", "解析完成")
+                              : activeBatchImportCheckQuota
+                                ? t("codex.batchImport.scanning", "扫描中")
+                                : t("codex.batchImport.parsing", "解析中")}
+                    </span>
+                    <strong>
+                      {batchImportProgress?.current ?? 0}/
+                      {batchImportProgress?.total ??
+                        batchImportPreview?.total ??
+                        0}
+                    </strong>
+                  </div>
+                  <div className="codex-batch-import-progress-track">
+                    <div
+                      className="codex-batch-import-progress-fill"
+                      style={{
+                        width: `${
+                          batchImportProgress?.total
+                            ? Math.min(
+                                100,
+                                Math.round(
+                                  ((batchImportProgress.current || 0) /
+                                    batchImportProgress.total) *
+                                    100,
+                                ),
+                              )
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  {batchImportProgress?.currentLabel && (
+                    <div className="codex-batch-import-current">
+                      {t("codex.batchImport.current", "当前")}：
+                      {maskAccountText(batchImportProgress.currentLabel)}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {batchImportResult ? (
+                <div className="codex-batch-import-result">
+                  <div className="codex-batch-import-stat-grid">
+                    <div>
+                      <span>{t("codex.batchImport.imported", "已导入")}</span>
+                      <strong>{batchImportResult.imported.length}</strong>
+                    </div>
+                    <div>
+                      <span>{t("codex.batchImport.failed", "失败")}</span>
+                      <strong>{batchImportResult.failed.length}</strong>
+                    </div>
+                  </div>
+                  {batchImportResult.failed.length > 0 && (
+                    <div className="codex-batch-import-list compact">
+                      {batchImportResult.failed.map((item) => (
+                        <div
+                          className="codex-batch-import-row"
+                          key={item.email}
+                        >
+                          <div>
+                            <strong>{maskAccountText(item.email)}</strong>
+                            <small>{item.error}</small>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : batchImportPreview ? (
+                <>
+                  <div className="codex-batch-import-stat-grid">
+                    <div>
+                      <span>
+                        {t("codex.batchImport.groups.ready", "可导入")}
+                      </span>
+                      <strong>{batchImportCounts.ready}</strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t("codex.batchImport.groups.quotaFailed", "异常")}
+                      </span>
+                      <strong>{batchImportCounts.quotaFailed}</strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t("codex.batchImport.groups.existing", "已存在")}
+                      </span>
+                      <strong>{batchImportCounts.existing}</strong>
+                    </div>
+                    <div>
+                      <span>
+                        {t("codex.batchImport.groups.invalid", "无效账号")}
+                      </span>
+                      <strong>{batchImportCounts.invalid}</strong>
+                    </div>
+                  </div>
+
+                  <div className="codex-batch-import-toolbar">
+                    <div className="codex-batch-import-toolbar-main">
+                      <span>{batchImportSelectedCountLabel}</span>
+                      <label className="codex-batch-import-check-toggle">
+                        <input
+                          type="checkbox"
+                          checked={batchImportCheckQuota}
+                          disabled={batchImportBusy}
+                          onChange={(event) =>
+                            void handleBatchImportCheckQuotaChange(
+                              event.target.checked,
+                            )
+                          }
+                        />
+                        <span className="codex-batch-import-check-switch" />
+                        <span>
+                          {t("codex.batchImport.checkQuotaToggle", "检测账号")}
+                        </span>
+                      </label>
+                    </div>
+                    <div className="codex-batch-import-actions">
+                      <button
+                        type="button"
+                        className="btn btn-secondary compact"
+                        disabled={
+                          batchImportBusy ||
+                          batchImportSelectableIds.length === 0
+                        }
+                        onClick={selectAllBatchImportAccounts}
+                      >
+                        {t(
+                          "codex.batchImport.selectAllAccounts",
+                          "选择全部账号",
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary compact"
+                        disabled={
+                          batchImportBusy ||
+                          batchImportCounts.ready +
+                            batchImportCounts.existing ===
+                            0
+                        }
+                        onClick={selectReadyBatchImportAccounts}
+                      >
+                        {t("codex.batchImport.selectReady", "选择正常账号")}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary compact"
+                        disabled={
+                          batchImportBusy ||
+                          batchImportSelectedSelectableCount === 0
+                        }
+                        onClick={clearBatchImportSelection}
+                      >
+                        {t("codex.batchImport.clearSelection", "取消选择")}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="codex-batch-import-list">
+                    {[...batchImportVisibleItems].reverse().map((item) => {
+                      const selectable = batchImportSelectableIdSet.has(
+                        item.itemId,
+                      );
+                      const checked =
+                        selectable &&
+                        batchImportSelectedIds.includes(item.itemId);
+                      return (
+                        <label
+                          className={`codex-batch-import-row status-${item.status}`}
+                          key={item.itemId}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={!selectable || batchImportBusy}
+                            onChange={() => toggleBatchImportItem(item.itemId)}
+                          />
+                          <div className="codex-batch-import-row-main">
+                            <div className="codex-batch-import-row-title">
+                              <strong>{maskAccountText(item.label)}</strong>
+                              <span>{item.accountType}</span>
+                            </div>
+                            <div className="codex-batch-import-row-meta">
+                              <span>{item.source}</span>
+                              {item.provider && <span>{item.provider}</span>}
+                              {item.status === "ready" && (
+                                <span>
+                                  {activeBatchImportCheckQuota
+                                    ? t(
+                                        "codex.batchImport.quotaOk",
+                                        "账号正常",
+                                      )
+                                    : t(
+                                        "codex.batchImport.groups.ready",
+                                        "可导入",
+                                      )}
+                                </span>
+                              )}
+                              {item.status === "quota_failed" && (
+                                <span>
+                                  {t("codex.batchImport.quotaFailed", "异常")}
+                                </span>
+                              )}
+                              {item.status === "existing" && (
+                                <span>
+                                  {t(
+                                    "codex.batchImport.groups.existing",
+                                    "已存在",
+                                  )}
+                                </span>
+                              )}
+                              {item.status === "invalid" && (
+                                <span>
+                                  {t(
+                                    "codex.batchImport.groups.invalid",
+                                    "无效账号",
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                            {(item.quotaError || item.error) && (
+                              <small className="codex-batch-import-row-error">
+                                {item.quotaError || item.error}
+                              </small>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="codex-batch-import-empty">
+                  <RefreshCw size={18} className="loading-spinner" />
+                  {t("codex.batchImport.preparing", "正在准备导入任务...")}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer codex-batch-import-footer">
+              {batchImportResult ? (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => void handleCloseBatchImport()}
+                >
+                  {t("common.shared.close", "关闭")}
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      batchImportBusy
+                        ? void handleCancelBatchImport()
+                        : void handleCloseBatchImport()
+                    }
+                    disabled={
+                      batchImportBusy &&
+                      batchImportProgress?.phase === "cancelling"
+                    }
+                  >
+                    {batchImportBusy
+                      ? activeBatchImportCheckQuota
+                        ? t("codex.batchImport.cancelScan", "取消扫描")
+                        : t("codex.batchImport.cancelParse", "取消解析")
+                      : t("common.shared.close", "关闭")}
+                  </button>
+                  {!batchImportBusy &&
+                    batchImportPreview?.status === "cancelled" && (
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => void handleResumeBatchImport()}
+                      >
+                        <RefreshCw size={16} />
+                        {activeBatchImportCheckQuota
+                          ? t("codex.batchImport.resumeScan", "继续扫描")
+                          : t("codex.batchImport.resumeParse", "继续解析")}
+                      </button>
+                    )}
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => void handleConfirmBatchImport()}
+                    disabled={
+                      batchImportBusy ||
+                      !batchImportPreview ||
+                      batchImportSelectedSelectableCount === 0
+                    }
+                  >
+                    {batchImportBusy ? (
+                      <RefreshCw size={16} className="loading-spinner" />
+                    ) : (
+                      <Download size={16} />
+                    )}
+                    {t("codex.batchImport.importSelected", "导入选中账号")}
+                    {batchImportSelectedSelectableCount > 0
+                      ? ` (${batchImportSelectedSelectableCount})`
+                      : ""}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {externalImportProgress.visible && (
         <div
@@ -6904,6 +10536,7 @@ export function CodexAccountsPage() {
       )}
 
       {renderCockpitApiServicePanel()}
+      {renderApiKeyUsageDetailModal()}
 
       {activeTab === "overview" && (
         <>
@@ -6940,24 +10573,14 @@ export function CodexAccountsPage() {
                 {t("accounts.groups.addAccounts")}
               </button>
               {selected.size > 0 && (
-                <>
-                  <button
-                    className="btn btn-secondary breadcrumb-remove-btn"
-                    onClick={() => setShowAddToCodexGroupModal(true)}
-                    title={t("accounts.groups.moveToGroup")}
-                  >
-                    <FolderPlus size={14} />
-                    {t("accounts.groups.moveToGroup")} ({selected.size})
-                  </button>
-                  <button
-                    className="btn btn-secondary breadcrumb-remove-btn"
-                    onClick={() => void handleRemoveFromGroup()}
-                    title={t("accounts.groups.removeFromGroup")}
-                  >
-                    <LogOut size={14} />
-                    {t("accounts.groups.removeFromGroup")} ({selected.size})
-                  </button>
-                </>
+                <button
+                  className="btn btn-secondary breadcrumb-remove-btn"
+                  onClick={() => void handleRemoveFromGroup()}
+                  title={t("accounts.groups.removeFromGroup")}
+                >
+                  <LogOut size={14} />
+                  {t("accounts.groups.removeFromGroup")} ({selected.size})
+                </button>
               )}
             </div>
           )}
@@ -7154,7 +10777,7 @@ export function CodexAccountsPage() {
             <div className="toolbar-right">
               <button
                 className="btn btn-primary icon-only"
-                onClick={() => openAddModal("apikey")}
+                onClick={() => openCodexAddModal("apikey")}
                 title={t("common.shared.addAccount", "添加账号")}
               >
                 <Plus size={14} />
@@ -7193,28 +10816,6 @@ export function CodexAccountsPage() {
               >
                 <Upload size={14} />
               </button>
-              {selected.size > 0 && (
-                <>
-                  <button
-                    className="btn btn-secondary icon-only"
-                    onClick={() => setShowAddToCodexGroupModal(true)}
-                    title={
-                      activeGroupId
-                        ? t("accounts.groups.moveToGroup")
-                        : t("codex.groups.addToGroup", "添加至分组")
-                    }
-                  >
-                    <FolderPlus size={14} />
-                  </button>
-                  <button
-                    className="btn btn-danger icon-only"
-                    onClick={handleBatchDelete}
-                    title={`${t("common.delete", "删除")} (${selected.size})`}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </>
-              )}
               {!activeGroupId && (
                 <button
                   className={`btn btn-secondary icon-only ${groupFilter.length > 0 ? "btn-filter-active" : ""}`}
@@ -7257,7 +10858,7 @@ export function CodexAccountsPage() {
               >
                 <button
                   className="btn btn-primary"
-                  onClick={() => openAddModal("apikey")}
+                  onClick={() => openCodexAddModal("apikey")}
                 >
                   <Plus size={16} />
                   {t("common.shared.addAccount", "添加账号")}
@@ -7288,14 +10889,88 @@ export function CodexAccountsPage() {
             <>
               {showOverviewSelectionBar && (
                 <div className="codex-overview-selection-bar">
-                  <label className="codex-overview-select-all">
-                    <input
-                      type="checkbox"
-                      checked={isAllPaginatedSelected}
-                      onChange={() => toggleSelectAll(paginatedIds)}
-                    />
-                    <span>{t("common.selectAll", "全选")}</span>
-                  </label>
+                  <div className="codex-overview-selection-left">
+                    <label className="codex-overview-select-all">
+                      <input
+                        type="checkbox"
+                        checked={isAllPaginatedSelected}
+                        onChange={handleToggleSelectAllPaginated}
+                      />
+                      <span>{t("common.selectAll", "全选")}</span>
+                    </label>
+                    {selected.size > 0 && !isAllFilteredSelectionActive && (
+                      <span className="codex-overview-selected-count">
+                        {t(
+                          "codex.apiService.customRoutingSelected",
+                          "已选 {{count}}",
+                        ).replace("{{count}}", String(selected.size))}
+                      </span>
+                    )}
+                    {canSelectAllFilteredAccounts && (
+                      <button
+                        type="button"
+                        className="codex-overview-select-filtered-btn"
+                        onClick={handleSelectAllFilteredAccounts}
+                      >
+                        {t("messages.selectAllFilteredAccounts", {
+                          count: filteredIds.length,
+                          defaultValue: "选择全部符合条件 {{count}} 条",
+                        })}
+                      </button>
+                    )}
+                    {isAllFilteredSelectionActive && (
+                      <>
+                        <span className="codex-overview-selected-count">
+                          {t("messages.selectedAllFilteredAccounts", {
+                            count: filteredIds.length,
+                            defaultValue: "已选择全部符合条件 {{count}} 条",
+                          })}
+                        </span>
+                        <button
+                          type="button"
+                          className="codex-overview-clear-selection-btn"
+                          onClick={handleClearOverviewSelection}
+                        >
+                          {t("messages.clearSelection", "取消选择")}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {(selected.size > 0 || errorAccountIds.length > 0) && (
+                    <div className="codex-overview-selection-actions">
+                      {errorAccountIds.length > 0 && (
+                        <button
+                          className="btn btn-danger icon-only codex-overview-clear-error-btn"
+                          onClick={handleClearErrorAccounts}
+                          title={`${t("messages.cleanErrorAccountsAction", "清理 ERROR 账号")} (${errorAccountIds.length})`}
+                        >
+                          <CircleAlert size={14} />
+                        </button>
+                      )}
+                      {selected.size > 0 && (
+                        <>
+                          <button
+                            className="btn btn-secondary icon-only"
+                            onClick={() => setShowAddToCodexGroupModal(true)}
+                            title={
+                              activeGroupId
+                                ? `${t("accounts.groups.moveToGroup")} (${selected.size})`
+                                : `${t("codex.groups.addToGroup", "添加至分组")} (${selected.size})`
+                            }
+                          >
+                            <FolderPlus size={14} />
+                          </button>
+                          <button
+                            className="btn btn-danger icon-only"
+                            onClick={handleCodexBatchDelete}
+                            title={`${t("common.delete", "删除")} (${selected.size})`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               {overviewLayoutMode === "compact" ? (
@@ -7352,7 +11027,7 @@ export function CodexAccountsPage() {
                           <input
                             type="checkbox"
                             checked={isAllPaginatedSelected}
-                            onChange={() => toggleSelectAll(paginatedIds)}
+                            onChange={handleToggleSelectAllPaginated}
                           />
                           {t("common.selectAll", "全选")}
                         </label>
@@ -7404,11 +11079,13 @@ export function CodexAccountsPage() {
                       <thead>
                         <tr>
                           <th style={{ width: 40 }}>
-                            <input
-                              type="checkbox"
-                              checked={isAllPaginatedSelected}
-                              onChange={() => toggleSelectAll(paginatedIds)}
-                            />
+                            {showOverviewSelectionBar ? null : (
+                              <input
+                                type="checkbox"
+                                checked={isAllPaginatedSelected}
+                                onChange={handleToggleSelectAllPaginated}
+                              />
+                            )}
                           </th>
                           <th style={{ width: 260 }}>
                             {t("common.shared.columns.email", "账号")}
@@ -7465,7 +11142,7 @@ export function CodexAccountsPage() {
                               <input
                                 type="checkbox"
                                 checked={isAllPaginatedSelected}
-                                onChange={() => toggleSelectAll(paginatedIds)}
+                                onChange={handleToggleSelectAllPaginated}
                               />
                             )}
                           </th>
@@ -7511,16 +11188,16 @@ export function CodexAccountsPage() {
           />
 
           {showAddModal && (
-            <div className="modal-overlay" onClick={closeAddModal}>
+            <div className="modal-overlay">
               <div
-                className="modal-content codex-add-modal"
+                className="modal-content codex-add-modal codex-account-add-modal"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="modal-header">
                   <h2>{t("codex.addModal.title", "添加 Codex 账号")}</h2>
                   <button
                     className="modal-close"
-                    onClick={closeAddModal}
+                    onClick={closeCodexAddModal}
                     aria-label={t("common.close", "关闭")}
                   >
                     <X />
@@ -7529,7 +11206,7 @@ export function CodexAccountsPage() {
                 <div className="modal-tabs">
                   <button
                     className={`modal-tab ${addTab === "apikey" ? "active" : ""}`}
-                    onClick={() => openAddModal("apikey")}
+                    onClick={() => openCodexAddModal("apikey")}
                   >
                     <KeyRound size={14} />
                     <span className="modal-tab-label">
@@ -7538,7 +11215,7 @@ export function CodexAccountsPage() {
                   </button>
                   <button
                     className={`modal-tab ${addTab === "oauth" ? "active" : ""}`}
-                    onClick={() => openAddModal("oauth")}
+                    onClick={() => openCodexAddModal("oauth")}
                   >
                     <Globe size={14} />
                     <span className="modal-tab-label">
@@ -7547,7 +11224,7 @@ export function CodexAccountsPage() {
                   </button>
                   <button
                     className={`modal-tab ${addTab === "token" ? "active" : ""}`}
-                    onClick={() => openAddModal("token")}
+                    onClick={() => openCodexAddModal("token")}
                   >
                     <FileText size={14} />
                     <span className="modal-tab-label">
@@ -7556,7 +11233,7 @@ export function CodexAccountsPage() {
                   </button>
                   <button
                     className={`modal-tab ${addTab === "import" ? "active" : ""}`}
-                    onClick={() => openAddModal("import")}
+                    onClick={() => openCodexAddModal("import")}
                   >
                     <Database size={14} />
                     <span className="modal-tab-label">
@@ -7565,8 +11242,50 @@ export function CodexAccountsPage() {
                   </button>
                 </div>
                 <div className="modal-body">
+                  <MfaQuickCodeSelect />
                   {addTab === "oauth" && (
                     <div className="add-section">
+                      {reauthTargetEmail && (
+                        <div className="oauth-link codex-reauth-email-block">
+                          <label>
+                            {t(
+                              "codex.oauth.reauthEmailLabel",
+                              "本次重新授权账号",
+                            )}
+                          </label>
+                          <div className="oauth-url-box">
+                            <input
+                              type="text"
+                              value={reauthTargetEmail}
+                              readOnly
+                              aria-label={t(
+                                "codex.oauth.reauthEmailLabel",
+                                "本次重新授权账号",
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void handleCopyReauthEmail()}
+                              title={
+                                reauthEmailCopied
+                                  ? t("common.copied", "已复制")
+                                  : t("common.copy", "复制")
+                              }
+                              aria-label={
+                                reauthEmailCopied
+                                  ? t("common.copied", "已复制")
+                                  : t("common.copy", "复制")
+                              }
+                            >
+                              {reauthEmailCopied ? (
+                                <Check size={16} />
+                              ) : (
+                                <Copy size={16} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       <p className="section-desc">
                         {t(
                           "codex.oauth.desc",
@@ -7796,6 +11515,22 @@ export function CodexAccountsPage() {
                               {t("codex.api.provider.custom", "自定义")}
                             </span>
                           </button>
+                          {sponsorApiProviderTemplates.map((template) => (
+                            <button
+                              key={template.id}
+                              className={`api-provider-chip sponsor ${apiProviderPresetId === template.id ? "active" : ""}`}
+                              onClick={() =>
+                                handleSelectApiProviderPreset(template.id)
+                              }
+                              type="button"
+                            >
+                              <span>{template.name}</span>
+                              <Star
+                                size={12}
+                                className="api-provider-chip-badge"
+                              />
+                            </button>
+                          ))}
                           {CODEX_API_PROVIDER_PRESETS.map((preset) => (
                             <button
                               key={preset.id}
@@ -7821,6 +11556,47 @@ export function CodexAccountsPage() {
                           ))}
                         </div>
                       </div>
+                      {selectedSponsorApiProviderTemplate && (
+                        <div className="api-provider-hint-block sponsor">
+                          <p className="api-provider-hint">
+                            {t(
+                              "codex.modelProviders.sponsorHint",
+                              "已按专属中转站配置自动填写兼容服务地址。输入 API Key 后，卡片会自动查询余额和用量。",
+                            )}
+                          </p>
+                          <div className="api-provider-links">
+                            {selectedSponsorApiProviderTemplate.website && (
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                  void handleOpenProviderLink(
+                                    selectedSponsorApiProviderTemplate.website,
+                                  )
+                                }
+                              >
+                                <ExternalLink size={14} />
+                                {t("codex.api.provider.website", "官网")}
+                              </button>
+                            )}
+                            {selectedSponsorApiProviderTemplate.apiKeyUrl && (
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                  void handleOpenProviderLink(
+                                    selectedSponsorApiProviderTemplate.apiKeyUrl,
+                                  )
+                                }
+                              >
+                                <KeyRound size={14} />
+                                {t(
+                                  "codex.api.provider.apiKeyPage",
+                                  "API Key 页面",
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       {selectedApiProviderPreset &&
                         selectedApiProviderPreset.baseUrls.length > 1 && (
                           <div className="oauth-link">
@@ -7987,7 +11763,7 @@ export function CodexAccountsPage() {
                       <p className="section-desc">
                         {t(
                           "codex.token.desc",
-                          "粘贴 auth.json、账号 JSON 或 refresh_token。",
+                          "粘贴 auth.json、账号 JSON、Sub2API JSON、accessToken 或 refresh_token。",
                         )}
                       </p>
                       <details className="token-format-collapse">
@@ -8001,7 +11777,7 @@ export function CodexAccountsPage() {
                           <p className="token-format-required">
                             {t(
                               "codex.token.formatRequired",
-                              "支持完整 tokens（id_token + access_token）或仅 refresh_token。仅 refresh_token 会先联网换取完整凭据。",
+                              "支持 session JSON、完整 tokens（id_token + access_token）、Sub2API 导出 JSON、仅 accessToken 或仅 refresh_token。仅 refresh_token 会先联网换取完整凭据。",
                             )}
                           </p>
                           <div className="token-format-group">
@@ -8019,11 +11795,11 @@ export function CodexAccountsPage() {
                             <div className="token-format-label">
                               {t(
                                 "codex.token.formatRefreshOnlyLabel",
-                                "仅 refresh_token 示例",
+                                "session / accessToken / refresh_token 示例",
                               )}
                             </div>
                             <pre className="token-format-code">
-                              {CODEX_TOKEN_REFRESH_ONLY_EXAMPLE}
+                              {CODEX_TOKEN_SESSION_EXAMPLE}
                             </pre>
                           </div>
                           <div className="token-format-group">
@@ -8042,7 +11818,7 @@ export function CodexAccountsPage() {
                         onChange={(e) => setTokenInput(e.target.value)}
                         placeholder={t(
                           "codex.token.placeholder",
-                          '示例：每行一个 refresh_token，或 {"refresh_token":"rt_..."}',
+                          '示例：直接粘贴 session JSON、accessToken、Sub2API 导出 JSON，或 {"accessToken":"eyJ..."}',
                         )}
                       />
                       <button
@@ -8137,7 +11913,7 @@ export function CodexAccountsPage() {
           {quickSwitchAccountId && (
             <div className="modal-overlay" onClick={closeQuickSwitchModal}>
               <div
-                className="modal-content codex-add-modal"
+                className="modal-content codex-add-modal codex-api-key-edit-modal"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="modal-header">
@@ -8292,13 +12068,369 @@ export function CodexAccountsPage() {
             </div>
           )}
 
+          {oauthBindingTargetActive && (
+            <div className="modal-overlay" onClick={closeOAuthBindingModal}>
+              <div
+                className="modal-content codex-add-modal codex-oauth-binding-modal"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header">
+                  <h2>
+                    {t("codex.api.oauthBinding.title", "绑定 OAuth 账号")}
+                  </h2>
+                  <button
+                    className="modal-close"
+                    onClick={closeOAuthBindingModal}
+                    aria-label={t("common.close", "关闭")}
+                    disabled={oauthBindingSaving}
+                  >
+                    <X />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <ModalErrorMessage
+                    message={oauthBindingError}
+                    scrollKey={oauthBindingErrorScrollKey}
+                  />
+                  <div className="add-section">
+                    <div className="codex-oauth-binding-context">
+                      <p className="section-desc codex-oauth-binding-desc">
+                        {oauthBindingTargetKind === "local_access"
+                          ? t(
+                              "codex.localAccess.oauthBinding.desc",
+                              "可选绑定。只要 OAuth 账号带 refresh_token 即可选择；未绑定时 API 服务按原 API Key 逻辑运行；绑定后登录态使用 OAuth 账号，Provider 使用当前 API 服务配置。",
+                            )
+                          : t(
+                              "codex.api.oauthBinding.desc",
+                              "可选绑定。只要 OAuth 账号带 refresh_token 即可选择；未绑定时该账号按原 API Key 逻辑切换；绑定后登录态使用 OAuth 账号，Provider 使用当前 API Key 账号配置。",
+                            )}
+                      </p>
+                      <div className="section-desc codex-oauth-binding-current-target">
+                        {oauthBindingTargetKind === "local_access"
+                          ? t("codex.localAccess.oauthBinding.currentService", {
+                              defaultValue: "API 服务：{{name}}",
+                              name: t("codex.localAccess.title", "API 服务"),
+                            })
+                          : oauthBindingAccount
+                            ? t("codex.api.oauthBinding.currentAccount", {
+                                defaultValue: "API Key 账号：{{name}}",
+                                name: maskAccountText(
+                                  resolvePresentation(oauthBindingAccount)
+                                    .displayName,
+                                ),
+                              })
+                            : null}
+                      </div>
+                    </div>
+                    <div className="codex-oauth-binding-picker">
+                      <label>
+                        {t(
+                          "codex.api.oauthBinding.selectLabel",
+                          "选择 OAuth 账号",
+                        )}
+                      </label>
+                      {oauthAccounts.length === 0 ? (
+                        <div className="add-status error">
+                          <CircleAlert size={16} />
+                          <span>
+                            {t(
+                              "codex.api.oauthBinding.empty",
+                              "暂无 OAuth 账号，请先添加 OAuth 授权账号。",
+                            )}
+                          </span>
+                        </div>
+                      ) : oauthBindingEligibleAccounts.length === 0 ? (
+                        <div className="add-status error">
+                          <CircleAlert size={16} />
+                          <span>
+                            {t(
+                              "codex.api.oauthBinding.emptyEligible",
+                              "没有带 refresh_token 的 OAuth 账号，请重新 OAuth 授权或添加符合条件的 OAuth 账号。",
+                            )}
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="codex-oauth-binding-toolbar">
+                            <div className="search-box codex-oauth-binding-search">
+                              <Search size={16} className="search-icon" />
+                              <input
+                                type="text"
+                                placeholder={t(
+                                  "common.shared.search",
+                                  "搜索账号...",
+                                )}
+                                value={oauthBindingSearchQuery}
+                                onChange={(event) =>
+                                  setOauthBindingSearchQuery(event.target.value)
+                                }
+                                disabled={oauthBindingSaving}
+                              />
+                            </div>
+                            <MultiSelectFilterDropdown
+                              options={oauthBindingTierFilterOptions}
+                              selectedValues={oauthBindingFilterTypes}
+                              allLabel={t("common.shared.filter.all", {
+                                count: oauthBindingTierCounts.all,
+                              })}
+                              filterLabel={t(
+                                "common.shared.filterLabel",
+                                "筛选",
+                              )}
+                              clearLabel={t("accounts.clearFilter", "清空筛选")}
+                              emptyLabel={t("common.none", "暂无")}
+                              ariaLabel={t("common.shared.filterLabel", "筛选")}
+                              onToggleValue={toggleOAuthBindingFilterTypeValue}
+                              onClear={() => setOauthBindingFilterTypes([])}
+                            />
+                            <AccountTagFilterDropdown
+                              availableTags={oauthBindingAvailableTags}
+                              selectedTags={oauthBindingTagFilter}
+                              onToggleTag={toggleOAuthBindingTagFilterValue}
+                              onClear={() => setOauthBindingTagFilter([])}
+                            />
+                            <SingleSelectFilterDropdown
+                              value={oauthBindingSortBy}
+                              options={[
+                                {
+                                  value: "last_used",
+                                  label: t(
+                                    "accounts.columns.lastUsed",
+                                    "最后使用",
+                                  ),
+                                },
+                                {
+                                  value: "created_at",
+                                  label: t(
+                                    "common.shared.sort.createdAt",
+                                    "按创建时间",
+                                  ),
+                                },
+                                {
+                                  value: "account",
+                                  label: t(
+                                    "common.shared.columns.account",
+                                    "账号",
+                                  ),
+                                },
+                                {
+                                  value: "plan",
+                                  label: t("accounts.sort.plan", "按套餐"),
+                                },
+                              ]}
+                              ariaLabel={t("common.shared.sortLabel", "排序")}
+                              icon={<ArrowDownWideNarrow size={14} />}
+                              disabled={oauthBindingSaving}
+                              onChange={(value) =>
+                                setOauthBindingSortBy(
+                                  value as OAuthBindingSortBy,
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              className="sort-direction-btn"
+                              onClick={() =>
+                                setOauthBindingSortDirection((prev) =>
+                                  prev === "desc" ? "asc" : "desc",
+                                )
+                              }
+                              disabled={oauthBindingSaving}
+                              title={
+                                oauthBindingSortDirection === "desc"
+                                  ? t(
+                                      "common.shared.sort.descTooltip",
+                                      "当前：降序，点击切换为升序",
+                                    )
+                                  : t(
+                                      "common.shared.sort.ascTooltip",
+                                      "当前：升序，点击切换为降序",
+                                    )
+                              }
+                              aria-label={t(
+                                "common.shared.sort.toggleDirection",
+                                "切换排序方向",
+                              )}
+                            >
+                              {oauthBindingSortDirection === "desc" ? (
+                                <ArrowDown size={15} />
+                              ) : (
+                                <ArrowUp size={15} />
+                              )}
+                            </button>
+                          </div>
+                          {oauthBindingFilteredAccounts.length === 0 ? (
+                            <div className="group-account-empty">
+                              <span>
+                                {t(
+                                  "common.shared.noMatch.title",
+                                  "没有匹配的账号",
+                                )}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="codex-oauth-binding-list">
+                              {oauthBindingPagination.pageItems.map(
+                                (account) => {
+                                  const presentation =
+                                    resolvePresentation(account);
+                                  const subscriptionInfo =
+                                    resolveSubscriptionPresentation(account);
+                                  const selected =
+                                    oauthBindingSelectedAccountId ===
+                                    account.id;
+                                  const emailText = maskAccountText(
+                                    account.email ||
+                                      account.account_name ||
+                                      presentation.displayName ||
+                                      account.id,
+                                  );
+                                  return (
+                                    <label
+                                      key={account.id}
+                                      className={`codex-oauth-binding-row ${selected ? "is-selected" : ""}`}
+                                      aria-label={emailText}
+                                      aria-disabled={oauthBindingSaving}
+                                      onClick={(event) => {
+                                        if (oauthBindingSaving) {
+                                          event.preventDefault();
+                                          return;
+                                        }
+                                        setOauthBindingSelectedAccountId(
+                                          account.id,
+                                        );
+                                        setOauthBindingError(null);
+                                      }}
+                                    >
+                                      <input
+                                        type="radio"
+                                        name="codex-oauth-binding-account"
+                                        checked={selected}
+                                        onChange={() => {
+                                          setOauthBindingSelectedAccountId(
+                                            account.id,
+                                          );
+                                          setOauthBindingError(null);
+                                        }}
+                                        disabled={oauthBindingSaving}
+                                      />
+                                      <div className="codex-oauth-binding-row-main">
+                                        <span
+                                          className="codex-oauth-binding-row-name"
+                                          title={emailText}
+                                        >
+                                          {emailText}
+                                        </span>
+                                        <span
+                                          className={`tier-badge codex-oauth-binding-row-plan ${presentation.planClass || "unknown"}`}
+                                          title={presentation.planLabel}
+                                        >
+                                          {presentation.planLabel}
+                                        </span>
+                                        <span
+                                          className={`codex-oauth-binding-row-term ${subscriptionInfo.tone}`}
+                                          title={subscriptionInfo.titleText}
+                                        >
+                                          <Clock size={12} />
+                                          <span>
+                                            {t(
+                                              "codex.subscription.label",
+                                              "有效期",
+                                            )}
+                                          </span>
+                                          <strong>
+                                            {subscriptionInfo.valueText}
+                                          </strong>
+                                          <span>
+                                            {subscriptionInfo.detailText}
+                                          </span>
+                                        </span>
+                                      </div>
+                                    </label>
+                                  );
+                                },
+                              )}
+                            </div>
+                          )}
+                          <PaginationControls
+                            totalItems={oauthBindingPagination.totalItems}
+                            currentPage={oauthBindingPagination.currentPage}
+                            totalPages={oauthBindingPagination.totalPages}
+                            pageSize={oauthBindingPagination.pageSize}
+                            pageSizeOptions={
+                              oauthBindingPagination.pageSizeOptions
+                            }
+                            rangeStart={oauthBindingPagination.rangeStart}
+                            rangeEnd={oauthBindingPagination.rangeEnd}
+                            canGoPrevious={oauthBindingPagination.canGoPrevious}
+                            canGoNext={oauthBindingPagination.canGoNext}
+                            onPageSizeChange={
+                              oauthBindingPagination.setPageSize
+                            }
+                            onPreviousPage={
+                              oauthBindingPagination.goToPreviousPage
+                            }
+                            onNextPage={oauthBindingPagination.goToNextPage}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <div className="api-key-edit-actions">
+                      {oauthAccounts.length === 0 && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            closeOAuthBindingModal();
+                            openCodexAddModal("oauth");
+                          }}
+                          disabled={oauthBindingSaving}
+                        >
+                          {t("codex.addModal.oauth", "OAuth 授权")}
+                        </button>
+                      )}
+                      {oauthBindingHasExistingBinding && (
+                        <button
+                          className="btn btn-secondary codex-oauth-binding-clear"
+                          onClick={() => void handleClearOAuthBinding()}
+                          disabled={oauthBindingSaving}
+                        >
+                          {t("codex.api.oauthBinding.clearAction", "解除绑定")}
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-secondary"
+                        onClick={closeOAuthBindingModal}
+                        disabled={oauthBindingSaving}
+                      >
+                        {t("common.cancel")}
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => void handleSubmitOAuthBinding()}
+                        disabled={
+                          oauthBindingSaving ||
+                          !selectedOAuthBindingAccount ||
+                          oauthBindingEligibleAccounts.length === 0
+                        }
+                      >
+                        {oauthBindingSaving
+                          ? t("common.saving", "保存中...")
+                          : t("common.save")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {editingApiKeyCredentialsId && (
             <div
               className="modal-overlay"
               onClick={closeApiKeyCredentialsModal}
             >
               <div
-                className="modal-content codex-add-modal"
+                className="modal-content codex-add-modal codex-api-key-edit-modal"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="modal-header">
@@ -9395,11 +13527,15 @@ export function CodexAccountsPage() {
             isOpen={showLocalAccessModal}
             mode={localAccessModalMode}
             state={localAccessState}
+            addressKind={selectedLocalAccessAddressKind}
+            addressOptions={localAccessAddressOptions}
+            onAddressKindChange={handleLocalAccessAddressKindChange}
             accounts={accounts}
             accountGroups={codexGroups}
             initialSelectedIds={localAccessModalSelectedIds}
             maskAccountText={maskAccountText}
             onClose={() => setShowLocalAccessModal(false)}
+            onOpenFullPage={openCodexApiServicePage}
             onSaveAccounts={({ accountIds, restrictFreeAccounts }) =>
               handleSaveLocalAccessAccounts(accountIds, {
                 restrictFreeAccounts,
@@ -9409,12 +13545,28 @@ export function CodexAccountsPage() {
             onRefreshStats={reloadLocalAccessState}
             onUpdatePort={handleUpdateLocalAccessPort}
             onUpdateRoutingStrategy={handleUpdateLocalAccessRoutingStrategy}
+            onUpdateCustomRouting={handleUpdateLocalAccessCustomRouting}
+            onUpdateAccessScope={handleUpdateLocalAccessAccessScope}
+            onUpdateDebugLogs={(debugLogs) =>
+              codexLocalAccessService
+                .updateCodexLocalAccessDebugLogs(debugLogs)
+                .then(setLocalAccessState)
+            }
+            onUpdateUpstreamProxyConfig={
+              handleUpdateLocalAccessUpstreamProxyConfig
+            }
             onRotateApiKey={handleRotateLocalAccessApiKey}
             onKillPort={handleKillLocalAccessPort}
             onToggleEnabled={handleToggleLocalAccessEnabled}
-            onTest={handleTestLocalAccess}
+            onStreamTestMessage={({ sessionId, modelId, messages }) =>
+              codexLocalAccessService.streamCodexLocalAccessChatTest(
+                sessionId,
+                modelId,
+                messages,
+              )
+            }
             saving={localAccessSaving}
-            testing={localAccessTesting}
+            testing={false}
             starting={localAccessStarting}
             portCleanupBusy={localAccessPortKilling}
           />

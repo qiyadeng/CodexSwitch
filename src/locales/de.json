@@ -14,6 +14,7 @@
     "close": "Schließen",
     "open": "Öffnen",
     "copy": "Kopieren",
+    "copied": "Kopiert",
     "add": "Hinzufügen",
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
@@ -27,7 +28,7 @@
         "actions": "Aktionen",
         "plan": "Planen",
         "addOnPromptCredits": "Zusatz-Prompt-Credits",
-        "credits": "Credits",
+        "credits": "Credits​",
         "email": "E-Mail",
         "promptCredits": "Prompt-Credits",
         "creditPackage": "Credit-Paket",
@@ -47,12 +48,12 @@
         "all": "Alle ({{count}})",
         "enterprise": "UNTERNEHMEN ({{count}})",
         "free": "KOSTENLOS ({{count}})",
-        "pro": "PRO ({{count}})",
+        "pro": "PRO ({{count}})​",
         "business": "GESCHÄFT ({{count}})",
         "individual": "EINZEL ({{count}})",
         "validAccounts": "Gültige Konten ({{count}})"
       },
-      "filterLabel": "Filter",
+      "filterLabel": "Filter​",
       "import": {
         "failedMsg": "Import fehlgeschlagen: {{error}}",
         "label": "Importieren",
@@ -183,7 +184,7 @@
         "relativeHours": "{{hours}} Std",
         "relativeHoursMinutes": "{{hours}} Std {{minutes}} Min",
         "relativeMinutes": "{{minutes}} Min",
-        "relativeWithAbsolute": "{{relative}} ({{absolute}})"
+        "relativeWithAbsolute": "{{relative}} ({{absolute}})​"
       },
       "credits": {
         "leftInline": "{{left}} verbleibend",
@@ -227,14 +228,13 @@
     "selectAll": "Alle auswählen"
   },
   "nav": {
-    "overview": "Antigravity",
+    "overview": "Antigravity IDE​",
     "accounts": "Konten",
     "wakeup": "Weckaufgaben",
-    "fingerprints": "Fingerabdrücke",
     "settings": "Einstellungen",
-    "codex": "Codex",
-    "githubCopilot": "GitHub Copilot",
-    "windsurf": "Windsurf",
+    "codex": "Codex​",
+    "githubCopilot": "GitHub Copilot​",
+    "windsurf": "Windsurf​",
     "dashboard": "Armaturenbrett",
     "morePlatforms": "Weitere Plattformen",
     "instances": "Multi-Instanz",
@@ -244,21 +244,34 @@
       "restart": "Neustart",
       "installing": "Installation"
     },
-    "gemini": "Gemini Cli",
-    "codebuddy": "CodeBuddy",
-    "qoder": "Qoder",
-    "trae": "Trae",
-    "codebuddyCn": "CodeBuddy CN",
+    "gemini": "Gemini Cli​",
+    "codebuddy": "CodeBuddy​",
+    "qoder": "Qoder​",
+    "trae": "Trae​",
+    "codebuddyCn": "CodeBuddy CN​",
     "zed": "Zed-Plattform",
     "expandSidebar": "Seitenleiste erweitern",
     "collapseSidebar": "Seitenleiste einklappen",
     "logs": "Protokolle",
+    "sponsors": "Sponsoren",
+    "sponsorAppreciation": "Unterstützen",
     "switchClassicLayoutEntry": "Zur klassischen Ansicht wechseln",
     "switchClassicLayoutTitle": "Zur klassischen Seitenleisten-Ansicht wechseln",
     "switchClassicLayoutDesc": "Die klassische Ansicht zeigt die vollständige Plattform-Navigation und unterstützt das Einklappen der Seitenleiste. Du kannst jederzeit unter Einstellungen > Allgemein > Seitenleisten-Layout zurückwechseln.",
     "switchClassicLayoutDontAskAgain": "Diesen Hinweis nicht erneut anzeigen",
     "switchClassicLayoutConfirm": "Jetzt wechseln",
-    "2faManager": "2FA-Verwaltung"
+    "2faManager": "2FA-Verwaltung",
+    "apiRelay": "API-Relay"
+  },
+  "sponsors": {
+    "pageTitle": "Sponsoren",
+    "pageDesc": "Vielen Dank an diese Sponsoren für die Unterstützung von Codex Switch.",
+    "loading": "Sponsoren werden geladen...",
+    "emptyTitle": "Noch keine Sponsoren",
+    "emptyDesc": "Das Remote-Sponsorenmodul ist derzeit deaktiviert.",
+    "listAriaLabel": "Sponsorenliste",
+    "defaultDescription": "Danke für die Unterstützung von Codex Switch.",
+    "openSponsor": "Öffnen"
   },
   "platformLayout": {
     "title": "Plattformlayout",
@@ -268,10 +281,11 @@
     "sidebarToggle": "In Seitenleiste anzeigen",
     "dashboardToggle": "Im Dashboard anzeigen",
     "trayToggle": "Im Tray anzeigen",
+    "apiRelayTrayDisabled": "Relay kann noch nicht im Tray angezeigt werden",
     "hiddenBadge": "Ausgeblendet",
     "openFromMore": "Plattformlayout verwalten",
     "dragHandleLabel": "Zum Neuanordnen ziehen",
-    "tipWithGroups": "Zum Sortieren ziehen. In der Seitenleiste können höchstens drei Einträge angezeigt werden. Unterplattformen einer Gruppe haben keine Seitenleisten-/Dashboard-Schalter und dienen nur für Menüleiste und Standardplattform-Wechsel.",
+    "tipWithGroups": "Zum Sortieren ziehen. In der Seitenleiste können höchstens {{max}} Einträge angezeigt werden. Gruppenunterelemente haben keine Seitenleisten-/Dashboard-Schalter und dienen nur der Menüleistenanzeige und dem Wechsel der Standardplattform.",
     "addGroup": "Gruppe hinzufügen",
     "editGroup": "Gruppe bearbeiten",
     "deleteGroup": "Gruppe löschen",
@@ -365,7 +379,8 @@
       "instance": "Instanz",
       "email": "Konto",
       "quota": "Quota-Status",
-      "actions": "Aktionen"
+      "actions": "Aktionen",
+      "speed": "Tempo"
     },
     "empty": {
       "title": "Keine Instanzen",
@@ -410,7 +425,7 @@
       "nameRequired": "Bitte geben Sie einen Instanznamen ein",
       "pathRequired": "Bitte wählen Sie ein Instanzverzeichnis aus",
       "bindRequired": "Bitte wählen Sie ein Konto zum Koppeln aus",
-      "optional": "Optional",
+      "optional": "Optional​",
       "launchMode": "Startmodus",
       "launchModeApp": "Desktop-App",
       "launchModeCli": "CLI-Modus",
@@ -443,7 +458,11 @@
           "contextWindowInvalid": "Das Kontextfenster muss eine Ganzzahl größer als 0 sein.",
           "autoCompactInvalid": "Der Grenzwert für die automatische Komprimierung muss eine Ganzzahl größer als 0 sein."
         }
-      }
+      },
+      "appSpeed": "Tempo",
+      "appSpeedDesc": "Schreibt das gewählte Tempo vor dem Start von Codex",
+      "autoSyncThreads": "Sitzungen auto-syncen",
+      "autoSyncThreadsDesc": "Aus lässt Sitzungen mehrerer Instanzen getrennt. Wenn aktiviert, werden lokale Sitzungsdaten beim Starten oder Schließen einer Instanz automatisch zusammengeführt, aber nur nachdem alle Codex-Instanzen gestoppt sind."
     },
     "quota": {
       "unbound": "Nicht gekoppelt",
@@ -464,7 +483,8 @@
       "allAlreadyRunning": "Alle Instanzen laufen bereits",
       "noneRunning": "Keine laufenden Instanzen gefunden",
       "syncThreadsNeedTwo": "Mindestens zwei Instanzen sind erforderlich, um Threads zu synchronisieren",
-      "launchPrepared": "Startbefehl ist bereit"
+      "launchPrepared": "Startbefehl ist bereit",
+      "speedUpdated": "Tempo aktualisiert"
     },
     "runningDialog": {
       "title": "Instanz läuft bereits",
@@ -493,16 +513,16 @@
       },
       "safe": {
         "title": "Sicherer Neustart (Empfohlen)",
-        "principle": "Sendet ein SIGTERM-Signal an alle Antigravity-Prozesse, damit die App speichern und sich selbst beenden kann, und startet dann die Zielinstanz (erzwingt das Beenden, falls erforderlich).",
-        "commandMac": "macOS/Linux: kill -15 <pid> (alle Antigravity-Prozesse)",
-        "commandWin": "Windows: taskkill /F /PID <pid> (alle Antigravity-Prozesse)",
+        "principle": "Sendet ein SIGTERM-Signal an alle Antigravity IDE-Prozesse, damit die App speichern und sich selbst beenden kann, und startet dann die Zielinstanz (erzwingt das Beenden, falls erforderlich).",
+        "commandMac": "macOS/Linux: kill -15 <pid> (alle Antigravity IDE-Prozesse)",
+        "commandWin": "Windows: taskkill /F /PID <pid> (alle Antigravity IDE-Prozesse)",
         "pros": "Näher am normalen Beenden, weniger wahrscheinlich Crash-Warnungen, Daten sind sicherer.",
         "cons": "Unterstützt nur den vollständigen Neustart aller Instanzen."
       },
       "force": {
         "title": "Erzwungener Neustart",
         "principle": "Sucht Prozesse anhand von --user-data-dir und beendet sie gewaltsam (SIGKILL / taskkill /F), startet dann die Zielinstanz.",
-        "commandMac": "macOS/Linux: pkill -9 -f \"--user-data-dir <dir>\"",
+        "commandMac": "macOS/Linux: pkill -9 -f \"--user-data-dir <dir>\"​",
         "commandWin": "Windows: taskkill /F /PID <pid> (Übereinstimmung mit --user-data-dir)",
         "pros": "Kann eine einzelne Instanz gezielt neu starten.",
         "cons": "Könnte Warnungen vor unerwartetem Beenden verursachen, Risiko von Datenverlust für ungespeicherte Daten."
@@ -542,7 +562,8 @@
     "tabs": {
       "general": "Allgemein",
       "network": "Netzwerk",
-      "about": "Über"
+      "about": "Über",
+      "data": "Datenverwaltung"
     },
     "general": {
       "appearance": "Erscheinungsbild",
@@ -551,15 +572,15 @@
       "theme": "Design",
       "themeDesc": "Zwischen hellem und dunklem Modus wechseln",
       "defaultTerminal": "Standard-Terminal",
-      "defaultTerminalDesc": "Das beim Öffnen der Codex CLI verwendete Terminal",
+      "defaultTerminalDesc": "Das beim Öffnen der Gemini CLI verwendete Terminal",
       "terminalSystem": "Systemstandard",
       "themeLight": "Hell",
       "themeDark": "Dunkel",
-      "themeSystem": "System",
+      "themeSystem": "System​",
       "uiScale": "UI-Skalierung",
       "uiScaleDesc": "UI-Skalierung anpassen",
       "accountManagement": "Kontoverwaltung",
-      "autoRefresh": "Antigravity-Quote automatisch aktualisieren",
+      "autoRefresh": "Antigravity IDE-Quote automatisch aktualisieren",
       "codexAutoRefresh": "Codex-Quote automatisch aktualisieren",
       "autoRefreshDesc": "Hintergrundaktualisierungsfrequenz",
       "codexAutoRefreshDesc": "Hintergrundaktualisierungsfrequenz",
@@ -583,6 +604,10 @@
       "hideDockIconDesc": "Steuert die Sichtbarkeit des Dock-Symbols unabhängig vom Minimierungsverhalten des Fensters",
       "hideDockIconOff": "Nein (Dock-Symbol anzeigen)",
       "hideDockIconOn": "Ja (Dock-Symbol ausblenden)",
+      "trayIconStyle": "Menüleisten-Symbolstil (nur macOS)",
+      "trayIconStyleDesc": "Systemvorlagen-Symbol oder ursprüngliches farbiges App-Symbol wählen",
+      "trayIconStyleTemplate": "Vorlagen-Symbol",
+      "trayIconStyleColor": "Farbiges Symbol",
       "floatingCardStartup": "Schwebende Karte beim Start anzeigen",
       "floatingCardStartupDesc": "Die schwebende Kontokarte nach dem Start der App automatisch anzeigen",
       "floatingCardAlwaysOnTop": "Schwebende Karte standardmäßig im Vordergrund halten",
@@ -592,8 +617,8 @@
       "floatingCardShowNowAction": "Schwebende Karte anzeigen",
       "dataDir": "Datenverzeichnis",
       "dataDirDesc": "Speicherort für Konten und Konfigurationsdateien.",
-      "fpDir": "Antigravity-Speicher",
-      "fpDirDesc": "Speicherort für Antigravity-Datendateien.",
+      "topRightAdVisible": "Top-Promo anzeigen",
+      "topRightAdVisibleDesc": "Blendet den oberen Promo-Bereich in der App aus. Die Sponsorenseite bleibt unverändert.",
       "opencodeTitle": "OpenCode-Integration",
       "opencodeRestart": "OpenCode beim Codex-Wechsel neu starten",
       "opencodeRestartDesc": "Codex-Kontoinformationen in OpenCode synchronisieren",
@@ -608,16 +633,21 @@
       "codexAppPathPlaceholder": "Standardpfad",
       "codexPathSelect": "Auswählen",
       "codexPathReset": "Standard zurücksetzen",
+      "codexSyncWsl": "Codex mit WSL synchronisieren",
+      "codexSyncWslDesc": "Nach dem Wechsel des Standard-Codex-Kontos werden auth.json und config.toml auch in das Codex-Verzeichnis in WSL geschrieben.",
+      "codexWslConfigDir": "WSL-Codex-Verzeichnis",
+      "codexWslConfigDirDesc": "Gib das .codex-Verzeichnis in WSL ein. \\\\wsl.localhost\\-Pfade werden unterstützt.",
+      "codexWslConfigDirPlaceholder": "Beispiel: \\\\wsl.localhost\\Ubuntu-24.04\\home\\user\\.codex",
       "vscodeTitle": "VS Code-Start",
       "vscodeAppPath": "VS Code-App-Pfad",
       "vscodeAppPathDesc": "Leer lassen, um den Standardpfad zu verwenden",
       "vscodeAppPathPlaceholder": "Standardpfad",
       "vscodePathSelect": "Auswählen",
       "vscodePathReset": "Standard zurücksetzen",
-      "antigravityAppPath": "Antigravity-App-Pfad",
-      "antigravityTitle": "Antigravity-Start",
+      "antigravityAppPath": "Antigravity IDE-App-Pfad",
+      "antigravityTitle": "Antigravity IDE-Start",
       "commonTitle": "Allgemein",
-      "antigravitySettingsTitle": "Antigravity-Einstellungen",
+      "antigravitySettingsTitle": "Antigravity IDE-Einstellungen",
       "codexSettingsTitle": "Codex-Einstellungen",
       "githubCopilotSettingsTitle": "GitHub Copilot-Einstellungen",
       "ghcpAutoRefresh": "GitHub Copilot-Kontingent automatisch aktualisieren",
@@ -690,14 +720,14 @@
       "sideNavLayoutOriginal": "Ursprüngliches Layout",
       "sideNavLayoutClassic": "Klassisches Layout",
       "antigravityDualSwitchNoRestart": "Nahtloser Doppelwechsel (ohne Neustart)",
-      "antigravityDualSwitchNoRestartDesc": "Beim Kontowechsel werden lokale Kontodaten geschrieben und der nahtlose Erweiterungswechsel in einem Ablauf ausgeführt, ohne Antigravity neu zu starten.",
+      "antigravityDualSwitchNoRestartDesc": "Beim Kontowechsel werden lokale Kontodaten geschrieben und der nahtlose Erweiterungswechsel in einem Ablauf ausgeführt, ohne Antigravity IDE neu zu starten.",
       "appAutoLaunch": "Codex Switch beim Anmelden starten",
       "appAutoLaunchDesc": "App nach der Systemanmeldung automatisch starten",
       "startupWakeupDisabled": "Deaktiviert",
       "startupWakeupImmediate": "Sofort aufwecken",
       "startupWakeupDelayed": "Mit Verzögerung aufwecken",
-      "antigravityStartupWakeup": "Antigravity-Wecklauf nach dem Start ausführen",
-      "antigravityStartupWakeupDesc": "Nach dem App-Start aktivierte Antigravity-Weckaufgaben einmal ausführen",
+      "antigravityStartupWakeup": "Antigravity IDE-Wecklauf nach dem Start ausführen",
+      "antigravityStartupWakeupDesc": "Nach dem App-Start aktivierte Antigravity IDE-Weckaufgaben einmal ausführen",
       "codexStartupWakeup": "Codex-Wecklauf nach dem Start ausführen",
       "codexStartupWakeupDesc": "Nach dem App-Start aktivierte Codex-Weckaufgaben einmal ausführen",
       "currentAccountRefreshTitle": "Aktuelles Konto aktualisieren",
@@ -741,11 +771,18 @@
       "codexSpecifiedAppPath": "Pfad der angegebenen App",
       "codexSpecifiedAppPathDesc": "Pfad der App, die beim Codex-Wechsel mit neu gestartet wird.",
       "codexSpecifiedAppPathPlaceholder": "z. B. /Applications/Host.app",
-      "codexSpecifiedAppPathClear": "Leeren"
+      "codexSpecifiedAppPathClear": "Leeren",
+      "codexAppSpeed": "Codex-Geschwindigkeit",
+      "codexAppSpeedDesc": "Speichert die offizielle Codex-Startgeschwindigkeit und schreibt sie vor jedem Start aus dieser App.",
+      "codexAppSpeedStandard": "Normal",
+      "codexAppSpeedFast": "Schnell",
+      "codexAppSpeedLaunch": "Codex neu starten",
+      "codexAppSpeedSaveFailed": "Codex-Geschwindigkeit konnte nicht gespeichert werden: {{error}}",
+      "codexAppSpeedLaunchFailed": "Codex konnte nicht neu gestartet werden: {{error}}"
     },
     "network": {
       "apiTitle": "Antigravity-Cockpit-API",
-      "wsService": "WebSocket Service",
+      "wsService": "WebSocket Service​",
       "wsServiceDesc": "Externen Programmen (z. B. VS Code Erweiterung) die Verbindung erlauben",
       "preferredPort": "Bevorzugter Port",
       "preferredPortDesc": "Standard ist {{port}}, Neustart nach Änderung erforderlich",
@@ -786,9 +823,9 @@
       "appName": "Codex Switch",
       "slogan": "Professionelle Lösung zur Kontoverwaltung",
       "author": "Autor",
-      "wechat": "WeChat",
+      "wechat": "WeChat​",
       "github": "GitHub Repository",
-      "alipay": "Alipay",
+      "alipay": "Alipay​",
       "wechatpay": "WeChat-Bezahlung",
       "sponsor": "Sponsoren",
       "sponsorDesc": "Unterstützen Sie die Entwicklung",
@@ -910,6 +947,66 @@
         "unsupportedLegacyFile": "Dieses Legacy-Konto-Backup-Format wird nicht erkannt",
         "unsupportedVersion": "Diese App-Version unterstützt diese Bundle-Version nicht"
       }
+    },
+    "webdav": {
+      "groupTitle": "WebDAV-Synchronisierung",
+      "enabledTitle": "WebDAV-Backup-Synchronisierung",
+      "enabledDesc": "Standardmäßig Jianguoyun, kann in jeden WebDAV-Dienst geändert werden.",
+      "urlTitle": "Dienstadresse",
+      "urlDesc": "Standardadresse von Jianguoyun: https://dav.jianguoyun.com/dav/",
+      "usernameTitle": "Konto",
+      "usernameDesc": "Jianguoyun verwendet Ihre E-Mail-Adresse.",
+      "usernamePlaceholder": "E-Mail oder Benutzername",
+      "passwordTitle": "App-Passwort",
+      "passwordDesc": "Lokal gespeichert; leer lassen, um das bestehende Passwort zu behalten.",
+      "passwordPlaceholder": "Jianguoyun-Drittanbieter-App-Passwort",
+      "passwordSavedPlaceholder": "Gespeichert; leer lassen, um es zu behalten",
+      "clearPassword": "Löschen",
+      "remoteDirTitle": "Remote-Ordner",
+      "remoteDirDesc": "Es werden nur Cockpit-Backup-Dateien in diesem Ordner verwaltet.",
+      "statusTitle": "Synchronisationsstatus",
+      "statusDesc": "Die Remote-Wiederherstellung erfordert eine manuelle Auswahl und überschreibt lokale Daten niemals stillschweigend.",
+      "lastUpload": "Letzter Upload: {{time}}",
+      "lastDownload": "Letzte Wiederherstellung: {{time}}",
+      "never": "Noch nicht synchronisiert",
+      "testAction": "Testen/Einstellungen speichern",
+      "uploadAction": "Erstellen & Hochladen",
+      "syncAction": "Einstellungen synchronisieren",
+      "syncLatestConfirm": "Möchten Sie wirklich das neueste Remote-Backup {{name}} herunterladen und lokal synchronisieren? Dadurch werden bestehende lokale Daten überschrieben.",
+      "remoteListTitle": "Remote-Backups",
+      "remoteListDesc": "Es werden nur JSON- und ZIP-Dateien angezeigt, die den Namen der automatischen/manuellen Cockpit-Backups entsprechen.",
+      "emptyTitle": "Keine Remote-Backups",
+      "emptyDesc": "Einstellungen speichern, dann ein Backup erstellen und hochladen.",
+      "unknownTime": "Unbekannt",
+      "restoreAction": "Wiederherstellen",
+      "restoreConfirm": "Daten aus dem Remote-Backup {{name}} wiederherstellen?",
+      "deleteConfirm": "Remote-Backup {{name}} löschen?",
+      "feedback": {
+        "testingAndSaving": "Speichern und Testen der WebDAV-Verbindung...",
+        "saveAndTestSuccess": "Einstellungen gespeichert und Verbindungstest erfolgreich!",
+        "saveSuccessTestFailed": "Einstellungen gespeichert, aber Verbindungstest fehlgeschlagen: {{message}}",
+        "saveAndTestFailed": "Speichern und Testen der Verbindung fehlgeschlagen: {{error}}",
+        "uploading": "Backup wird erstellt und hochgeladen...",
+        "uploadSuccess": "{{count}} Datei(en) hochgeladen, {{deleted}} abgelaufene Remote-Backup(s) bereinigt",
+        "uploadFailed": "WebDAV-Upload fehlgeschlagen: {{error}}",
+        "listFailed": "Laden der Remote-Backups fehlgeschlagen: {{error}}",
+        "loadSettingsFailed": "Laden der WebDAV-Einstellungen fehlgeschlagen: {{error}}",
+        "restoring": "Remote-Backup wird gelesen und importiert...",
+        "restoreEmpty": "Es wurden keine Daten aus dem Remote-Backup wiederhergestellt",
+        "deleteSuccess": "Remote-Backup gelöscht",
+        "deleteFailed": "Löschen des Remote-Backups fehlgeschlagen: {{error}}",
+        "syncingLatest": "Synchronisierung der neuesten Remote-Konfiguration...",
+        "syncFailed": "Synchronisierung der neuesten Konfiguration fehlgeschlagen: {{error}}",
+        "noRemoteBackup": "Keine wiederherstellbaren Backup-Dateien auf Remote gefunden"
+      },
+      "errors": {
+        "notEnabled": "Aktivieren Sie zuerst die WebDAV-Synchronisierung"
+      },
+      "retentionTitle": "Remote Retention Days",
+      "retentionDesc": "Backups older than this on the cloud will be removed during the next sync.",
+      "retentionUnit": "days",
+      "collapseAll": "Collapse remote backups",
+      "expandAll": "Expand all remote backups ({{count}} more)"
     }
   },
   "appPath": {
@@ -925,7 +1022,7 @@
   },
   "accounts": {
     "title": "Kontoverwaltung",
-    "subtitle": "Verwalten Sie Ihre Antigravity-Kontenliste.",
+    "subtitle": "Verwalten Sie Ihre Antigravity IDE-Kontenliste.",
     "total": "{{count}} Konten",
     "search": "Konten suchen...",
     "addAccount": "Konto hinzufügen",
@@ -941,7 +1038,6 @@
       "email": "E-Mail",
       "subscription": "Abonnement",
       "quota": "Kontingentstatus",
-      "fingerprint": "Fingerabdruck",
       "lastUsed": "Zuletzt verwendet",
       "actions": "Aktionen"
     },
@@ -950,14 +1046,14 @@
       "disabled": "Deaktiviert",
       "authInvalid": "Ungültige Anmeldeinformationen",
       "refreshFailed": "Aktualisierung fehlgeschlagen",
-      "normal": "Normal",
-      "forbidden": "403",
+      "normal": "Normal​",
+      "forbidden": "403​",
       "forbidden_tooltip": "API gab 403 Forbidden zurück, Konto hat keinen Zugriff auf Gemini Code Assist",
       "forbidden_msg": "Konto verboten, automatische Aktualisierung übersprungen"
     },
     "tier": {
-      "pro": "PRO",
-      "ultra": "ULTRA"
+      "pro": "PRO​",
+      "ultra": "ULTRA​"
     },
     "credits": {
       "label": "KI-Guthaben"
@@ -979,8 +1075,8 @@
     "filterLabel": "Konten filtern",
     "filter": {
       "all": "Alle ({{count}})",
-      "pro": "PRO ({{count}})",
-      "ultra": "ULTRA ({{count}})"
+      "pro": "PRO ({{count}})​",
+      "ultra": "ULTRA ({{count}})​"
     },
     "sortLabel": "Sortieren",
     "sort": {
@@ -1027,10 +1123,8 @@
     "actions": {
       "viewDetails": "Details anzeigen",
       "viewError": "Fehler anzeigen",
-      "fingerprint": "Fingerabdruck",
       "switch": "Konto wechseln",
       "switchTo": "Zu diesem Konto wechseln",
-      "selectFingerprint": "Fingerabdruck auswählen",
       "delete": "Löschen",
       "deleteSelected": "Ausgewählte löschen",
       "export": "Exportieren",
@@ -1082,6 +1176,8 @@
       "noGroups": "Keine Gruppen",
       "noGroupsDesc": "Erstellen Sie Gruppen, um Ihre Konten zu verwalten",
       "manage": "Verwalten",
+      "refresh": "Gruppe aktualisieren",
+      "refreshEmpty": "Keine aktualisierbaren Konten in dieser Gruppe",
       "error": {
         "duplicate": "Gruppenname existiert bereits",
         "createFailed": "Gruppe konnte nicht erstellt werden: {{error}}",
@@ -1108,7 +1204,7 @@
       "triggerManual": "Manueller Wechsel",
       "triggerAuto": "Automatischer Wechsel",
       "triggerUnknown": "Unbekannt",
-      "origin": "Initiator: {{origin}}",
+      "origin": "Initiator: {{origin}}​",
       "originDesktop": "Desktop-App",
       "originPlugin": "Erweiterung",
       "originUnknown": "Unbekannt",
@@ -1177,111 +1273,13 @@
     "currentAccount": "Derzeit in Gebrauch",
     "switchTo": "Zu diesem Konto wechseln",
     "switching": "Wechselt...",
-    "fingerprint": "Fingerabdruck",
     "bound": "Gebunden",
-    "brandTitle": "Antigravity Kontoverwaltung"
-  },
-  "fingerprints": {
-    "title": "Geräte-Fingerabdrücke",
-    "subtitle": "Verwalten Sie Fingerabdrücke, die Konten zugeordnet sind.",
-    "toolbar": {
-      "generate": "Neu generieren",
-      "capture": "Aktuelle erfassen",
-      "import": "Importieren",
-      "folder": "Ordner",
-      "delete": "Löschen",
-      "deleteUnbound": "Ungebundene löschen"
-    },
-    "table": {
-      "name": "Fingerabdruck-Name",
-      "machineId": "Maschinen-ID",
-      "accounts": "Gebundene Konten",
-      "actions": "Aktionen",
-      "accountCount": "{{count}} Konten",
-      "apply": "Anwenden",
-      "noData": "Keine Fingerabdruckdaten",
-      "preview": "Vorschau",
-      "rename": "Umbenennen"
-    },
-    "modals": {
-      "generate": {
-        "title": "Fingerabdruck generieren",
-        "btn": "Generieren"
-      },
-      "capture": {
-        "title": "Fingerabdruck erfassen",
-        "btn": "Erfassen"
-      },
-      "rename": {
-        "title": "Fingerabdruck umbenennen",
-        "label": "Fingerabdruck-Name"
-      },
-      "import": {
-        "title": "Fingerabdrücke importieren",
-        "fromTools": "Von Antigravity Tools importieren",
-        "desc": "Import aus dem Verzeichnis ~/.antigravity_tools/",
-        "fromJsonBtn": "Aus JSON importieren",
-        "jsonExample": "Beispielformat:",
-        "jsonPlaceholder": "Arbeits-Fingerabdruck",
-        "orPasteJson": "Oder JSON einfügen"
-      },
-      "bound": {
-        "title": "Gebundene Konten",
-        "add": "Konten hinzufügen",
-        "empty": "Keine Konten gebunden",
-        "emptyAll": "Alle Konten sind gebunden",
-        "select": "Wählen Sie Konten zum Hinzufügen aus",
-        "from": "Von: {{name}}",
-        "back": "Zurück"
-      },
-      "detail": {
-        "title": "Fingerabdruck-Details",
-        "created": "Erstellt am {{time}}"
-      }
-    },
-    "messages": {
-      "deleteConfirm": "Diesen Fingerabdruck löschen? Gebundene Konten werden zum Original zurückkehren.",
-      "batchDeleteConfirm": "{{count}} Fingerabdrücke löschen? Gebundene Konten werden zum Original zurückkehren.",
-      "generated": "Neuer Fingerabdruck generiert",
-      "captured": "Aktueller Fingerabdruck erfasst",
-      "renamed": "Umbenannt",
-      "deleted": "Fingerabdruck gelöscht",
-      "imported": "{{count}} Fingerabdrücke importiert",
-      "addedAccounts": "{{count}} Konten hinzugefügt",
-      "enterName": "Geben Sie einen Namen für den Fingerabdruck ein",
-      "previewNotReady": "Vorschau noch nicht bereit, bitte warten",
-      "duplicate": "Gleicher Fingerabdruck existiert bereits: {{name}}",
-      "autoGeneratedSuffix": "(Nicht gefunden, automatisch generiert)",
-      "readOnly": "Schreibgeschützt",
-      "current": "Aktuell",
-      "addCount": "{{count}} Konten hinzugefügt",
-      "addFailed": "Hinzufügen fehlgeschlagen",
-      "adding": "Wird hinzugefügt...",
-      "applyFailed": "Anwenden fehlgeschlagen",
-      "boundCount": "{{count}} Konten gebunden",
-      "captureFailed": "Erfassung fehlgeschlagen",
-      "count": "{{count}}",
-      "deleteFailed": "Löschen fehlgeschlagen",
-      "fpLabel": "Fingerabdruck:",
-      "generateFailed": "Erstellung fehlgeschlagen",
-      "importFailed": "Import fehlgeschlagen",
-      "importPartialFailed": "{{failCount}} fehlgeschlagen: {{failList}}",
-      "refreshingQuota": "Kontingent wird aktualisiert {{done}}/{{total}} (dieses Fenster kann geschlossen werden)",
-      "quotaRefreshDone": "Kontingentaktualisierung abgeschlossen",
-      "importing": "Importieren...",
-      "loadFailed": "Fingerabdruckliste konnte nicht geladen werden",
-      "processing": "Wird verarbeitet...",
-      "renameFailed": "Umbenennen fehlgeschlagen",
-      "serviceMachineIdEmpty": "Leer",
-      "deleteUnboundConfirm": "{{count}} Fingerabdrücke ohne verknüpftes Konto löschen?",
-      "deletedUnbound": "{{count}} ungebundene Fingerabdrücke gelöscht",
-      "noUnboundToDelete": "Keine ungebundenen Fingerabdrücke zum Löschen"
-    }
+    "brandTitle": "Antigravity IDE Kontoverwaltung"
   },
   "modals": {
     "addAccount": {
       "title": "Konto hinzufügen",
-      "desc": "Fügen Sie Ihr Antigravity-Konto via Google OAuth hinzu",
+      "desc": "Fügen Sie Ihr Antigravity IDE-Konto via Google OAuth hinzu",
       "loginBtn": "Google OAuth Login",
       "waiting": "Warten..."
     },
@@ -1289,7 +1287,7 @@
       "title": "Konten importieren",
       "desc": "Wählen Sie eine Importmethode",
       "local": "Lokales Konto importieren",
-      "localDesc": "Importiere das aktuelle Konto vom Antigravity Client",
+      "localDesc": "Importiere das aktuelle Konto vom Antigravity IDE Client",
       "tools": "Antigravity Tools importieren",
       "toolsDesc": "Import aus dem Verzeichnis ~/.antigravity_tools/",
       "jsonDivider": "oder JSON einfügen",
@@ -1302,7 +1300,7 @@
       "fromExtension": "Von Plugin importieren",
       "syncBadge": "Antigravity Cockpit Plugin-Konten synchronisieren",
       "fromLocalDB": "Aus lokaler Datenbank importieren",
-      "localDBDesc": "Login-Konten vom Antigravity-Client auf diesem Rechner lesen",
+      "localDBDesc": "Login-Konten vom Antigravity IDE-Client auf diesem Rechner lesen",
       "toolsDescMigrate": "Konten von ~/.antigravity_tools/ migrieren",
       "importingTools": "Importiere von Antigravity Tools...",
       "importingLocal": "Lokales Konto wird importiert...",
@@ -1311,15 +1309,6 @@
       "fromFiles": "Aus lokalen Dateien importieren",
       "fromFilesDesc": "JSON-Dateien zum Importieren von Konten auswählen (mehrere Formate unterstützt)",
       "importingFiles": "{{count}} Datei(en) werden importiert..."
-    },
-    "fingerprint": {
-      "title": "Fingerabdruck wählen",
-      "desc": "Fingerabdruck für Konto <1>{{email}}</1> auswählen",
-      "original": "Originaler Fingerabdruck",
-      "new": "Neuen Fingerabdruck hinzufügen",
-      "bind": "Bindung bestätigen",
-      "selectLabel": "Fingerabdruck wählen",
-      "boundCount": "Konten"
     },
     "quota": {
       "title": "Kontingentdetails",
@@ -1345,8 +1334,15 @@
   "messages": {
     "deleteConfirm": "Sind Sie sicher, dass Sie dieses Konto löschen möchten?",
     "batchDeleteConfirm": "Sind Sie sicher, dass Sie die {{count}} ausgewählten Konten löschen möchten?",
+    "cleanErrorAccountsAction": "ERROR-Konten bereinigen",
+    "cleanErrorAccountsConfirm": "{{count}} ERROR-Konten im aktuellen Bereich löschen?",
+    "selectAllFilteredAccounts": "Alle passenden {{count}} auswählen",
+    "selectedAllFilteredAccounts": "Alle passenden {{count}} ausgewählt",
+    "deleteFilteredAccountsConfirm": "Dadurch werden {{count}} Codex-Konten gelöscht, die den aktuellen Filtern entsprechen, nicht nur diese Seite. Fortfahren?",
+    "clearSelection": "Auswahl leeren",
     "switched": "Zu {{email}} gewechselt",
     "switchFailed": "Wechsel fehlgeschlagen: {{error}}",
+    "antigravityLegacyUnsupported": "Antigravity 2.0.0 und neuer wird hier nicht unterstützt. Wählen Sie eine Antigravity-Version unter 2.0.0 oder verwenden Sie Antigravity IDE.",
     "importSuccess": "{{count}} Konten erfolgreich importiert",
     "importLocalSuccess": "Konto erfolgreich importiert: {{email}}",
     "importFailed": "Import fehlgeschlagen: {{error}}",
@@ -1357,7 +1353,7 @@
     "bindFailed": "Verbindung fehlgeschlagen: {{error}}",
     "jsonRequired": "Bitte geben Sie den JSON-Inhalt ein oder fügen Sie ihn ein",
     "example": "Beispiel",
-    "actionRunning": "{{action}}...",
+    "actionRunning": "{{action}}...​",
     "actionSuccess": "{{action}} erfolgreich",
     "actionFailed": "{{action}} fehlgeschlagen: {{error}}"
   },
@@ -1385,7 +1381,7 @@
       },
       "runHint": {
         "title": "Hinweise zur Verifizierung",
-        "line1": "„Jetzt prüfen“ sendet eine minimale Chat-Anfrage, indem der Antigravity-Client über ein lokales Gateway und das offizielle Language-Server-Protokoll simuliert wird.",
+        "line1": "„Jetzt prüfen“ sendet eine minimale Chat-Anfrage, indem der Antigravity IDE-Client über ein lokales Gateway und das offizielle Language-Server-Protokoll simuliert wird.",
         "line2": "Dabei werden wenige Token verbraucht (in der Regel ein kurzer Dialog). Der tatsächliche Verbrauch hängt von Modell und Kontorichtlinie ab.",
         "line3": "Diese Aktion ändert keine Wakeup-Task-Einstellungen. Sie prüft nur die Kontoverfügbarkeit und schreibt einen Prüfdatensatz.",
         "line4": "Bei einem 403-Fehler muss zuerst die Kontoverifizierung abgeschlossen oder ein Einspruch eingereicht werden; das Ergebnis enthält die URL und Schnellaktionen."
@@ -1429,20 +1425,20 @@
     },
     "format": {
       "noReply": "(Keine Antwort)",
-      "durationMs": "{{ms}}ms",
+      "durationMs": "{{ms}}ms​",
       "tokens": "Token={{prompt}}+{{completion}}={{total}}",
       "traceId": "TraceId={{traceId}}",
-      "detailJoiner": ", ",
-      "message": "[[{{model}}]]: {{reply}}{{suffix}}",
-      "none": "--",
+      "detailJoiner": ", ​",
+      "message": "[[{{model}}]]: {{reply}}{{suffix}}​",
+      "none": "--​",
       "today": "Heute {{time}}",
       "tomorrow": "Morgen {{time}}",
-      "weekdayWithTime": "{{day}} {{time}}",
+      "weekdayWithTime": "{{day}} {{time}}​",
       "notSelected": "Nicht ausgewählt",
-      "joiner": ", ",
+      "joiner": ", ​",
       "moreItems": "{{items}} ({{total}} Elemente)",
       "quotaReset": "Weckung bei Quoten-Reset",
-      "crontab": "Crontab: {{expr}}",
+      "crontab": "Crontab: {{expr}}​",
       "daily": "Täglich {{times}}{{suffix}}",
       "weekly": "Wöchentlich {{days}} {{times}}{{suffix}}",
       "interval": "Alle {{hours}} Std. ({{start}}-{{end}})",
@@ -1486,7 +1482,7 @@
     },
     "triggerSource": {
       "scheduled": "Geplant",
-      "crontab": "Crontab",
+      "crontab": "Crontab​",
       "quotaReset": "Quoten-Reset",
       "manual": "Jetzt testen",
       "unknown": "Unbekannt",
@@ -1514,8 +1510,9 @@
       "triggerMode": "Auslösemodus",
       "triggerModeHint": "1. Geplant: Auslösung zu festgelegten Zeiten.\n2. Crontab: per Ausdruck definieren.\n3. Quoten-Reset: einmal auslösen, wenn Quote voll ist.",
       "modeScheduled": "📅 Geplant",
-      "modeCrontab": "🧩 Crontab",
+      "modeCrontab": "🧩 Crontab​",
       "modeQuotaReset": "🔄 Quoten-Reset",
+      "antigravityVersion": "Antigravity IDE-Version",
       "modelSelect": "Modellauswahl",
       "modelHint": "Im selben Quotengruppe nur ein Modell wählen. Mehrere Modelle werden nacheinander ausgelöst.",
       "modelsEmpty": "Keine empfohlenen Modelle",
@@ -1540,7 +1537,7 @@
       "intervalSetting": "Intervall-Einstellungen",
       "intervalEvery": "Alle",
       "intervalHours": "Stunden",
-      "intervalStart": "Start",
+      "intervalStart": "Start​",
       "intervalEnd": "Ende",
       "nextRuns": "Nächste Ausführungen",
       "nextRunsEmpty": "Bitte Auslösezeiten wählen",
@@ -1555,7 +1552,11 @@
       "timeWindowFrom": "Von",
       "timeWindowTo": "Bis",
       "fallbackTimes": "Zeiten außerhalb des Fensters",
-      "saveTask": "Aufgabe speichern"
+      "saveTask": "Aufgabe speichern",
+      "executionMode": "Ausführungsmodus",
+      "executionModeAuto": "Direkt ausführen",
+      "executionModeConfirm": "Bestätigung nötig",
+      "confirmTimeout": "Bestätigungs-Timeout"
     },
     "test": {
       "modelsLabel": "Zu auslösende Modelle",
@@ -1595,6 +1596,7 @@
     "installFailed": "Die Systeminstallation ist fehlgeschlagen. Versuchen Sie es später erneut oder laden Sie das Paket manuell herunter.",
     "restartRequiredAfterInstall": "Das Update ist installiert. Starten Sie die App manuell neu, um den Wechsel abzuschließen.",
     "stoppingApiService": "API-Dienst wird gestoppt...",
+    "stopApiServiceFailed": "Der API-Dienst konnte nicht beendet werden. Deaktivieren Sie ihn zuerst und versuchen Sie es erneut.",
     "skipThisVersion": "Diese Version überspringen",
     "skipFailed": "Dieses Update konnte nicht übersprungen werden: {{error}}"
   },
@@ -1629,11 +1631,28 @@
       "comingSoon": "Multi-Instanz kommt bald",
       "comingSoonDesc": "Führen Sie mehrere Codex.app-Instanzen mit verschiedenen Konten gleichzeitig aus.",
       "unsupported": {
-        "desc": "Codex Multi-Instanz ist derzeit nur auf macOS verfügbar."
+        "desc": "Codex Multi-Instanz ist derzeit nur auf macOS verfügbar.",
+        "title": "Auf diesem System nicht unterstützt"
       },
       "quota": {
         "hourly": "5 Std.",
         "weekly": "Wöchentlich"
+      },
+      "syncAllRecords": {
+        "action": "Alle Instanzdatensätze synchronisieren",
+        "autoAction": "Alle Instanzdatensätze automatisch synchronisieren",
+        "autoDisabled": "Automatische Synchronisierung aller Instanzdatensätze ist aus",
+        "autoEnabled": "Automatische Synchronisierung aller Instanzdatensätze ist an",
+        "autoTooltip": "Alle Instanzdatensätze automatisch synchronisieren",
+        "autoDesc": "Aus lässt Datensätze mehrerer Instanzen getrennt. Wenn aktiviert, führt das Starten oder Schließen einer Instanz lokale Datensätze erst automatisch zusammen, nachdem alle Codex-Instanzen gestoppt sind.",
+        "closeFirst": "Schließe vor der Synchronisierung alle Codex-Instanzen, damit laufende Instanzen keine alten Datensätze zurückschreiben.",
+        "confirmMessage": "Lokale Sitzungsdatensätze werden vollständig über alle Codex-Instanzen synchronisiert. Sitzungen mit gleicher ID werden auf Ereignisebene zusammengeführt; wichtige Zieldateien und alte Sitzungsdateien werden vor dem Schreiben gesichert. Fortfahren?",
+        "needTwo": "Zum Synchronisieren der Datensätze werden mindestens zwei Instanzen benötigt",
+        "settingsSection": "Synchronisierung",
+        "settingsSubtitle": "Verhalten der Datensatzsynchronisierung für mehrere Codex-Instanzen verwalten",
+        "settingsTitle": "Instanzdatensatz-Einstellungen",
+        "title": "Alle Instanzdatensätze synchronisieren",
+        "tooltip": "Alle Instanzdatensätze synchronisieren"
       },
       "restartStrategy": {
         "safe": {
@@ -1643,7 +1662,7 @@
         },
         "force": {
           "principle": "Sucht Prozesse anhand von CODEX_HOME und beendet sie gewaltsam (SIGKILL / taskkill /F), startet dann die Zielinstanz.",
-          "commandMac": "macOS: pkill -9 -f \"CODEX_HOME=<dir>\"",
+          "commandMac": "macOS: pkill -9 -f \"CODEX_HOME=<dir>\"​",
           "commandWin": "Windows: taskkill /F /PID <pid> (Übereinstimmung mit CODEX_HOME)"
         }
       }
@@ -1661,6 +1680,7 @@
       "refreshTokenExpired": "Die Codex-Anmeldeautorisierung ist abgelaufen und kann nicht automatisch erneuert werden. Melden Sie sich erneut beim Codex-Konto an.",
       "refreshTokenInvalidated": "Die Codex-Anmeldeautorisierung wurde vom Dienst widerrufen und kann nicht automatisch erneuert werden. Melden Sie sich erneut beim Codex-Konto an.",
       "invalidGrant": "Die Codex-Anmeldeautorisierung ist ungültig und kann nicht automatisch erneuert werden. Melden Sie sich erneut beim Codex-Konto an.",
+      "staleAccount": "Dieses Konto ist nicht mehr im lokalen Kontospeicher. Die Kontoliste wurde aktualisiert. Importieren Sie dieses Codex-Konto erneut oder melden Sie sich erneut an.",
       "unsupportedCountryRegion": "Die aktuelle Netzwerkregion unterstützt das Erneuern der Codex-Autorisierung nicht. Der OpenAI-Autorisierungsdienst hat diesen Netzwerkausgang abgelehnt. Wechseln Sie in eine unterstützte Region und versuchen Sie es erneut."
     },
     "current": "Aktuell",
@@ -1675,6 +1695,11 @@
     },
     "oauth": {
       "desc": "Klicke unten und schließe die OpenAI-Autorisierung im Browser ab",
+      "trialGuideTitle": "Tipps zur Testregistrierung",
+      "trialGuideDesc": "Für ein neues Konto empfiehlt sich eine langfristig erreichbare Gmail-Adresse; das ist stabiler für Kontobestand und spätere Verifizierung.",
+      "trialGuideAliasDesc": "Ein Haupt-Gmail kann bis zu 5 Alias-Adressen vorbereiten, um ChatGPT-Registrierungen zu trennen; bitte gemäß den Regeln des Zielservices nutzen.",
+      "trialGuideLink": "Testanleitung öffnen",
+      "gmailAliasLink": "Gmail-Alias erzeugen",
       "preparing": "Autorisierungslink wird vorbereitet...",
       "exchanging": "Token wird ausgetauscht...",
       "portInUse": "Port {{port}} ist bereits belegt. Bitte schließen Sie die Anwendung, die ihn nutzt, und versuchen Sie es erneut.",
@@ -1684,7 +1709,8 @@
       "portStillInUse": "Port {{port}} ist weiterhin belegt.",
       "portInUseAction": "Port schließen und erneut versuchen",
       "timeout": "Authentifizierung abgelaufen. Bitte klicken",
-      "timeoutRetry": "Authentifizierungslink aktualisieren"
+      "timeoutRetry": "Authentifizierungslink aktualisieren",
+      "reauthEmailLabel": "Konto erneut autorisieren"
     },
     "token": {
       "desc": "auth.json, Konto-JSON oder refresh_token einfügen.",
@@ -1709,18 +1735,28 @@
       "title": "API-Dienst",
       "accountCount": "{{count}} Konten",
       "baseUrl": "Adresse",
+      "addressKind": "Adresstyp",
+      "addressLocal": "Lokal",
+      "addressLan": "Heimnetz",
+      "accessScopeLabel": "Zugriffsumfang",
+      "accessScopeLocalhost": "Nur lokal",
+      "accessScopeLan": "Heimnetz",
+      "accessScopeLocalhostShort": "Nur lokal",
+      "accessScopeLanShort": "Lokal+Netz",
+      "accessScopeSaveSuccess": "Zugriffsumfang des API-Diensts aktualisiert",
       "apiKey": "Schlüssel",
       "statusRunning": "Aktiv",
       "statusStopped": "Gestoppt",
       "statusDisabled": "Deaktiviert",
       "emptyMembers": "Diese Sammlung enthält noch keine Konten",
-      "footerHint": "Hört lokal und im LAN",
+      "footerHint": "Zugriff: {{scope}}",
       "manageAccounts": "Konten verwalten",
       "rotateKey": "Schlüssel erneuern",
       "rotateConfirmMessage": "Nach dem Zurücksetzen wird der aktuelle API-Service-Schlüssel sofort ungültig. Laufende Anfragen könnten dadurch nicht mehr verfügbar sein. Fortfahren?",
       "disableService": "Dienst deaktivieren",
       "enableService": "Dienst aktivieren",
       "saveSuccess": "API-Dienst-Sammlung aktualisiert",
+      "noEligibleAccountsSelected": "Die ausgewählten Konten befinden sich nicht in dieser Umgebung oder können vom API-Dienst nicht verwendet werden. Importiere zuerst ein nutzbares Codex-Konto in diese Umgebung.",
       "removeSuccess": "Konto aus dem API-Dienst entfernt",
       "rotateSuccess": "API-Dienst-Schlüssel erneuert",
       "enabledSuccess": "API-Dienst aktiviert",
@@ -1731,7 +1767,7 @@
       "hideKey": "Schlüssel ausblenden",
       "modal": {
         "title": "Zum API-Dienst hinzufügen",
-        "desc": "Wählen Sie die OAuth-Konten aus, die in die API-Dienst-Sammlung aufgenommen werden sollen. Hinzugefügte Konten werden aus der normalen Übersicht ausgeblendet und nur noch über die API-Dienst-Karte verwaltet.",
+        "desc": "Wählen Sie OAuth- oder API-Key-Konten aus, die in die API-Dienst-Sammlung aufgenommen werden sollen. Hinzugefügte Konten werden aus der normalen Übersicht ausgeblendet und nur noch über die API-Dienst-Karte verwaltet.",
         "empty": "Keine OAuth-Konten verfügbar",
         "selected": "Im API-Dienst",
         "available": "Normale Übersicht",
@@ -1739,6 +1775,7 @@
         "freeNotice": "Kostenlose Konten werden noch nicht unterstützt. Kostenlose Konten können nicht ausgewählt werden.",
         "freeUnsupported": "Kostenlose Konten werden noch nicht unterstützt",
         "restrictFreeToggle": "Free-Konten begrenzen",
+        "chatApiKeyUnsupported": "Chat Completions nicht unterstützt",
         "freeNoticeRestricted": "Free-Konten sind eingeschränkt. Deaktiviere dies, um sie auszuwählen.",
         "freeNoticeUnstable": "Proxy für Free-Konten kann instabil sein. Vorsichtig verwenden.",
         "restrictFreeDisableConfirmTitle": "Free-Konten zulassen",
@@ -1746,10 +1783,28 @@
         "manageMembers": "Mitglieder verwalten"
       },
       "entryAction": "Zum API-Dienst hinzufügen",
-      "testAction": "API-Dienst testen",
-      "testSuccess": "API-Dienst-Test erfolgreich ({{count}} Modelle)",
-      "testTimeout": "Zeitüberschreitung beim Test. Prüfen Sie, ob der lokale Dienst läuft.",
+      "testAction": "Prüfen",
+      "testDialogTitle": "API-Dienst testen",
+      "testDialogDesc": "Startet wie im Playground einen echten Chat über den aktuellen API-Dienst, um Modell, Konto-Routing und Upstream-Antwort zu prüfen.",
+      "testProgressTitle": "Dienst wird getestet",
+      "testProgressDesc": "Es wird eine echte Anfrage an den lokalen API-Dienst gesendet. Bitte warten.",
+      "testOutputTitle": "Zurückgegebene Antwort",
+      "testResultTitle": "Ergebnis der Dienstprüfung",
+      "testSuccess": "Dienstprüfung bestanden: Lokaler Dienst, Schlüssel und Upstream-Antwort sind fehlerfrei ({{model}}, {{latency}}). Wenn der Client weiterhin fehlschlägt, prüfen Sie Base URL, API Key oder Proxy-Einstellungen.",
+      "testFailureStage": "Prüfschritt",
+      "testFailureCause": "Fehlerursache",
+      "testFailureSuggestion": "Empfohlene Behebung",
+      "testFailureStatus": "HTTP-Status",
+      "testFailureModel": "Testmodell",
+      "testFailureDetail": "Diagnosedetails",
+      "testFailureGatewayOutput": "Gateway-Antwort",
+      "testTimeout": "Zeitüberschreitung bei der echten Anfrageprüfung. Prüfen Sie lokalen Dienst, Proxy oder Upstream-Netzwerk.",
       "testUnavailable": "Die aktuelle API-Dienst-URL ist nicht erreichbar",
+      "testConnectFailed": "Keine Verbindung zu {{url}}. Prüfen Sie, ob der API-Dienst läuft, der Port unverändert ist und nichts blockiert.",
+      "testAuthFailed": "Dienst erreichbar, aber Authentifizierung fehlgeschlagen: {{detail}}. Prüfen Sie API-Dienstschlüssel oder Kontoanmeldung.",
+      "testServiceUnavailable": "Dienst erreichbar, aber derzeit nicht verfügbar: {{detail}}. Prüfen Sie, ob der Dienst aktiv ist, die Kontosammlung leer ist oder Konten nutzbar sind.",
+      "testRateLimited": "Dienst erreichbar, aber Upstream ist limitiert oder das Kontingent ist erschöpft: {{detail}}.",
+      "testHttpFailed": "Dienst erreichbar, aber die Anfrage gab HTTP {{status}} zurück: {{detail}}.",
       "activateAction": "API-Dienst starten",
       "activateSuccess": "Zum API-Dienst gewechselt",
       "dashboardAction": "Service-Panel",
@@ -1764,12 +1819,12 @@
       "statsTitle": "Gesamt",
       "accountStatsTitle": "Nach Konto",
       "statsEmpty": "Noch keine Statistiken",
-      "summaryMeta": "{{count}} Konten · Lokal/LAN",
-      "summaryMetaUnconfigured": "Nicht konfiguriert · Lokal/LAN",
+      "summaryMeta": "{{count}} Konten · {{scope}}",
+      "summaryMetaUnconfigured": "Nicht konfiguriert · {{scope}}",
       "memberTitle": "Sammlungsmitglieder",
       "stats": {
         "requests": "Anfragen",
-        "requestsDetail": "Erfolg {{success}} / Fehler {{failed}}",
+        "requestsDetail": "OK {{success}} / Fehler {{failed}} / Abbr. {{canceled}} / Quelle {{upstreamFailed}} / Unvollst. {{incomplete}}",
         "tokens": "Token",
         "tokensDetail": "Eingabe {{input}} / Ausgabe {{output}}",
         "specialTokens": "Cache / Denken",
@@ -1779,9 +1834,13 @@
         "accountRequests": "{{count}} Anfragen",
         "accountTokens": "{{count}} Token",
         "accountResult": "Erfolg {{success}} / Fehler {{failed}}",
-        "accountTokensCompact": "{{value}}"
+        "accountTokensCompact": "{{value}}​",
+        "images": "Bildanfragen",
+        "imagesDetail": "Erzeugen {{generate}} / Bearbeiten {{edit}} / Berechtigung {{blocked}}",
+        "estimatedCost": "Geschätzter Wert",
+        "estimatedCostDetail": "Aus Preis-Snapshots der Anfragen summiert"
       },
-      "routingLabel": "Routing",
+      "routingLabel": "Routing​",
       "routingSaveSuccess": "API-Service-Routing wurde aktualisiert",
       "routingDescriptionAuto": "Bevorzugt Konten mit höherem Tarif und mehr Restkontingent, rotiert dann innerhalb derselben Tarifstufe.",
       "routingDescriptionQuotaHighFirst": "Bevorzugt Konten mit mehr verbleibendem Kontingent.",
@@ -1806,7 +1865,8 @@
         "quotaLowFirst": "Niedrige Quote zuerst",
         "planHighFirst": "Hohes Abo zuerst",
         "planLowFirst": "Niedriges Abo zuerst",
-        "expirySoonFirst": "Bald ablaufend zuerst"
+        "expirySoonFirst": "Bald ablaufend zuerst",
+        "custom": "Benutzerdefiniert"
       },
       "statusUnconfigured": "Nicht konfiguriert",
       "expandDetails": "Details aufklappen",
@@ -1839,12 +1899,119 @@
       "modelIdViewOnly": "Nur Ansicht",
       "quotaPool": {
         "title": "Kontingentpool",
-        "hourlyShort": "5h",
+        "hourlyShort": "5h​",
         "weeklyShort": "Woche",
         "viewFull": "Vollständige Statistik anzeigen",
         "modalTitle": "Kontingentpool des API-Dienstes",
         "empty": "Noch keine Kontingentstatistik"
-      }
+      },
+      "oauthBinding": {
+        "desc": "Optional. Es können nur OAuth-Konten mit refresh_token ausgewählt werden. Ohne Verknüpfung nutzt der API-Dienst weiter den bisherigen API-Key-Ablauf; nach der Verknüpfung verwendet die Anmeldung das OAuth-Konto und der Provider die API-Dienst-Konfiguration.",
+        "currentService": "API-Dienst: {{name}}"
+      },
+      "customRoutingEdit": "Benutzerdefiniertes Routing bearbeiten",
+      "customRoutingTitle": "Benutzerdefiniertes Routing",
+      "customRoutingDesc": "Lege Priorität und Gewicht je Konto fest, um Auswahlreihenfolge und Lastverteilung innerhalb gleicher Priorität zu steuern.",
+      "customRoutingPriorityTitle": "Priorität",
+      "customRoutingPriorityDesc": "Höhere Werte werden zuerst gewählt; Konten mit niedrigerer Priorität werden erst versucht, wenn höhere nicht verfügbar sind.",
+      "customRoutingWeightTitle": "Gewicht",
+      "customRoutingWeightDesc": "Dient der Lastverteilung bei gleicher Priorität. Höheres Gewicht bedeutet mehr Anfragen.",
+      "customRoutingSearch": "E-Mail, Abo oder Konto-ID suchen",
+      "customRoutingSelected": "{{count}} ausgewählt",
+      "customRoutingPriorityShort": "Priorität",
+      "customRoutingWeightShort": "Gewicht",
+      "customRoutingApplyBatch": "Auf Auswahl anwenden",
+      "customRoutingReset": "Zurücksetzen",
+      "customRoutingAccountColumn": "Konto",
+      "customRoutingQuotaColumn": "Kontingent",
+      "customRoutingEmpty": "Keine konfigurierbaren Konten in der aktuellen API-Service-Sammlung",
+      "customRoutingSave": "Routing speichern",
+      "customRoutingSaveSuccess": "Benutzerdefiniertes Routing des API-Service wurde aktualisiert",
+      "upstreamProxyLabel": "API-Proxy-URL",
+      "upstreamProxySaveSuccess": "API-Proxy-URL aktualisiert",
+      "upstreamProxyUrlPlaceholder": "Leer = globaler Proxy",
+      "upstreamProxySaveAction": "Proxy speichern",
+      "imageGenerationLabel": "image_generation-Tool",
+      "imageGenerationDesc": "Steuert, ob Text-Chats das Bildwerkzeug deklarieren und ob Bild-Endpunkte verfügbar sind.",
+      "imageGenerationSaveSuccess": "image_generation-Einstellung aktualisiert",
+      "apiKeysTitle": "Client-Schlüssel",
+      "apiKeyAdd": "Schlüssel hinzufügen",
+      "apiKeyLabel": "Schlüsselname",
+      "apiKeySaveLabel": "Namen speichern",
+      "apiKeyDefaultLabel": "Kunde {{index}}",
+      "apiKeyCreateSuccess": "API Key erstellt",
+      "apiKeyUpdateSuccess": "API Key aktualisiert",
+      "apiKeyRotateSuccess": "API Key zurückgesetzt",
+      "apiKeyDeleteSuccess": "API Key gelöscht",
+      "apiKeyRotateConfirm": "Dieser API Key ist nach dem Zurücksetzen sofort ungültig. Fortfahren?",
+      "apiKeyDeleteConfirm": "Diesen API Key löschen?",
+      "apiKeyDelete": "Schlüssel löschen",
+      "apiKeyDisable": "Schlüssel deaktivieren",
+      "apiKeyEnable": "Schlüssel aktivieren",
+      "modelStatsTitle": "Nach Modell",
+      "apiKeyStatsTitle": "Nach Schlüssel",
+      "healthAvailable": "Verfügbar",
+      "healthUnavailable": "Nicht verfügbar",
+      "healthCooldown": "Abklingzeit {{count}}",
+      "healthImageUnavailable": "Bilder nicht verfügbar",
+      "requestLogTitle": "Anfragenprotokoll",
+      "requestLogEmpty": "Noch keine Anfragenprotokolle",
+      "requestLogSuccess": "Erfolg",
+      "requestLogFailed": "Fehlgeschlagen",
+      "requestLogTokens": "{{value}} Token",
+      "imageGenerationMode": {
+        "enabled": "Aktiv",
+        "imagesOnly": "Nur Bilder",
+        "disabled": "Aus"
+      },
+      "requestKind": {
+        "text": "Textmodus",
+        "imageGeneration": "Bild",
+        "imageEdit": "Bearbeitung",
+        "other": "Sonstige"
+      },
+      "testSuccessInline": "API-Diensttest bestanden",
+      "gatewayModeLabel": "Gateway-Modus",
+      "gatewayModeLegacyShort": "Alt",
+      "gatewayModeSidecarShort": "Neu",
+      "gatewayModeNewLabel": "API-Dienst-Neu",
+      "gatewayModeOldLabel": "API-Dienst-Alt",
+      "gatewayModeSaveSuccess": "Gateway-Modus des API-Dienstes aktualisiert",
+      "gatewayGuideTitle": "Gateway hier wechseln",
+      "gatewayGuideDesc": "Standard ist das neue Gateway. Bei Kompatibilitätsproblemen oder Client-Anfragefehlern kannst du hier auf das alte Gateway wechseln.",
+      "gatewayGuideAction": "Verstanden",
+      "upstreamProxyUrlPlaceholderLegacy": "Leer lassen fur globalen Proxy, Umgebungs-Proxy oder System-Proxy",
+      "upstreamProxyUrlPlaceholderSidecar": "Leer lassen, um den globalen Proxy zu verwenden",
+      "debugLogsLabel": "Debugprotokolle",
+      "debugLogsDescription": "Gibt API-Debugprotokolle zur Analyse von Gateway- und Streamingproblemen aus",
+      "debugLogsEnabledSuccess": "Debugprotokolle aktiviert",
+      "debugLogsDisabledSuccess": "Debugprotokolle deaktiviert",
+      "debugLogsEnableConfirmTitle": "Debugprotokolle aktivieren",
+      "debugLogsEnableConfirmMessage": "Nach dem Aktivieren schreibt der API-Dienst Debugprotokolle zur Diagnose von Gateway-, Proxy-, Upstream-Request- und Streaming-Problemen. Bei hoher Parallelität oder langen Streaming-Anfragen kann das etwas Leistung kosten. Nach der Fehlersuche wieder deaktivieren. Aktivieren?",
+      "debugLogsEnableConfirmAction": "Aktivieren",
+      "debugLogsDisableConfirmTitle": "Debugprotokolle deaktivieren",
+      "debugLogsDisableConfirmMessage": "Nach dem Deaktivieren schreibt der API-Dienst keine Debugprotokolle mehr. Das reduziert Log-Rauschen und Zusatzaufwand. Für die Diagnose von Gateway-, Proxy- oder Streaming-Problemen können Sie sie erneut aktivieren. Deaktivieren?",
+      "debugLogsDisableConfirmAction": "Deaktivieren",
+      "clientBaseUrlHostLabel": "Client-Adresse",
+      "clientBaseUrlHostDesc": "Beeinflusst nur die Base URL, die in den Codex Provider geschrieben und an Clients kopiert wird; die Dienst-Adresse bleibt unverändert.",
+      "clientBaseUrlHostSaveSuccess": "Client-Adresse wurde aktualisiert",
+      "accountPoolHealth": {
+        "title": "Kontenpool",
+        "allAvailable": "Alle OK {{count}}",
+        "availableRatio": "Bereit {{available}}/{{total}}",
+        "issueSummary": "Fehler {{abnormal}} · Pause {{cooldown}}",
+        "detail": "OK {{available}}/{{total}}, Fehler {{abnormal}}, Pause {{cooldown}}, fehlt {{missing}}, Auth {{authError}}, Kontingent {{quotaLimited}}"
+      },
+      "testChatModel": "Modell",
+      "testChatClear": "Chat leeren",
+      "testChatEmpty": "Senden Sie eine Nachricht, um einen echten Chat über den aktuellen API-Dienst zu starten.",
+      "testChatLatency": "{{latency}} Dauer",
+      "testChatSending": "API-Dienst wird angefragt",
+      "testChatInputPlaceholder": "Testnachricht eingeben, Enter sendet",
+      "testChatSend": "Senden",
+      "testChatInputRequired": "Testnachricht eingeben",
+      "testChatModelRequired": "Modell-ID wählen",
+      "testChatEmptyResponse": "Leere Antwort"
     },
     "local": {
       "desc": "Aktuell eingeloggtes Konto aus ~/.codex/auth.json importieren",
@@ -1869,11 +2036,11 @@
       "requestFailedManualRetry": "Netzwerk prüfen. Das neueste Kontingent wurde nicht abgerufen. Zum Wiederholen aktualisieren."
     },
     "plan": {
-      "free": "FREE",
-      "plus": "PLUS",
-      "pro": "PRO",
-      "team": "TEAM",
-      "enterprise": "ENTERPRISE"
+      "free": "FREE​",
+      "plus": "PLUS​",
+      "pro": "PRO​",
+      "team": "TEAM​",
+      "enterprise": "ENTERPRISE​"
     },
     "list": {
       "showCodeReviewQuota": "Code-Review-Kontingent anzeigen"
@@ -1881,14 +2048,14 @@
     "time": {
       "today": "Heute {{time}}",
       "tomorrow": "Morgen {{time}}",
-      "dateTime": "{{date}} {{time}}"
+      "dateTime": "{{date}} {{time}}​"
     },
     "view": {
       "compact": "Kompaktansicht"
     },
     "filter": {
-      "plus": "PLUS ({{count}})",
-      "team": "TEAM ({{count}})"
+      "plus": "PLUS ({{count}})​",
+      "team": "TEAM ({{count}})​"
     },
     "sort": {
       "weekly": "Wöchentliches Kontingent",
@@ -2102,7 +2269,11 @@
       "runtimeConfigCodexCliPlaceholder": "z. B. /opt/homebrew/bin/codex",
       "runtimeConfigNodeLabel": "node-Pfad",
       "runtimeConfigNodePlaceholder": "z. B. /opt/homebrew/bin/node",
-      "runtimeConfigApplyHint": "Klicken Sie nach Änderungen auf „CLI erneut prüfen“, um sie zu speichern und sofort anzuwenden."
+      "runtimeConfigApplyHint": "Klicken Sie nach Änderungen auf „CLI erneut prüfen“, um sie zu speichern und sofort anzuwenden.",
+      "officialChatRuntimeTitle": "Offiziell direkt",
+      "officialChatRuntimePath": "Offizieller ChatGPT-Codex-Chat",
+      "officialChatRuntimeSource": "Offiziell direkt",
+      "officialChatRuntimeMessage": "Direkter Chat mit OAuth-Konto"
     },
     "sessionManager": {
       "title": "Sitzungsverwaltung",
@@ -2180,74 +2351,94 @@
         "custom": "Benutzerdefiniert",
         "endpoint": "Anbieter-Endpunkt",
         "hint": "Eine kompatible Base URL wurde automatisch eingetragen. Sie können sie weiterhin manuell bearbeiten.",
-        "website": "Website",
+        "website": "Website​",
         "apiKeyPage": "API-Key-Seite",
         "getApiKey": "Schlüssel holen"
       },
       "providers": {
         "openai_official": {
-          "name": "OpenAI Official"
+          "name": "OpenAI Official​"
         },
         "azure_openai": {
-          "name": "Azure OpenAI"
+          "name": "Azure OpenAI​"
         },
         "packycode": {
-          "name": "PackyCode"
+          "name": "PackyCode​"
         },
         "cubence": {
-          "name": "Cubence"
+          "name": "Cubence​"
         },
         "aigocode": {
-          "name": "AIGoCode"
+          "name": "AIGoCode​"
         },
         "rightcode": {
-          "name": "RightCode"
+          "name": "RightCode​"
         },
         "sssaicode": {
-          "name": "SSSAiCode"
+          "name": "SSSAiCode​"
         },
         "micu": {
-          "name": "Micu"
+          "name": "Micu​"
         },
         "x_code_api": {
-          "name": "X-Code API"
+          "name": "X-Code API​"
         },
         "ctok_ai": {
-          "name": "CTok.ai"
+          "name": "CTok.ai​"
         },
         "aihubmix": {
-          "name": "AiHubMix"
+          "name": "AiHubMix​"
         },
         "dmxapi": {
-          "name": "DMXAPI"
+          "name": "DMXAPI​"
         },
         "compshare": {
-          "name": "Compshare"
+          "name": "Compshare​"
         },
         "openrouter": {
-          "name": "OpenRouter"
+          "name": "OpenRouter​"
         },
         "aicodemirror": {
-          "name": "AICodeMirror"
+          "name": "AICodeMirror​"
         },
         "aicoding": {
-          "name": "AICoding"
+          "name": "AICoding​"
         },
         "crazyrouter": {
-          "name": "CrazyRouter"
+          "name": "CrazyRouter​"
         },
         "deepseek": {
-          "name": "DeepSeek"
+          "name": "DeepSeek​"
         },
         "moonshot": {
-          "name": "Moonshot"
+          "name": "Moonshot​"
         },
         "siliconflow": {
-          "name": "SiliconFlow"
+          "name": "SiliconFlow​"
         },
         "cockpit_api": {
           "name": "Newbee API"
         }
+      },
+      "oauthBinding": {
+        "label": "OAuth-Bindung",
+        "unbound": "Nicht gebunden",
+        "action": "OAuth binden",
+        "actionShort": "Binden",
+        "title": "OAuth-Konto binden",
+        "desc": "Optional. Es können nur OAuth-Konten mit refresh_token ausgewählt werden. Ohne Verknüpfung wechselt dieses Konto mit dem bisherigen API-Key-Ablauf; nach der Verknüpfung verwendet die Anmeldung das OAuth-Konto und der Provider die Konfiguration dieses API-Key-Kontos.",
+        "currentAccount": "API-Key-Konto: {{name}}",
+        "selectLabel": "OAuth-Konto wählen",
+        "empty": "Noch kein OAuth-Konto vorhanden. Bitte zuerst ein OAuth-Konto hinzufügen.",
+        "emptyEligible": "Keine OAuth-Konten mit refresh_token. Bitte per OAuth erneut autorisieren oder zuerst ein geeignetes OAuth-Konto hinzufügen.",
+        "validationRequired": "Bitte ein OAuth-Konto wählen",
+        "validationSubscriptionRequired": "Es können nur OAuth-Konten mit refresh_token verknüpft werden",
+        "saveSuccess": "OAuth-Bindung aktualisiert",
+        "saveFailed": "OAuth-Bindung fehlgeschlagen: {{error}}",
+        "switchRequiresBinding": "Bitte zuerst ein OAuth-Konto binden",
+        "clearAction": "Trennen",
+        "clearSuccess": "OAuth-Verknüpfung entfernt.",
+        "clearFailed": "OAuth-Verknüpfung konnte nicht entfernt werden: {{error}}"
       }
     },
     "modelProviders": {
@@ -2258,7 +2449,7 @@
       "emptyTitle": "Noch keine Modellanbieter",
       "emptyDesc": "Klicken Sie oben rechts auf „Anbieter hinzufügen“, um loszulegen.",
       "baseUrl": "Basis-URL",
-      "website": "Website",
+      "website": "Website​",
       "apiKeyPage": "API-Key-Seite",
       "apiKeysCount": "{{count}} API-Keys",
       "referencesCount": "{{count}} verknüpfte Konten",
@@ -2272,7 +2463,13 @@
         "website": "Website (optional)",
         "apiKeyUrl": "API-Key-Seite (optional)",
         "newApiKeyName": "Name des neuen Keys (optional)",
-        "newApiKey": "Neuer API-Key"
+        "newApiKey": "Neuer API-Key",
+        "wireApi": "Protokoll",
+        "enableMode": "Aktivierung",
+        "modelCatalog": "Modellkatalog",
+        "visionCapability": "Bildeingabe",
+        "visionModels": "Vision-Modelle",
+        "visionRoutingModel": "Bild-Routing-Modell"
       },
       "validation": {
         "nameRequired": "Der Name des Anbieters ist erforderlich.",
@@ -2287,6 +2484,19 @@
       "confirmDelete": "Anbieter „{{name}}“ löschen?",
       "deleteFailed": "Anbieter konnte nicht gelöscht werden: {{error}}",
       "deleteApiKeyFailed": "API-Key konnte nicht gelöscht werden: {{error}}",
+      "enableAsBackend": "Als Codex-Backend nutzen",
+      "enabling": "Wird aktiviert...",
+      "enableSuccess": "{{name}} aktiviert und {{instance}} gestartet.",
+      "enableFailed": "Anbieter konnte nicht aktiviert werden: {{error}}",
+      "status": {
+        "active": "Aktuelles Backend",
+        "available": "Bereit"
+      },
+      "enableMode": {
+        "label": "Verbindungsmodus",
+        "gatewayMode": "Gateway-Modus",
+        "directMode": "Direktmodus"
+      },
       "selectSavedProvider": "Gespeicherte Anbieter",
       "selectSavedApiKey": "Gespeicherte API-Keys",
       "noSavedProviders": "Es sind noch keine Anbieter gespeichert. Sie können die Felder direkt ausfüllen; der Eintrag wird automatisch gespeichert.",
@@ -2345,7 +2555,108 @@
         "partialDetected": "Derzeit ist nur ein verwaltetes Feld festgelegt: model_context_window={{context}}, model_auto_compact_token_limit={{compact}}. Beim Speichern werden beide Felder mit dem aktuellen Schema neu geschrieben.",
         "notSet": "Nicht festgelegt"
       },
-      "managePresets": "Modellvorgaben"
+      "managePresets": "Modellvorgaben",
+      "wireApi": {
+        "responses": "Responses nativ",
+        "chatCompletions": "Chat-Completions-Protokoll",
+        "help": "Wähle für die meisten Anbieter Responses. Wechsle nur dann zu Chat Completions, wenn der Anbieter ausdrücklich nur dieses Protokoll unterstützt. Wenn du unsicher bist, wähle zuerst Responses.",
+        "helpAria": "Protokollhilfe anzeigen"
+      },
+      "testing": "Test läuft...",
+      "testSuccess": "Anbieter-Verbindung ist in Ordnung: {{protocol}}, {{model}}, {{latency}}.",
+      "testFailed": "Anbietertest fehlgeschlagen: {{error}}",
+      "testFailure": {
+        "credential": "API-Key nicht verfügbar",
+        "url": "Ungültige Base URL",
+        "network": "Netzwerkverbindung fehlgeschlagen",
+        "models": "Models-Endpunkt fehlerhaft",
+        "parse": "Antwort konnte nicht gelesen werden",
+        "httpStatus": "Status {{status}}",
+        "message": "{{title}}: {{detail}}. {{suggestion}}​"
+      },
+      "testSuggestion": {
+        "addApiKey": "Füge vor dem Test einen API-Key für diesen Anbieter hinzu.",
+        "checkBaseUrl": "Prüfe, ob die Base URL den richtigen Versionspfad enthält, zum Beispiel /v1.",
+        "checkNetwork": "Prüfe Anbieteradresse, Proxy, Firewall oder den Status des Upstream-Dienstes.",
+        "checkApiKey": "Prüfe, ob der API-Key gültig ist und den Models-Endpunkt nutzen darf.",
+        "checkProviderStatus": "Prüfe Dienststatus, Proxy oder API-Kompatibilität des Anbieters.",
+        "checkModelsApi": "Bestätige, dass der Anbieter eine OpenAI-kompatible Modellliste zurückgibt."
+      },
+      "enableAndStart": "Starten",
+      "instance": {
+        "label": "Instanz starten",
+        "default": "Standardinstanz",
+        "running": "Läuft",
+        "targetHint": "Ziel: {{instance}}",
+        "uninitializedHint": "Die Zielinstanz ist nicht initialisiert. Starte sie zuerst einmal unter Mehrfachinstanzen.",
+        "shortLabel": "Instanz",
+        "saveFailed": "Instanzbindung konnte nicht gespeichert werden: {{error}}"
+      },
+      "modelCatalog": "Modelle",
+      "modelCatalogEmpty": "Kein Modellkatalog",
+      "gatewayHint": "Drittanbieter starten über das lokale Gateway zur Instanztrennung und Protokollumwandlung. Offizielle OpenAI-Anbieter bleiben direkt.",
+      "vision": {
+        "providerDefault": "Dieser Anbieter unterstützt Bildeingaben standardmäßig",
+        "providerDefaultHint": "Wenn deaktiviert, dürfen nur die unten gelisteten Modelle Bilder erhalten; andere weist das lokale Gateway ab.",
+        "modelsHint": "Ein Modell pro Zeile. Nützlich, wenn nur einige Modelle dieses Anbieters eingefügte Bilder unterstützen.",
+        "routingModelHint": "Wenn das aktuelle Modell keine Bilder liest, nutzt die Anfrage dieses Modell; leer nutzt automatisch das einzige Vision-Modell.",
+        "allModels": "Bilder",
+        "partialModels": "Teilweise Bilder",
+        "textOnly": "Nur Text"
+      },
+      "sponsorRecommended": "Relay-Empfehlung",
+      "builtinProviders": "Integrierte Anbieter",
+      "sponsorHint": "Die URL des exklusiven Relay-Dienstes wurde eingetragen. Nach Eingabe des API Key fragt die Karte Guthaben und Nutzung automatisch ab.",
+      "integration": {
+        "sub2api": "Sub2API-kompatibel",
+        "newApi": "New-API-kompatibel"
+      },
+      "usage": {
+        "title": "Kontingentübersicht",
+        "remaining": "Verbleibend",
+        "today": "Heute",
+        "total": "Gesamt",
+        "requests": "Anfragen heute",
+        "loading": "Kontingent wird abgefragt...",
+        "failed": "Kontingentabfrage fehlgeschlagen: {{error}}",
+        "pending": "Warten auf Kontingentabfrage",
+        "noKey": "Kein abfragbares Kontingent",
+        "used": "Verbraucht",
+        "limit": "Grenze",
+        "viewDetail": "Details​",
+        "detailTitle": "Servicepanel",
+        "rawFields": "Servicedaten",
+        "fields": {
+          "status": "Zustand",
+          "planName": "Tarif",
+          "remaining": "Restguthaben",
+          "balance": "Guthaben",
+          "todayRequests": "Anfragen heute",
+          "todayTokens": "Token heute",
+          "todayCost": "Kosten heute",
+          "totalRequests": "Anfragen gesamt",
+          "totalTokens": "Token gesamt",
+          "totalCost": "Kosten gesamt",
+          "hardLimitUsd": "Harte Grenze",
+          "softLimitUsd": "Weiche Grenze",
+          "systemHardLimitUsd": "Systemgrenze",
+          "accessUntil": "Zugriff bis",
+          "totalUsage": "Nutzung gesamt",
+          "quotaUnlimited": "Unbegrenzt",
+          "expiresAt": "Läuft ab",
+          "totalGranted": "Gewährt",
+          "totalAvailable": "Verfügbar",
+          "modelLimitsEnabled": "Modelllimits"
+        },
+        "accountBalance": "Kontostand",
+        "unlimitedQuota": "Unbegrenzt",
+        "booleanTrue": "Ja",
+        "booleanFalse": "Nein"
+      },
+      "oauthBinding": {
+        "desc": "Optional. Jedes OAuth-Konto mit refresh_token kann verknüpft werden. Ohne Verknüpfung nutzt der Anbieter weiter den ursprünglichen API-Key-Ablauf.",
+        "currentProvider": "Anbieter: {{name}}"
+      }
     },
     "quickSwitch": {
       "action": "Anbieter schnell wechseln",
@@ -2372,6 +2683,7 @@
       "column": "Ablauf",
       "unknown": "Neu autorisieren",
       "missingDetail": "Zum Abrufen neu autorisieren",
+      "refresh": "Abo aktualisieren",
       "expired": "Abgelaufen",
       "hoursLeft": "{{count}} h",
       "daysLeft": "{{count}} T.",
@@ -2392,6 +2704,7 @@
       "repairing": "Codex-Sitzungssichtbarkeit wird repariert...",
       "repairFailed": "Die automatische Reparatur ist fehlgeschlagen. Sie können es später unter Sitzungsverwaltung > Sichtbarkeit reparieren erneut versuchen.",
       "type": {
+        "api": "API-Modus",
         "apiKey": "API-Schlüssel",
         "apiService": "API-Dienst",
         "account": "Konto"
@@ -2422,6 +2735,228 @@
       "noStats": "Noch keine Statistik",
       "refreshHint": "Klicke auf Aktualisieren, um die Statistik dieses API-Schlüssels zu synchronisieren.",
       "dailyStats": "Tägliche Statistiken"
+    },
+    "speed": {
+      "title": "Tempo",
+      "standard": "Normal",
+      "standardDesc": "Standardtempo, normaler Verbrauch",
+      "fast": "Schnell",
+      "fastDesc": "1,5-faches Tempo, höherer Verbrauch",
+      "saveSuccess": "Tempo aktualisiert",
+      "saveFailed": "Tempo konnte nicht gespeichert werden: {{error}}"
+    },
+    "apiService": {
+      "navTitle": "Codex-API-Dienst",
+      "title": "Codex-API-Dienst",
+      "openPage": "API-Dienst öffnen",
+      "openFullPage": "Alle Funktionen anzeigen",
+      "tabs": {
+        "overview": "Dienstübersicht",
+        "keys": "Client-Schlüssel",
+        "accounts": "Kontopool",
+        "models": "Modelle & Fähigkeiten",
+        "logs": "Statistik & Protokolle"
+      },
+      "healthTitle": "Dienstzustand",
+      "compat": {
+        "title": "Protokollkompat.",
+        "desc": "Dieselbe API-Service-URL unterstützt OpenAI Chat, Responses, Anthropic Messages, Gemini und Ollama.",
+        "openaiTitle": "OpenAI-kompatibel",
+        "openaiNote": "Base URL nutzt /v1.",
+        "responsesTitle": "Responses-Eingang",
+        "responsesNote": "Nativer Codex-Responses-Eingang.",
+        "anthropicTitle": "Anthropic-Nachrichten",
+        "anthropicNote": "Denselben Service-Key verwenden.",
+        "geminiTitle": "Gemini-Eingang",
+        "geminiNote": "Base URL nutzt /v1beta.",
+        "ollamaTitle": "Ollama-Brücke",
+        "ollamaNote": "Authorization: Bearer verwenden.",
+        "modelCatalogLabel": "Modellkatalog"
+      },
+      "health": {
+        "availableAccounts": "Verfügbare Konten",
+        "cooldowns": "Abklingzeiten",
+        "imageUnavailable": "Bilder nicht verfügbar",
+        "keys": "Client-Schlüssel"
+      },
+      "accountHealth": {
+        "failures": "{{count}} Fehlversuche in Folge",
+        "image": "Bilder {{status}}"
+      },
+      "models": {
+        "availableTitle": "Verfügbare Modelle",
+        "capabilityTitle": "Fähigkeitsschalter",
+        "capabilityDesc": "gpt-image-2 wird je nach Dienstschalter, Kontotarif und aufgezeichnetem Bildfähigkeitsstatus automatisch angezeigt oder ausgeblendet.",
+        "rulesTitle": "Modellregeln",
+        "aliasTitle": "Modellaliasse",
+        "aliasPlaceholder": "gpt-5 => g5; + erhält das Originalmodell",
+        "excludedTitle": "Versteckte Modelle",
+        "excludedPlaceholder": "Ein Modell oder Muster pro Zeile, z. B. gpt-5-*",
+        "saveRules": "Regeln speichern",
+        "rulesSaved": "Modellregeln gespeichert",
+        "pricingAction": "Preise",
+        "pricingTitle": "Modellpreise",
+        "pricingDesc": "USD / 1M Token, nur für lokale Wertstatistiken.",
+        "pricingModel": "Modell",
+        "pricingInput": "Eingabe",
+        "pricingCache": "Cache-Eingabe",
+        "pricingOutput": "Ausgabe",
+        "pricingSource": "Quelle",
+        "pricingActions": "Aktion",
+        "pricingCachePlaceholder": "Wie Eingabe",
+        "pricingCustom": "Eigen",
+        "pricingPreset": "Vorgabe",
+        "pricingUnset": "Nicht gesetzt",
+        "pricingReset": "Zurücksetzen",
+        "pricingSaved": "Preise gespeichert",
+        "pricingInvalid": "Preise müssen Zahlen größer oder gleich 0 sein"
+      },
+      "keys": {
+        "policyTitle": "Modellrichtlinie",
+        "advancedPolicyTitle": "Erweitert: Modellrichtlinie",
+        "modelPrefix": "Modellpräfix",
+        "modelPrefixPlaceholder": "Beispiel: codex",
+        "allowedModels": "Erlaubte Modelle",
+        "allowedModelsPlaceholder": "Leer erlaubt alle; ein Modell oder Muster pro Zeile",
+        "excludedModels": "Ausgeschlossene Modelle",
+        "excludedModelsPlaceholder": "Ein Modell oder Muster pro Zeile",
+        "savePolicy": "Richtlinie speichern",
+        "policySaved": "Key-Modellrichtlinie gespeichert"
+      },
+      "routing": {
+        "optionsTitle": "Routingoptionen",
+        "sessionAffinity": "Sitzungsbindung",
+        "sessionAffinityTtl": "Bindungs-TTL",
+        "maxRetryCredentials": "Retry-Konten",
+        "maxRetryInterval": "Retry-Wartezeit",
+        "disableCooling": "Cooldown deaktivieren",
+        "saveOptions": "Optionen speichern",
+        "optionsSaved": "Routingoptionen gespeichert"
+      },
+      "validation": {
+        "numberRange": "Zahl von {{min}} bis {{max}} eingeben"
+      },
+      "logs": {
+        "allKinds": "Alle Typen",
+        "allStatuses": "Alle Status",
+        "allGatewayModes": "Alle Modi",
+        "modelFilter": "Modell",
+        "modelPlaceholder": "Modell-ID",
+        "accountFilter": "Konto",
+        "accountPlaceholder": "E-Mail oder Konto-ID",
+        "apiKeyFilter": "API-Schlüssel",
+        "apiKeyPlaceholder": "Name oder ID",
+        "kindFilter": "Typ",
+        "statusFilter": "Zustand",
+        "gatewayModeFilter": "Modus",
+        "errorFilter": "Fehler",
+        "errorPlaceholder": "Fehlerkategorie",
+        "clearFilters": "Filter löschen",
+        "loading": "Anfrageprotokolle werden geladen",
+        "gatewayModeUnknown": "Unbekannter Modus",
+        "requestIdShort": "Anfrage-ID {{id}}",
+        "httpStatus": "HTTP-Status {{status}}"
+      },
+      "timeouts": {
+        "entryLabel": "Erweitert",
+        "openAction": "Timeouts & Wiederholungen",
+        "title": "Timeouts & Wiederholungen",
+        "desc": "Werte in Sekunden. Beim Speichern wird der API-Dienst je nach aktuellem Gateway-Modus neu gestartet oder neu geladen.",
+        "sidecarTitle": "Neuer API-Dienst",
+        "legacyTitle": "Alter API-Dienst",
+        "streamOpen": "Stream-Start",
+        "streamIdle": "Stream-Leerlauf",
+        "imageOpen": "Bildstream-Start",
+        "imageIdle": "Bildstream-Leerlauf",
+        "openAttempts": "Startversuche",
+        "keepalive": "Verbindungsimpuls",
+        "requestRead": "Anfrage lesen",
+        "connect": "Upstream-Verbindung",
+        "streamTotal": "Stream gesamt",
+        "resetDefaults": "Standardwerte",
+        "saved": "Timeouts und Wiederholungen gespeichert",
+        "totalGteIdle": "Das Gesamt-Timeout des alten API-Streams darf nicht kleiner sein als das Leerlauf-Timeout",
+        "bootstrapRetries": "Start-Wdh.",
+        "websocketTitle": "WebSocket-Einstellungen",
+        "websocketConnect": "Verbindungs-Timeout",
+        "websocketInitial": "Timeout erste Nachricht",
+        "websocketIdle": "Leerlauf-Timeout",
+        "websocketHeartbeat": "Heartbeat-Intervall",
+        "sendRetryAttempts": "Sende-Wdh.",
+        "sendRetryBaseDelay": "Sende-Basisdelay (ms)",
+        "sendRetryMaxDelay": "Sende-Maxdelay (ms)",
+        "singleStatusAttempts": "Einzelkonto-Wdh.",
+        "singleStatusBaseDelay": "Konto-Basisdelay (ms)",
+        "singleStatusMaxDelay": "Konto-Maxdelay (ms)",
+        "maxDelayGteBase": "Maximale Verzögerung darf nicht kleiner als die Basisverzögerung sein",
+        "longWaitPreset": "Lange-Wartezeit-Profil",
+        "shortWaitPreset": "Kurz-Wartezeit-Profil",
+        "presetTitle": "Parameterprofil",
+        "presetSelect": "Profil wählen",
+        "presetName": "Profilname",
+        "presetNamePlaceholder": "Neues eigenes Profil",
+        "saveAsPreset": "Als Profil speichern",
+        "updatePreset": "Aktuelles Profil aktualisieren",
+        "deletePreset": "Profil löschen",
+        "presetSaved": "Profil gespeichert",
+        "presetUpdated": "Profil aktualisiert",
+        "presetDeleted": "Profil gelöscht",
+        "presetNameRequired": "Profilnamen eingeben",
+        "deletePresetConfirm": "Dieses eigene Profil löschen?",
+        "deletePresetTitle": "Profil löschen"
+      },
+      "accountModelRules": {
+        "action": "Modelle sperren",
+        "title": "Kontomodelle sperren",
+        "desc": "Passende Konten werden für diese Modellanfrage übersprungen. Ein Modell oder Platzhalter pro Zeile.",
+        "bulkLabel": "Stapelregeln",
+        "placeholder": "Beispiel:\ngpt-5.4-mini\ngpt-5.3-*",
+        "applySelected": "Auf Auswahl anwenden",
+        "selectAll": "Konten wählen",
+        "clearSelection": "Auswahl leeren",
+        "saveSuccess": "Kontomodell-Sperren gespeichert",
+        "cardCount": "{{count}} gesperrt"
+      }
+    },
+    "apiKey": {
+      "renameSuccess": "Umbenannt",
+      "renameFailed": "Umbenennen fehlgeschlagen"
+    },
+    "batchImport": {
+      "title": "Codex-Stapelimport",
+      "resultSubtitle": "Importergebnis",
+      "previewSubtitle": "Zu speichernde Konten wählen",
+      "scanSubtitle": "Konten werden einzeln gelesen und geprüft",
+      "parseSubtitle": "Kontodateien werden gelesen",
+      "cancelling": "Wird abgebrochen...",
+      "scanDone": "Scan abgeschlossen",
+      "parseDone": "Einlesen abgeschlossen",
+      "scanning": "Scan läuft",
+      "parsing": "Einlesen",
+      "current": "Aktuell",
+      "imported": "Importiert",
+      "failed": "Fehlgeschlagen",
+      "quotaOk": "Konto OK",
+      "quotaFailed": "Störung",
+      "checkQuotaToggle": "Konten prüfen",
+      "preparing": "Import wird vorbereitet...",
+      "importSelected": "Ausgewählte Konten importieren",
+      "noSelection": "Bitte zuerst Konten auswählen",
+      "groups": {
+        "ready": "Bereit",
+        "quotaFailed": "Störung",
+        "existing": "Vorhanden",
+        "invalid": "Ungültig"
+      },
+      "cancelScan": "Scan abbrechen",
+      "cancelParse": "Einlesen abbrechen",
+      "cancelled": "Abgebrochen",
+      "resumeScan": "Scan fortsetzen",
+      "resumeParse": "Einlesen fortsetzen",
+      "selectedCount": "Ausgewählt {{count}}/{{total}}",
+      "selectAllAccounts": "Alle Konten wählen",
+      "selectReady": "OK-Konten wählen",
+      "clearSelection": "Auswahl löschen"
     }
   },
   "githubCopilot": {
@@ -2474,25 +3009,40 @@
       "storage": "Datenumfang: Der lokale Import liest GitHub-Anmeldesitzungen aus VS Code, der Wechsel aktualisiert dieselben Einträge; OAuth, Token-Import, lokale Importprüfung und Quotenaktualisierung rufen offizielle GitHub-APIs mit den erforderlichen Auth-Feldern auf. state.vscdb und Systemschlüssel werden nicht hochgeladen."
     }
   },
+  "runtime": {
+    "installedVersion": {
+      "loading": "Installierte Version wird erkannt",
+      "missing": "Keine installierte Version erkannt",
+      "detecting": "Erkennung",
+      "notFound": "Keine Version erkannt"
+    }
+  },
   "dashboard": {
     "title": "Account-Dashboard",
+    "apiRelay": {
+      "localConfig": "Lokale Konfiguration",
+      "localConfigDesc": "Lokale Relay-Einstellungen, API-Key-Prüfung und Client-Schnelleinrichtung verwalten.",
+      "status": "Konfigurationsstatus",
+      "enabledByConfig": "Durch Remote-Konfiguration aktiviert",
+      "openLocalConfig": "Lokale Konfiguration öffnen"
+    },
     "summary": {
       "label": "Überblick",
       "title": "Account-Snapshot",
-      "desc": "Antigravity und Codex auf einen Blick"
+      "desc": "Antigravity IDE und Codex auf einen Blick"
     },
     "stats": {
-      "antigravity": "Antigravity-Konten",
+      "antigravity": "Antigravity IDE-Konten",
       "codex": "Codex-Konten",
-      "currentAntigravity": "Aktuelles Antigravity",
+      "currentAntigravity": "Aktuelles Antigravity IDE",
       "currentCodex": "Aktuelles Codex",
       "providers": "Anbieter",
       "totalAccounts": "Gesamtanzahl"
     },
     "panels": {
-      "antigravity": "Antigravity",
-      "codex": "Codex",
-      "githubCopilot": "GitHub Copilot",
+      "antigravity": "Antigravity IDE​",
+      "codex": "Codex​",
+      "githubCopilot": "GitHub Copilot​",
       "planDistribution": "Planverteilung",
       "current": "Aktuelles Konto",
       "recommended": "Empfohlenes Konto",
@@ -2505,7 +3055,7 @@
     },
     "emptyAccount": "Kein Konto",
     "sections": {
-      "antigravity": "Antigravity-Konten",
+      "antigravity": "Antigravity IDE-Konten",
       "codex": "Codex-Konten"
     },
     "actions": {
@@ -2538,7 +3088,7 @@
   },
   "quickSettings": {
     "antigravity": {
-      "title": "Antigravity-Einstellungen",
+      "title": "Antigravity IDE-Einstellungen",
       "appPath": "App-Pfad"
     },
     "codex": {
@@ -2574,6 +3124,18 @@
           "contextWindowInvalid": "Das Kontextfenster muss eine Ganzzahl größer als 0 sein.",
           "autoCompactInvalid": "Der Grenzwert für die automatische Komprimierung muss eine Ganzzahl größer als 0 sein."
         }
+      },
+      "appSpeed": {
+        "title": "Codex-Geschwindigkeit",
+        "desc": "Als Startgeschwindigkeit gespeichert; wird vor dem Start geschrieben.",
+        "standard": "Normal",
+        "fast": "Schnell",
+        "launch": "Neustart",
+        "loadFailed": "Codex-Geschwindigkeit konnte nicht geladen werden: {{error}}",
+        "saveSuccess": "Codex-Startgeschwindigkeit gespeichert.",
+        "saveFailed": "Codex-Geschwindigkeit konnte nicht gespeichert werden: {{error}}",
+        "launchSuccess": "Codex wurde mit der gespeicherten Geschwindigkeit neu gestartet.",
+        "launchFailed": "Codex konnte nicht neu gestartet werden: {{error}}"
       }
     },
     "githubCopilot": {
@@ -2627,7 +3189,9 @@
     "cursorRefreshInterval": "Kontingent automatisch aktualisieren",
     "gemini": {
       "title": "Gemini Cli-Einstellungen",
-      "appPath": "Gemini Cli-Pfad"
+      "appPath": "Gemini Cli-Pfad",
+      "syncWsl": "WSL-Konfiguration synchronisieren",
+      "syncWslDesc": "Beim Kontowechsel die .gemini-Konfiguration in WSL automatisch überschreiben"
     },
     "geminiRefreshInterval": "Kontingent automatisch aktualisieren",
     "codebuddy": {
@@ -2724,7 +3288,7 @@
       "batchDelimiterSpace": "Leerzeichen",
       "batchDelimiterComma": "Komma",
       "batchDelimiterPipe": "Senkrechter Strich",
-      "batchDelimiterDash": "----",
+      "batchDelimiterDash": "----​",
       "batchDelimiterCustom": "Benutzerdefiniert",
       "batchJsonDesc": "Fügen Sie ein JSON-Array ein, bei dem jeder Eintrag email und password enthält.",
       "batchTextDesc": "Geben Sie pro Zeile ein Konto ein; geparst wird strikt nach dem gewählten Trennzeichen.",
@@ -2747,7 +3311,7 @@
       "batchPartial": "{{success}} importiert, {{failed}} fehlgeschlagen",
       "batchFailed": "Stapelimport für {{failed}} Konto/Konten fehlgeschlagen",
       "batchFailureEntryWithLine": "Eintrag {{line}} ({{email}}): {{error}}",
-      "batchFailureEntry": "{{email}}: {{error}}",
+      "batchFailureEntry": "{{email}}: {{error}}​",
       "batchFailureMore": "{{count}} weitere fehlgeschlagen"
     },
     "oauth": {
@@ -2773,7 +3337,7 @@
       "addOnCreditsAvailableLabel": "Verfügbare Zusatz-Credits"
     },
     "columns": {
-      "plan": "Tag"
+      "plan": "Tag​"
     },
     "usageSummary": {
       "dailyQuota": "Tägliche Quotennutzung",
@@ -2804,7 +3368,7 @@
       "bonusUsageLine": "{{used}} verwendet / {{total}} insgesamt",
       "planUsageCoveredLine": "{{used}} verwendet / {{total}} im Plan abgedeckt",
       "expiryDays": "{{days}} Tage",
-      "expiryUnknown": "—",
+      "expiryUnknown": "—​",
       "resetNow": "Bald zurücksetzen",
       "resetInHours": "Wird in {{hours}}h zurückgesetzt",
       "resetInMinutes": "Wird in {{minutes}}m zurückgesetzt"
@@ -2816,11 +3380,11 @@
       "estUsage": "Schätzung: Verwendung"
     },
     "plan": {
-      "free": "Kiro Free",
-      "individual": "Kiro Individual",
-      "pro": "Kiro Pro",
-      "business": "Kiro Business",
-      "enterprise": "Kiro Enterprise",
+      "free": "Kiro Free​",
+      "individual": "Kiro Individual​",
+      "pro": "Kiro Pro​",
+      "business": "Kiro Business​",
+      "enterprise": "Kiro Enterprise​",
       "unknown": "Unbekannt"
     },
     "flowNotice": {
@@ -2857,7 +3421,7 @@
     "subscription": "Abonnement",
     "injectToCursor": "Zu Cursor wechseln",
     "quota": {
-      "onDemand": "On-Demand"
+      "onDemand": "On-Demand​"
     },
     "title": "Cursor-Kontoverwaltung",
     "instances": {
@@ -2899,12 +3463,12 @@
     "startHint": "Auf Start klicken oder Leertaste drücken",
     "rankTitle": "Lokales historisches Ranking",
     "rankCurrent": "Aktuell",
-    "rankNoData": "--",
+    "rankNoData": "--​",
     "restart": "Neu starten",
     "pause": "Pausieren",
     "resume": "Fortsetzen",
     "paused": "Pausiert",
-    "level": "Level {{level}}",
+    "level": "Level {{level}}​",
     "levelScore": "Level-Punktzahl {{score}}",
     "levelCleared": "Level geschafft",
     "nextLevel": "Nächstes Level",
@@ -2913,7 +3477,7 @@
     "historyEmpty": "Noch keine Einträge",
     "historyClear": "Leeren",
     "historyScoreShort": "Punkte {{score}}",
-    "historyLevelShort": "Lv {{level}}",
+    "historyLevelShort": "Lv {{level}}​",
     "historyDurationShort": "Zeit {{duration}}",
     "historyReasonGameOver": "Spiel vorbei",
     "historyReasonManualExit": "Manuell beendet",
@@ -2922,7 +3486,7 @@
     "rankingShort": "Lokal",
     "rankingEmpty": "Noch keine lokalen Einträge",
     "rankingClear": "Lokales Ranking leeren",
-    "rankingRankShort": "#{{rank}}",
+    "rankingRankShort": "#{{rank}}​",
     "minimize": "Minimieren",
     "resumeGameNav": "Spiel fortsetzen",
     "closeConfirmTitle": "Diesen Lauf beenden?",
@@ -2959,10 +3523,9 @@
     "actions": {
       "collapseAll": "Alle einklappen",
       "expandAll": "Alle ausklappen",
-      "goAntigravity": "Zu Antigravity",
+      "goAntigravity": "Zu Antigravity IDE",
       "goCodex": "Zu Codex",
       "goDashboard": "Zum Dashboard",
-      "goFingerprints": "Zu Geräte-Fingerprints",
       "goGitHubCopilot": "Zu GitHub Copilot",
       "goInstances": "Zu Mehrfachinstanzen",
       "goKiro": "Zu Kiro",
@@ -2974,25 +3537,25 @@
     },
     "antigravity": {
       "cautions": {
-        "0": "Vor riskanten oder Batch-Aktionen in Antigravity-Kontoverwaltung Daten sichern."
+        "0": "Vor riskanten oder Batch-Aktionen in Antigravity IDE-Kontoverwaltung Daten sichern."
       },
       "keywords": {
-        "0": "Antigravity-Kontoverwaltung",
+        "0": "Antigravity IDE-Kontoverwaltung",
         "1": "Leitfaden",
         "2": "Workflow",
         "3": "Konto"
       },
       "outcomes": {
-        "0": "Verstehe, was dir Antigravity-Kontoverwaltung bringt.",
-        "1": "Nutze den empfohlenen Ablauf in Antigravity-Kontoverwaltung, um Fehler zu vermeiden."
+        "0": "Verstehe, was dir Antigravity IDE-Kontoverwaltung bringt.",
+        "1": "Nutze den empfohlenen Ablauf in Antigravity IDE-Kontoverwaltung, um Fehler zu vermeiden."
       },
       "steps": {
-        "0": "Öffne die Seite für Antigravity-Kontoverwaltung.",
-        "1": "Schließe Grundkonfiguration und erforderliche Bindungen für Antigravity-Kontoverwaltung ab.",
-        "2": "Führe eine manuelle Aktion in Antigravity-Kontoverwaltung aus und prüfe das Ergebnis."
+        "0": "Öffne die Seite für Antigravity IDE-Kontoverwaltung.",
+        "1": "Schließe Grundkonfiguration und erforderliche Bindungen für Antigravity IDE-Kontoverwaltung ab.",
+        "2": "Führe eine manuelle Aktion in Antigravity IDE-Kontoverwaltung aus und prüfe das Ergebnis."
       },
-      "summary": "Dieser Abschnitt erklärt die Nutzung von Antigravity-Kontoverwaltung im täglichen Workflow.",
-      "title": "Antigravity-Kontoverwaltung"
+      "summary": "Dieser Abschnitt erklärt die Nutzung von Antigravity IDE-Kontoverwaltung im täglichen Workflow.",
+      "title": "Antigravity IDE-Kontoverwaltung"
     },
     "blocks": {
       "cautions": "Häufige Fallstricke / Hinweise",
@@ -3057,28 +3620,6 @@
     "empty": {
       "desc": "Versuche Stichwörter wie Instanz, Wechsel, Einstellungen, Export.",
       "title": "Keine passenden Inhalte"
-    },
-    "fingerprints": {
-      "cautions": {
-        "0": "Vor riskanten oder Batch-Aktionen in Geräte-Fingerprints Daten sichern."
-      },
-      "keywords": {
-        "0": "Geräte-Fingerprints",
-        "1": "Leitfaden",
-        "2": "Workflow",
-        "3": "Konto"
-      },
-      "outcomes": {
-        "0": "Verstehe, was dir Geräte-Fingerprints bringt.",
-        "1": "Nutze den empfohlenen Ablauf in Geräte-Fingerprints, um Fehler zu vermeiden."
-      },
-      "steps": {
-        "0": "Öffne die Seite für Geräte-Fingerprints.",
-        "1": "Schließe Grundkonfiguration und erforderliche Bindungen für Geräte-Fingerprints ab.",
-        "2": "Führe eine manuelle Aktion in Geräte-Fingerprints aus und prüfe das Ergebnis."
-      },
-      "summary": "Dieser Abschnitt erklärt die Nutzung von Geräte-Fingerprints im täglichen Workflow.",
-      "title": "Geräte-Fingerprints"
     },
     "instances": {
       "cautions": {
@@ -3292,9 +3833,9 @@
       "leftOfTotal": "Übrig / Gesamt",
       "usage": "Verbraucht",
       "usageResets": "Nutzung wird zurückgesetzt",
-      "usedPercent": "{{value}}%",
-      "remainingOfTotal": "{{remaining}} / {{total}}",
-      "resetAtWithRelative": "{{absolute}} ({{relative}})"
+      "usedPercent": "{{value}}%​",
+      "remainingOfTotal": "{{remaining}} / {{total}}​",
+      "resetAtWithRelative": "{{absolute}} ({{relative}})​"
     },
     "tierText": {
       "pro": "Gemini Code Assist für Google One AI Pro",
@@ -3399,7 +3940,7 @@
       }
     },
     "quota": {
-      "usedOfTotal": "{{used}} / {{total}}"
+      "usedOfTotal": "{{used}} / {{total}}​"
     }
   },
   "qoder": {
@@ -3421,8 +3962,8 @@
       "title": "Nutzungsübersicht",
       "viewDetails": "Details anzeigen",
       "includedCredits": "Im Tarif enthaltene Credits",
-      "usedOfTotal": "{{used}} / {{total}}",
-      "usedEmpty": "-- / --",
+      "usedOfTotal": "{{used}} / {{total}}​",
+      "usedEmpty": "-- / --​",
       "upgradeHint": "Upgrade des Tarifs erhöht das monatliche Kontingent",
       "upgradeAction": "Tarif erhöhen"
     },
@@ -3613,7 +4154,7 @@
       }
     },
     "quota": {
-      "usedOfTotal": "{{used}} / {{total}}"
+      "usedOfTotal": "{{used}} / {{total}}​"
     },
     "checkin": {
       "title": "Täglicher Check-in",
@@ -3720,7 +4261,7 @@
     "plan": "Tarif",
     "cycle": "Zyklus",
     "status": "Zustand",
-    "pager": "{{current}} / {{total}}",
+    "pager": "{{current}} / {{total}}​",
     "badges": {
       "recommended": "Empfohlen"
     },
@@ -3845,5 +4386,139 @@
       "warn": "Warnung",
       "error": "Fehler"
     }
+  },
+  "mfaQuick": {
+    "title": "2FA-Code",
+    "selectLabel": "2FA-Schlüssel auswählen",
+    "unnamedSecret": "Unbenannter Schlüssel",
+    "invalidCode": "Ungültiger Schlüssel",
+    "copyCode": "Code kopieren",
+    "copied": "Kopiert",
+    "refreshIn": "{{time}} s"
+  },
+  "relay": {
+    "pageTitle": "Exklusives Relay",
+    "pageDesc": "Partner-API-Dienst für Codex Switch Nutzer, verwendbar mit Codex API-Key-Konten.",
+    "loading": "Relay wird geladen...",
+    "emptyTitle": "Relay deaktiviert",
+    "emptyDesc": "Die Remote-Konfiguration hat das exklusive Relay nicht aktiviert.",
+    "defaultDescription": "Partner-API-Relay-Dienst.",
+    "getApiKey": "API Key holen",
+    "configTitle": "In Codex aktivieren",
+    "apiKeyLabel": "API-Schlüssel",
+    "apiKeyPlaceholder": "API Key aus dem Relay einfügen",
+    "apiKeyRequired": "API Key eingeben.",
+    "baseUrl": "API-URL",
+    "protocol": "Protokoll",
+    "vision": "Bildeingabe",
+    "testConnection": "Verbindung testen",
+    "saveAndEnable": "Speichern und aktivieren",
+    "goCodex": "Zu Codex",
+    "statusUnavailable": "Die Relay-Konfiguration ist nicht verfügbar.",
+    "testing": "Verbindung wird getestet...",
+    "testSuccess": "Verbindungstest bestanden. Dieser API Key kann mit dem Relay verwendet werden.",
+    "testFailed": "Verbindungstest fehlgeschlagen.",
+    "saving": "Speichern und in Codex aktivieren...",
+    "saveSuccess": "Relay-Konfiguration gespeichert. Sie kann auf der Codex-Kontoseite verwendet werden.",
+    "saveFailed": "Relay-Konfiguration konnte nicht gespeichert werden.",
+    "savedProvider": "Gespeicherter Anbieter: {{name}}",
+    "modelsTitle": "Unterstützte Modelle",
+    "modelsEmpty": "Remote ist keine feste Modellliste konfiguriert. Nach dem Speichern kann Codex die Dienstfunktionen nutzen."
+  },
+  "apiKeyFun": {
+    "eyebrow": "Vermittler",
+    "title": "APIKEY.FUN Relay",
+    "description": "Der offizielle Cockpit-Partner-Relay bietet stabilen, offenen und kosteneffizienten API-Zugriff auf Large Models. Unterstützt werden führende Modelle wie Claude, OpenAI und Gemini; die Nutzung eignet sich für eine einheitliche Konfiguration in Codex, Gemini CLI, Claude Code und weiteren Entwicklerwerkzeugen. Über den exklusiven Cockpit-Link registriert erhalten Sie dauerhaft bis zu 5% Rabatt auf Aufladungen.",
+    "register": "Exklusiver Link",
+    "docs": "Offizielle Doku",
+    "viewNow": "Jetzt ansehen",
+    "queryTitle": "Schlüsselkontingent",
+    "queryDesc": "Geben Sie einen APIKEY.FUN API Key ein, um das Kontingent automatisch zu prüfen.",
+    "keyNotSet": "Kein Key",
+    "apiKeyLabel": "API-Schlüssel",
+    "apiKeyPlaceholder": "API Key aus der APIKEY.FUN-Konsole einfügen",
+    "hideKey": "Ausblenden",
+    "showKey": "Anzeigen",
+    "endpointLabel": "Zielpunkt",
+    "protocolLabel": "Codex-Protokoll",
+    "queryUsage": "Kontingent prüfen",
+    "querying": "Prüfe",
+    "saveToCodex": "In Codex schreiben",
+    "saving": "Schreibe",
+    "saveSuccess": "In Codex Provider geschrieben: {{name}}",
+    "toolsTitle": "Client-Konfig schreiben",
+    "toolsDesc": "Schreibt lokale Client-Konfigurationsdateien direkt nach APIKEY.FUN-Doku und CC-Switch-Dateistruktur.",
+    "endpoint": {
+      "global": "Weltweit",
+      "globalDesc": "Offizielle Standard-API-Base für die meisten Netzwerke.",
+      "direct": "Direktleitung",
+      "directDesc": "Für latenzkritische Szenarien."
+    },
+    "wireApi": {
+      "responses": "Responses-Protokoll",
+      "responsesDesc": "Für Codex bevorzugt, direktes OpenAI-Responses-Protokoll.",
+      "chatCompletions": "Chat-Completions-Protokoll",
+      "chatCompletionsDesc": "Kompatibilität über das lokale Gateway."
+    },
+    "usage": {
+      "remaining": "Rest",
+      "used": "Verbraucht",
+      "todayRequests": "Heute",
+      "todayTokens": "Token heute",
+      "totalRequests": "Anfragen gesamt",
+      "totalTokens": "Token gesamt"
+    },
+    "tool": {
+      "codexTitle": "Codex-Anbieter",
+      "codexDesc": "Schreibt einen Provider mit /v1 Base URL des aktuellen Endpoints.",
+      "envTitle": "Umgebung",
+      "envDesc": "Referenz für OpenAI-kompatible Einträge wie Claude Code, Gemini CLI und Hermes.",
+      "curlTitle": "API-Skript",
+      "curlDesc": "Chat-Completions-kompatible Anfrage schnell prüfen."
+    },
+    "docTool": {
+      "codex": "Kann direkt in Codex Provider geschrieben werden.",
+      "claudeCode": "Anthropic-Messages-kompatible Parameter kopieren.",
+      "geminiCli": "OpenAI-kompatible Base URL und API Key kopieren.",
+      "traeSolo": "Relay-Parameter aus der offiziellen Doku kopieren.",
+      "openClaw": "OpenAI-kompatible Verbindungsparameter kopieren.",
+      "hermes": "Parameter für die Hermes-Modellseite kopieren.",
+      "apiScript": "Basisparameter für Skripte kopieren."
+    },
+    "apply": {
+      "codexTitle": "Codex​",
+      "codexDesc": "Schreibt ~/.codex/config.toml und auth.json mit Responses-Protokoll und aktuellem API Key.",
+      "geminiTitle": "Gemini-CLI-Konfig",
+      "geminiDesc": "Schreibt ~/.gemini/.env und setzt den Auth-Modus in settings.json auf gemini-api-key.",
+      "openclawTitle": "OpenClaw-Konfig",
+      "openclawDesc": "Schreibt models.providers.apikeyfun in ~/.openclaw/openclaw.json.",
+      "hermesTitle": "Hermes-Konfig",
+      "hermesDesc": "Schreibt custom_providers in ~/.hermes/config.yaml und schaltet auf das apikeyfun-Standardmodell.",
+      "button": "Konfig schreiben",
+      "applying": "Schreibe",
+      "success": "Konfigurationsdateien geschrieben: {{paths}}",
+      "failed": "Konfiguration konnte nicht geschrieben werden: {{error}}"
+    },
+    "error": {
+      "missingApiKey": "API Key eingeben.",
+      "queryFailed": "Kontingentprüfung fehlgeschlagen: {{error}}",
+      "saveFailed": "Schreiben fehlgeschlagen: {{error}}"
+    },
+    "keyManager": {
+      "title": "Schlüsselverwaltung",
+      "desc": "Speichern Sie API Keys zum schnellen Wechsel und zur automatischen Kontingentprüfung.",
+      "saveButton": "Schlüssel speichern",
+      "savedButton": "Gespeichert",
+      "empty": "Keine gespeicherten Schlüssel.",
+      "lastRemaining": "Letzter Saldo {{value}}",
+      "notQueried": "Nicht geprüft",
+      "deleteButton": "Löschen",
+      "editAlias": "Edit alias​",
+      "renamePlaceholder": "Enter alias...​",
+      "createdAt": "Hinzugefügt {{time}}",
+      "saveFlash": "Gerade gespeichert"
+    },
+    "copyKey": "Copy Key​",
+    "clearKey": "Clear input​"
   }
 }

@@ -33,7 +33,7 @@ const LOCAL_GATEWAY_BIND_TIMEOUT: Duration = Duration::from_secs(8);
 const LOCAL_GATEWAY_TLS_SETUP_TIMEOUT: Duration = Duration::from_secs(8);
 const OFFICIAL_LS_CLOUD_CODE_DAILY: &str = "https://daily-cloudcode-pa.googleapis.com";
 const OFFICIAL_LS_CLOUD_CODE_PROD: &str = "https://cloudcode-pa.googleapis.com";
-const OFFICIAL_LS_DEFAULT_APP_DATA_DIR: &str = "antigravity";
+const OFFICIAL_LS_DEFAULT_APP_DATA_DIR: &str = "antigravity-ide";
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
@@ -187,12 +187,21 @@ async fn start_official_ls_cascade_session(
     let mut ls = start_official_ls_process(&prepared.account_id, &token).await?;
     let client = build_official_ls_local_client(30)?;
     let base_url = format!("https://127.0.0.1:{}", ls.started.https_port);
+    // 新版官方 LS（≥1.21.6）要求 StartCascadeRequest.source（枚举 CortexTrajectorySource）非空，
+    // 否则返回 "invalid_argument: CortexTrajectorySource is unspecified"。
+    // 唤醒等价于 IDE 前台交互式 cascade，故默认注入 INTERACTIVE_CASCADE；
+    // 若调用方已显式传入 source 则保留，不覆盖。
+    let mut start_body = start_body.clone();
+    if let Some(obj) = start_body.as_object_mut() {
+        obj.entry("source")
+            .or_insert_with(|| json!("CORTEX_TRAJECTORY_SOURCE_INTERACTIVE_CASCADE"));
+    }
     let start_resp = match post_json_to_official_ls(
         &client,
         &base_url,
         &ls.ls_csrf_token,
         START_CASCADE_PATH,
-        start_body,
+        &start_body,
     )
     .await
     {
@@ -518,6 +527,25 @@ fn antigravity_extension_bin_dir(root: &std::path::Path) -> std::path::PathBuf {
     antigravity_extension_dir(root).join("bin")
 }
 
+#[cfg(target_os = "macos")]
+fn default_antigravity_app_root() -> std::path::PathBuf {
+    std::path::PathBuf::from("/Applications/Antigravity IDE.app")
+}
+
+#[cfg(target_os = "windows")]
+fn default_antigravity_app_root() -> std::path::PathBuf {
+    std::env::var("LOCALAPPDATA")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_default()
+        .join("Programs")
+        .join("Antigravity IDE")
+}
+
+#[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+fn default_antigravity_app_root() -> std::path::PathBuf {
+    std::path::PathBuf::from("/usr/share/antigravity-ide")
+}
+
 fn find_official_ls_binary_under(root: &std::path::Path) -> Option<String> {
     let bin_dir = antigravity_extension_bin_dir(root);
 
@@ -585,6 +613,10 @@ fn resolve_official_ls_binary_from_config() -> Result<String, String> {
     let user_config = crate::modules::config::get_user_config();
     let antigravity_path = user_config.antigravity_app_path.trim();
     let root = resolve_configured_antigravity_root(antigravity_path)
+        .or_else(|| {
+            let root = default_antigravity_app_root();
+            root.exists().then_some(root)
+        })
         .ok_or_else(|| app_path_missing_error("antigravity"))?;
     find_official_ls_binary_under(&root).ok_or_else(|| app_path_missing_error("antigravity"))
 }
@@ -631,7 +663,7 @@ pub(crate) fn official_antigravity_root_for_version() -> Option<std::path::PathB
 
     #[cfg(target_os = "macos")]
     {
-        let default_root = std::path::PathBuf::from("/Applications/Antigravity.app");
+        let default_root = default_antigravity_app_root();
         if default_root.exists() {
             return Some(default_root);
         }
@@ -717,12 +749,12 @@ fn official_antigravity_extension_path() -> String {
         return root.to_string_lossy().to_string();
     }
 
-    let default_path =
-        "/Applications/Antigravity.app/Contents/Resources/app/extensions/antigravity";
-    if std::path::Path::new(default_path).exists() {
-        return default_path.to_string();
+    let default_root = default_antigravity_app_root();
+    let default_ext_path = antigravity_extension_dir(&default_root);
+    if default_ext_path.exists() {
+        return default_ext_path.to_string_lossy().to_string();
     }
-    "/Applications/Antigravity.app".to_string()
+    default_root.to_string_lossy().to_string()
 }
 
 pub(crate) fn official_antigravity_app_version() -> String {
@@ -774,7 +806,7 @@ fn build_official_ls_metadata_bytes() -> Vec<u8> {
 
     // exa.codeium_common_pb.Metadata
     // 1=ide_name, 7=ide_version, 12=extension_name, 17=extension_path, 4=locale, 24=device_fingerprint
-    push_str(&mut out, 1, "Antigravity");
+    push_str(&mut out, 1, "Antigravity IDE");
     push_str(&mut out, 7, &official_antigravity_app_version());
     push_str(&mut out, 12, "antigravity");
     push_str(&mut out, 17, &official_antigravity_extension_path());
@@ -798,10 +830,13 @@ fn build_official_ls_metadata_bytes() -> Vec<u8> {
 
 fn build_uss_oauth_topic_bytes(token: &crate::models::token::TokenData) -> Vec<u8> {
     let expiry = token.expiry_timestamp.max(0);
-    let oauth_info = crate::utils::protobuf::create_oauth_info(
+    let oauth_info = crate::utils::protobuf::create_oauth_info_with_metadata(
         &token.access_token,
         &token.refresh_token,
         expiry,
+        token.is_gcp_tos,
+        token.id_token.as_deref(),
+        token.email.as_deref(),
     );
     let oauth_info_b64 = general_purpose::STANDARD.encode(oauth_info);
 
@@ -1010,6 +1045,14 @@ async fn post_json_to_official_ls(
     if !resp.status().is_success() {
         let status = resp.status();
         let text = resp.text().await.unwrap_or_default();
+        let preview: String = text.chars().take(512).collect();
+        crate::modules::logger::log_error(&format!(
+            "[WakeupGateway] 官方 LS 返回错误: status={}, path={}, body_len={}, body={}",
+            status,
+            path,
+            text.len(),
+            preview
+        ));
         return Err(format!(
             "官方 LS 返回错误: {} - {} ({})",
             status, text, path
@@ -1361,7 +1404,7 @@ async fn start_official_ls_process(
     let mut extension_server = start_official_ls_extension_server(token).await?;
     let ls_csrf = uuid::Uuid::new_v4().to_string();
     let cloud_code_endpoint = official_ls_cloud_code_endpoint(token);
-    // 对齐官方扩展：app_data_dir 使用固定 IDE 级目录（默认 antigravity），而非按账号拆分。
+    // 对齐官方扩展：app_data_dir 使用固定 IDE 级目录（默认 antigravity-ide），而非按账号拆分。
     let app_data_dir = official_ls_app_data_dir_name();
 
     let mut cmd = Command::new(&binary_path);

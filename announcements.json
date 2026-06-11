@@ -1,26 +1,158 @@
 {
   "version": "1.0",
-  "topRightAd": null,
-  "topRightAd_backup": {
+  "forceRefreshVersions": [
+    "0.25.3"
+  ],
+  "topRightAd_backup": null,
+  "topRightAd": {
     "id": "top-right-ad-2026-04-shop",
     "priority": 100,
-    "text": "此地址提供Codex 9.9元日抛号，可一键导入到此工具里。需要的可以选购，感谢",
+    "text": "Codex Plus代过试用，成品号，Gemini给自己账号订阅一年Pro 需要的了解一下",
+    "text_backup": "9.9Codex plus号和12元代过试用Plus。欢迎选购",
     "badge": "推广",
     "ctaLabel": "选购",
-    "ctaUrl": "https://xiangzili.xyz",
+    "ctaUrl": "https://xiangzili.xyz/user/index/shop",
     "targetVersions": "*",
     "targetLanguages": [
-      "*"
+      "zh"
     ],
-    "createdAt": "2026-04-07T12:00:00Z",  
+    "createdAt": "2026-04-07T12:00:00Z",
     "expiresAt": null,
     "locales": {
       "zh-CN": {
-        "text": "此地址提供Codex 9.9元日抛号，可一键导入到此工具里。需要的可以选购，感谢",
+        "text": "Codex Plus代过试用，成品号，Gemini给自己账号订阅一年Pro 需要的了解一下",
+        "text_backup": "9.9Codex plus号和12元代过试用Plus。欢迎选购",
         "badge": "推广",
         "ctaLabel": "选购"
       }
     }
+  },
+  "apiRelayEnabled": true,
+  "topRightAdsEnabled": true,
+  "topRightAds": [
+    {
+      "id": "top-right-ad-2026-04-shop",
+      "enabled": true,
+      "priority": 100,
+      "text": "Codex Plus代过试用，成品号，Gemini给自己账号订阅一年Pro 需要的了解一下",
+      "badge": "推广",
+      "ctaLabel": "选购",
+      "ctaUrl": "https://xiangzili.xyz/user/index/shop",
+      "targetLanguages": [
+        "zh"
+      ],
+      "createdAt": "2026-04-07T12:00:00Z",
+      "expiresAt": null,
+      "locales": {
+        "zh-CN": {
+          "text": "Codex Plus代过试用，成品号，Gemini给自己账号订阅一年Pro 需要的了解一下",
+          "badge": "推广",
+          "ctaLabel": "选购"
+        }
+      }
+    },
+    {
+      "id": "top-right-ad-local-carousel-test",
+      "enabled": false,
+      "relayRelated": true,
+      "priority": 90,
+      "text": "Cockpit 官方合作中转站 APIKEY.FUN，统一接入主流模型，点击专属注册享充值优惠",
+      "badge": "中转",
+      "ctaLabel": "查看",
+      "ctaUrl": "https://apikey.fun/register?aff=cockpit",
+      "targetVersions": ">=0.25.2",
+      "targetLanguages": [
+        "*"
+      ],
+      "createdAt": "2026-06-06T00:00:00Z",
+      "expiresAt": null,
+      "locales": {
+        "zh-CN": {
+          "text": "Cockpit 官方合作中转站 APIKEY.FUN，统一接入主流模型，点击专属注册享充值优惠",
+          "badge": "中转",
+          "ctaLabel": "查看"
+        },
+        "en": {
+          "text": "Cockpit official relay APIKEY.FUN, unified access to mainstream models with exclusive registration discounts.",
+          "badge": "Relay",
+          "ctaLabel": "View"
+        },
+        "en-US": {
+          "text": "Cockpit official relay APIKEY.FUN, unified access to mainstream models with exclusive registration discounts.",
+          "badge": "Relay",
+          "ctaLabel": "View"
+        }
+      }
+    }
+  ],
+  "sponsorModule": {
+    "enabled": true,
+    "entryVisible": true,
+    "title": "专属中转站",
+    "subtitle": "为 Cockpit Tools 用户提供的合作 API 中转服务，可一键保存并启用到 Codex。",
+    "targetVersions": ">=0.25.2",
+    "targetLanguages": [
+      "*"
+    ],
+    "createdAt": "2026-06-05T00:00:00Z",
+    "expiresAt": null,
+    "locales": {
+      "zh-CN": {
+        "title": "专属中转站",
+        "subtitle": "为 Cockpit Tools 用户提供的合作 API 中转服务，可一键保存并启用到 Codex。"
+      },
+      "en": {
+        "title": "Exclusive Relay",
+        "subtitle": "A partnered API relay service for Cockpit Tools users that can be saved and enabled in Codex."
+      },
+      "en-US": {
+        "title": "Exclusive Relay",
+        "subtitle": "A partnered API relay service for Cockpit Tools users that can be saved and enabled in Codex."
+      }
+    },
+    "sponsors": [
+      {
+        "id": "apikey-fun",
+        "name": "APIKEY.FUN",
+        "priority": 100,
+        "logoUrl": "https://raw.githubusercontent.com/BigPizzaV3/CodexPlusPlus/main/docs/images/sponsor-apikey-fun.png",
+        "url": "https://apikey.fun/register?aff=cockpit",
+        "badge": "AI 中转",
+        "description": "APIKEY.FUN 面向开发者提供多模型 API 接入与中转服务，覆盖 Claude、OpenAI、Gemini 等常用模型，适合需要统一密钥、稳定调用和成本优化的工具链场景。",
+        "integration": {
+          "enabled": true,
+          "type": "sub2api",
+          "baseUrl": "https://api.apikey.fun/v1",
+          "wireApi": "responses",
+          "quickConfigure": true,
+          "dashboardCard": true,
+          "models": [],
+          "supportsVision": false,
+          "website": "https://apikey.fun/register?aff=cockpit",
+          "apiKeyUrl": "https://apikey.fun/register?aff=cockpit"
+        },
+        "targetVersions": ">=0.25.2",
+        "targetLanguages": [
+          "*"
+        ],
+        "createdAt": "2026-06-05T00:00:00Z",
+        "expiresAt": null,
+        "locales": {
+          "zh-CN": {
+            "badge": "AI 中转",
+            "description": "APIKEY.FUN 面向开发者提供多模型 API 接入与中转服务，覆盖 Claude、OpenAI、Gemini 等常用模型，适合需要统一密钥、稳定调用和成本优化的工具链场景。"
+          },
+          "en": {
+            "badge": "AI Relay",
+            "description": "APIKEY.FUN provides multi-model API access and relay services for developers, covering popular models such as Claude, OpenAI, and Gemini. It fits workflows that need unified keys, stable calls, and better cost control."
+          },
+          "en-US": {
+            "badge": "AI Relay",
+            "description": "APIKEY.FUN provides multi-model API access and relay services for developers, covering popular models such as Claude, OpenAI, and Gemini. It fits workflows that need unified keys, stable calls, and better cost control."
+          }
+        }
+      }
+    ]
   },
   "announcements": [
     {

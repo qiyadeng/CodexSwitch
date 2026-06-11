@@ -50,7 +50,7 @@ function isLikelyChunkLoadFailure(value: string): boolean {
 }
 
 function createFallbackMessage(rawMessage: string): string {
-  const action = i18n.t('common.appName', 'Cockpit Tools');
+  const action = i18n.t('common.appName', 'Codex Switch');
   return i18n.t('messages.actionFailed', {
     action,
     error: rawMessage || 'error',

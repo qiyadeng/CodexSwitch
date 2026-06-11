@@ -82,6 +82,12 @@ pub struct UserConfig {
     /// Codex 自动刷新间隔（分钟），-1 表示禁用
     #[serde(default = "default_codex_auto_refresh")]
     pub codex_auto_refresh_minutes: i32,
+    /// Codex 切号时是否同步覆盖 WSL 配置 (Windows Only)
+    #[serde(default = "default_codex_sync_wsl")]
+    pub codex_sync_wsl: bool,
+    /// Codex WSL 配置目录 (Windows Only)
+    #[serde(default = "default_codex_wsl_config_dir")]
+    pub codex_wsl_config_dir: String,
     /// Zed 自动刷新间隔（分钟），-1 表示禁用
     #[serde(default = "default_zed_auto_refresh")]
     pub zed_auto_refresh_minutes: i32,
@@ -100,6 +106,9 @@ pub struct UserConfig {
     /// Gemini 自动刷新间隔（分钟），-1 表示禁用
     #[serde(default = "default_gemini_auto_refresh")]
     pub gemini_auto_refresh_minutes: i32,
+    /// Gemini 切号时是否同步覆盖 WSL 配置 (Windows Only)
+    #[serde(default = "default_gemini_sync_wsl")]
+    pub gemini_sync_wsl: bool,
     /// CodeBuddy 自动刷新间隔（分钟），-1 表示禁用
     #[serde(default = "default_codebuddy_auto_refresh")]
     pub codebuddy_auto_refresh_minutes: i32,
@@ -133,10 +142,10 @@ pub struct UserConfig {
     /// 是否启用应用开机自启动
     #[serde(default = "default_app_auto_launch_enabled")]
     pub app_auto_launch_enabled: bool,
-    /// 是否在应用启动后触发 Antigravity 唤醒
+    /// 是否在应用启动后触发 Antigravity IDE 唤醒
     #[serde(default = "default_antigravity_startup_wakeup_enabled")]
     pub antigravity_startup_wakeup_enabled: bool,
-    /// Antigravity 启动后唤醒延时（秒），0 表示立即
+    /// Antigravity IDE 启动后唤醒延时（秒），0 表示立即
     #[serde(default = "default_antigravity_startup_wakeup_delay_seconds")]
     pub antigravity_startup_wakeup_delay_seconds: i32,
     /// 是否在应用启动后触发 Codex 唤醒
@@ -172,7 +181,7 @@ pub struct UserConfig {
     /// OpenCode 启动路径（为空则使用默认路径）
     #[serde(default = "default_opencode_app_path")]
     pub opencode_app_path: String,
-    /// Antigravity 启动路径（为空则使用默认路径）
+    /// Antigravity IDE 启动路径（为空则使用默认路径）
     #[serde(default = "default_antigravity_app_path")]
     pub antigravity_app_path: String,
     /// Codex 启动路径（为空则使用默认路径）
@@ -427,6 +436,12 @@ fn default_auto_refresh() -> i32 {
 fn default_codex_auto_refresh() -> i32 {
     10
 } // 默认 10 分钟
+fn default_codex_sync_wsl() -> bool {
+    false
+}
+fn default_codex_wsl_config_dir() -> String {
+    String::new()
+}
 fn default_zed_auto_refresh() -> i32 {
     10
 }
@@ -444,6 +459,9 @@ fn default_cursor_auto_refresh() -> i32 {
 } // 默认 10 分钟
 fn default_gemini_auto_refresh() -> i32 {
     10
+}
+fn default_gemini_sync_wsl() -> bool {
+    true
 }
 fn default_codebuddy_auto_refresh() -> i32 {
     10
@@ -719,12 +737,15 @@ impl Default for UserConfig {
             ui_scale: default_ui_scale(),
             auto_refresh_minutes: default_auto_refresh(),
             codex_auto_refresh_minutes: default_codex_auto_refresh(),
+            codex_sync_wsl: default_codex_sync_wsl(),
+            codex_wsl_config_dir: default_codex_wsl_config_dir(),
             zed_auto_refresh_minutes: default_zed_auto_refresh(),
             ghcp_auto_refresh_minutes: default_ghcp_auto_refresh(),
             windsurf_auto_refresh_minutes: default_windsurf_auto_refresh(),
             kiro_auto_refresh_minutes: default_kiro_auto_refresh(),
             cursor_auto_refresh_minutes: default_cursor_auto_refresh(),
             gemini_auto_refresh_minutes: default_gemini_auto_refresh(),
+            gemini_sync_wsl: default_gemini_sync_wsl(),
             codebuddy_auto_refresh_minutes: default_codebuddy_auto_refresh(),
             codebuddy_cn_auto_refresh_minutes: default_codebuddy_cn_auto_refresh(),
             workbuddy_auto_refresh_minutes: default_workbuddy_auto_refresh(),
@@ -977,8 +998,31 @@ pub fn load_user_config() -> Result<UserConfig, String> {
     let content =
         fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
 
-    let mut value: serde_json::Value =
-        serde_json::from_str(&content).map_err(|e| format!("解析配置文件失败: {}", e))?;
+    let mut value: serde_json::Value = match serde_json::from_str(&content) {
+        Ok(value) => value,
+        Err(error) => {
+            match crate::modules::atomic_write::quarantine_file(&config_path, "invalid-json") {
+                Ok(Some(backup_path)) => crate::modules::logger::log_warn(&format!(
+                    "配置文件解析失败，已隔离并使用默认配置: path={}, backup={}, error={}",
+                    config_path.display(),
+                    backup_path.display(),
+                    error
+                )),
+                Ok(None) => crate::modules::logger::log_warn(&format!(
+                    "配置文件解析失败，文件已不存在，使用默认配置: path={}, error={}",
+                    config_path.display(),
+                    error
+                )),
+                Err(backup_error) => crate::modules::logger::log_warn(&format!(
+                    "配置文件解析失败，隔离失败，使用默认配置: path={}, parse_error={}, backup_error={}",
+                    config_path.display(),
+                    error,
+                    backup_error
+                )),
+            }
+            return Ok(UserConfig::default());
+        }
+    };
 
     // 兼容旧配置：平台独立预警字段不存在时，继承历史全局预警配置
     if let Some(obj) = value.as_object_mut() {
@@ -1018,6 +1062,27 @@ pub fn load_user_config() -> Result<UserConfig, String> {
             obj.insert(
                 "gemini_auto_refresh_minutes".to_string(),
                 json!(inherited_refresh),
+            );
+        }
+
+        if !obj.contains_key("codex_sync_wsl") {
+            obj.insert(
+                "codex_sync_wsl".to_string(),
+                json!(default_codex_sync_wsl()),
+            );
+        }
+
+        if !obj.contains_key("codex_wsl_config_dir") {
+            obj.insert(
+                "codex_wsl_config_dir".to_string(),
+                json!(default_codex_wsl_config_dir()),
+            );
+        }
+
+        if !obj.contains_key("gemini_sync_wsl") {
+            obj.insert(
+                "gemini_sync_wsl".to_string(),
+                json!(default_gemini_sync_wsl()),
             );
         }
 
@@ -1443,8 +1508,31 @@ pub fn load_user_config() -> Result<UserConfig, String> {
         }
     }
 
-    let mut config: UserConfig =
-        serde_json::from_value(value).map_err(|e| format!("解析配置文件失败: {}", e))?;
+    let mut config: UserConfig = match serde_json::from_value(value) {
+        Ok(config) => config,
+        Err(error) => {
+            match crate::modules::atomic_write::quarantine_file(&config_path, "invalid-shape") {
+                Ok(Some(backup_path)) => crate::modules::logger::log_warn(&format!(
+                    "配置文件结构无效，已隔离并使用默认配置: path={}, backup={}, error={}",
+                    config_path.display(),
+                    backup_path.display(),
+                    error
+                )),
+                Ok(None) => crate::modules::logger::log_warn(&format!(
+                    "配置文件结构无效，文件已不存在，使用默认配置: path={}, error={}",
+                    config_path.display(),
+                    error
+                )),
+                Err(backup_error) => crate::modules::logger::log_warn(&format!(
+                    "配置文件结构无效，隔离失败，使用默认配置: path={}, parse_error={}, backup_error={}",
+                    config_path.display(),
+                    error,
+                    backup_error
+                )),
+            }
+            return Ok(UserConfig::default());
+        }
+    };
     let (include_accounts, include_config) = normalize_auto_backup_selection(
         config.auto_backup_include_accounts,
         config.auto_backup_include_config,
@@ -1478,7 +1566,8 @@ pub fn save_user_config(config: &UserConfig) -> Result<(), String> {
     let json =
         serde_json::to_string_pretty(config).map_err(|e| format!("序列化配置失败: {}", e))?;
 
-    fs::write(&config_path, json).map_err(|e| format!("写入配置文件失败: {}", e))?;
+    crate::modules::atomic_write::write_string_atomic(&config_path, &json)
+        .map_err(|e| format!("写入配置文件失败: {}", e))?;
 
     // 更新运行时状态
     if let Ok(mut state) = get_runtime_state().write() {
@@ -1530,7 +1619,8 @@ pub fn save_server_status(status: &ServerStatus) -> Result<(), String> {
     let json =
         serde_json::to_string_pretty(status).map_err(|e| format!("序列化状态失败: {}", e))?;
 
-    fs::write(&status_path, json).map_err(|e| format!("写入状态文件失败: {}", e))?;
+    crate::modules::atomic_write::write_string_atomic(&status_path, &json)
+        .map_err(|e| format!("写入状态文件失败: {}", e))?;
 
     crate::modules::logger::log_info(&format!(
         "[Config] 服务状态已保存: ws_port={}, pid={}",

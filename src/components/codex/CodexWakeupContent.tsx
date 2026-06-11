@@ -15,6 +15,7 @@ import { confirm as confirmDialog } from '@tauri-apps/plugin-dialog';
 import {
   Check,
   ChevronDown,
+  ChevronLeft,
   CircleAlert,
   Copy,
   Eye,
@@ -24,10 +25,10 @@ import {
   Power,
   RefreshCw,
   Search,
-  Settings,
   Trash2,
   X,
 } from 'lucide-react';
+import { useEscClose } from '../../hooks/useEscClose';
 import {
   CodexAccount,
   getCodexAuthMetadata,
@@ -53,11 +54,18 @@ import {
   MultiSelectFilterDropdown,
   type MultiSelectFilterOption,
 } from '../MultiSelectFilterDropdown';
+import { PaginationControls } from '../PaginationControls';
+import {
+  buildPaginationPageSizeStorageKey,
+  usePagination,
+} from '../../hooks/usePagination';
 import {
   isPrivacyModeEnabledByDefault,
   maskSensitiveValue,
   PRIVACY_MODE_CHANGED_EVENT,
 } from '../../utils/privacy';
+
+const WAKEUP_ACCOUNT_PAGE_SIZE_OPTIONS = [50, 100, 200] as const;
 
 interface CodexWakeupGeneralConfig {
   language?: string;
@@ -98,6 +106,8 @@ interface TaskDraft {
   quotaResetWindow: CodexWakeupQuotaResetWindow;
   startupDelayMode: 'immediate' | 'delayed';
   startupDelayMinutes: string;
+  executionMode: 'auto' | 'confirm';
+  confirmTimeoutMinutes: number;
 }
 
 interface PresetDraft {
@@ -130,6 +140,15 @@ interface RuntimeConfigDraft {
   codexCliPath: string;
   nodePath: string;
 }
+
+const CODEX_WAKEUP_OFFICIAL_RUNTIME: CodexWakeupBatchResult['runtime'] = {
+  available: true,
+  source: 'official_chat',
+  message: 'official_chat',
+  required_runtime_paths: [],
+  checked_at: 0,
+  install_hints: [],
+};
 
 interface WakeupQuotaBadge {
   key: 'primary' | 'secondary';
@@ -294,6 +313,8 @@ function createEmptyTaskDraft(defaultPreset?: CodexWakeupModelPreset | null): Ta
     quotaResetWindow: 'either',
     startupDelayMode: 'immediate',
     startupDelayMinutes: '1',
+    executionMode: 'auto',
+    confirmTimeoutMinutes: 5,
   };
 }
 
@@ -356,6 +377,8 @@ function buildTaskDraft(task: CodexWakeupTask, presets: CodexWakeupModelPreset[]
     quotaResetWindow: task.schedule.quota_reset_window ?? 'either',
     startupDelayMode: startupDelayMinutes > 0 ? 'delayed' : 'immediate',
     startupDelayMinutes: String(startupDelayMinutes > 0 ? startupDelayMinutes : 1),
+    executionMode: task.execution_mode ?? 'auto',
+    confirmTimeoutMinutes: task.confirm_timeout_minutes ?? 5,
   };
 }
 
@@ -965,6 +988,7 @@ export function CodexWakeupContent({
   } = useModalErrorState();
   const [taskAccountFilters, setTaskAccountFilters] = useState<AccountPickerFilters>(createEmptyAccountPickerFilters());
   const [showPresetModal, setShowPresetModal] = useState(false);
+  const [presetModalSource, setPresetModalSource] = useState<'task' | 'test' | 'page'>('page');
   const [presetDraft, setPresetDraft] = useState<PresetDraft>(createEmptyPresetDraft());
   const {
     message: presetModalError,
@@ -977,6 +1001,7 @@ export function CodexWakeupContent({
     if (openPresetManagerSignal <= 0) return;
     setPresetDraft(createEmptyPresetDraft());
     clearPresetModalError();
+    setPresetModalSource('page');
     setShowPresetModal(true);
   }, [clearPresetModalError, openPresetManagerSignal]);
   const [showTestModal, setShowTestModal] = useState(false);
@@ -997,11 +1022,11 @@ export function CodexWakeupContent({
   const activeTestRunTokenRef = useRef(0);
   const activeTestScopeIdRef = useRef<string | null>(null);
   const [executionSession, setExecutionSession] = useState<ExecutionSessionState | null>(null);
+  const [executionSessionFromHistory, setExecutionSessionFromHistory] = useState(false);
   const [executionFilter, setExecutionFilter] = useState<ExecutionRecordFilter>('all');
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [showRuntimeGuideModal, setShowRuntimeGuideModal] = useState(false);
   const [runtimeGuideRefreshing, setRuntimeGuideRefreshing] = useState(false);
-  const [runtimeGuideAutoShown, setRuntimeGuideAutoShown] = useState(false);
   const [runtimeConfigDraft, setRuntimeConfigDraft] = useState<RuntimeConfigDraft>(() =>
     createRuntimeConfigDraft(runtime),
   );
@@ -1010,7 +1035,7 @@ export function CodexWakeupContent({
   const showCodexCliInput = true;
   const showNodeInput = true;
   const showRuntimeConfigCard = true;
-  const runtimeGuideNeedInstall = Boolean(runtime && !runtime.available);
+  const runtimeGuideNeedInstall = false;
   const runtimeGuideTitle = runtimeGuideNeedInstall
     ? t('codex.wakeup.installTitle')
     : t('codex.wakeup.runtimeConfigTitle');
@@ -1082,20 +1107,6 @@ export function CodexWakeupContent({
       }
     }
   }, [error, executionSession, showRuntimeGuideModal, showTaskModal, showTestModal, setTaskModalError, setTestModalError]);
-
-  useEffect(() => {
-    if (loading || runtime === null) {
-      return;
-    }
-    if (runtime.available) {
-      setRuntimeGuideAutoShown(false);
-      return;
-    }
-    if (!runtimeGuideAutoShown) {
-      setShowRuntimeGuideModal(true);
-      setRuntimeGuideAutoShown(true);
-    }
-  }, [loading, runtime, runtimeGuideAutoShown]);
 
   useEffect(() => {
     if (!runtime || runtimeConfigDirty) {
@@ -1234,7 +1245,10 @@ export function CodexWakeupContent({
         triggerType === 'test'
           ? t('codex.wakeup.testTitle')
           : taskName || t('codex.wakeup.resultsTitle'),
-      runtime: runtime,
+      runtime: {
+        ...CODEX_WAKEUP_OFFICIAL_RUNTIME,
+        checked_at: Date.now(),
+      },
       startedAt: Date.now(),
       durationMs: undefined,
       total: accountIds.length,
@@ -1262,7 +1276,7 @@ export function CodexWakeupContent({
         };
       }),
     }),
-    [accountMap, runtime, t, wakeupAccountMetaMap],
+    [accountMap, t, wakeupAccountMetaMap],
   );
 
   const buildExecutionSessionFromHistory = useCallback(
@@ -1275,15 +1289,10 @@ export function CodexWakeupContent({
         (batch.triggerType === 'test'
           ? t('codex.wakeup.testTitle')
           : t('codex.wakeup.resultsTitle')),
-      runtime: batch.cliPath
-        ? {
-            available: true,
-            binary_path: batch.cliPath,
-            checked_at: batch.timestamp,
-            required_runtime_paths: [],
-            install_hints: [],
-          }
-        : runtime,
+      runtime: {
+        ...CODEX_WAKEUP_OFFICIAL_RUNTIME,
+        checked_at: batch.timestamp,
+      },
       startedAt: batch.timestamp,
       durationMs: batch.durationMs,
       total: batch.total,
@@ -1311,7 +1320,7 @@ export function CodexWakeupContent({
         durationMs: item.duration_ms,
       })),
     }),
-    [runtime, t],
+    [t],
   );
 
   const buildTaskPreviewSession = useCallback(
@@ -1320,7 +1329,10 @@ export function CodexWakeupContent({
       taskId: task.id,
       triggerType: 'scheduled',
       title: task.name,
-      runtime: runtime,
+      runtime: {
+        ...CODEX_WAKEUP_OFFICIAL_RUNTIME,
+        checked_at: Date.now(),
+      },
       startedAt: 0,
       durationMs: undefined,
       total: task.account_ids.length,
@@ -1349,7 +1361,7 @@ export function CodexWakeupContent({
         };
       }),
     }),
-    [accountMap, runtime, t, wakeupAccountMetaMap],
+    [accountMap, t, wakeupAccountMetaMap],
   );
 
   const openTaskExecutionDetails = useCallback(
@@ -1551,6 +1563,26 @@ export function CodexWakeupContent({
     () => filterWakeupAccounts(testAccountFilters),
     [filterWakeupAccounts, testAccountFilters],
   );
+  const taskAccountPagination = usePagination({
+    items: filteredTaskAccounts,
+    storageKey: buildPaginationPageSizeStorageKey('CodexWakeupTaskAccounts'),
+    pageSizeOptions: WAKEUP_ACCOUNT_PAGE_SIZE_OPTIONS,
+    defaultPageSize: 50,
+  });
+  const testAccountPagination = usePagination({
+    items: filteredTestAccounts,
+    storageKey: buildPaginationPageSizeStorageKey('CodexWakeupTestAccounts'),
+    pageSizeOptions: WAKEUP_ACCOUNT_PAGE_SIZE_OPTIONS,
+    defaultPageSize: 50,
+  });
+
+  useEffect(() => {
+    taskAccountPagination.setCurrentPage(1);
+  }, [taskAccountFilters, taskAccountPagination.setCurrentPage]);
+
+  useEffect(() => {
+    testAccountPagination.setCurrentPage(1);
+  }, [testAccountFilters, testAccountPagination.setCurrentPage]);
   const allFilteredTaskSelected = useMemo(
     () =>
       filteredTaskAccounts.length > 0 &&
@@ -1792,9 +1824,10 @@ export function CodexWakeupContent({
     }
   }, [refreshRuntime, runtimeConfigDraft.codexCliPath, runtimeConfigDraft.nodePath]);
 
-  const openPresetModal = useCallback(() => {
+  const openPresetModal = useCallback((source: 'task' | 'test' | 'page' = 'page') => {
     setPresetDraft(createEmptyPresetDraft());
     setPresetModalError(null);
+    setPresetModalSource(source);
     setShowPresetModal(true);
   }, [setPresetModalError]);
 
@@ -1927,15 +1960,11 @@ export function CodexWakeupContent({
   );
 
   const openNewTaskModal = useCallback(async () => {
-    if (runtime && !runtime.available) {
-      openRuntimeGuideModal();
-      return;
-    }
     setTaskDraft(createEmptyTaskDraftWithRememberedModel());
     setTaskModalError(null);
     setTaskAccountFilters(createEmptyAccountPickerFilters());
     setShowTaskModal(true);
-  }, [createEmptyTaskDraftWithRememberedModel, openRuntimeGuideModal, runtime]);
+  }, [createEmptyTaskDraftWithRememberedModel]);
 
   const openEditTaskModal = useCallback((task: CodexWakeupTask) => {
     setTaskDraft(buildTaskDraft(task, state.model_presets));
@@ -1945,17 +1974,13 @@ export function CodexWakeupContent({
   }, [state.model_presets]);
 
   const openTestModal = useCallback(async () => {
-    if (runtime && !runtime.available) {
-      openRuntimeGuideModal();
-      return;
-    }
     setTestModalError(null);
     setTestAccountFilters(createEmptyAccountPickerFilters());
     setTestModelPresetId(resolvedModelSelection.modelPresetId);
     setTestModel(resolvedModelSelection.model);
     setTestModelReasoningEffort(resolvedModelSelection.modelReasoningEffort);
     setShowTestModal(true);
-  }, [openRuntimeGuideModal, resolvedModelSelection, runtime]);
+  }, [resolvedModelSelection]);
 
   const closeTaskModal = useCallback(() => {
     if (saving) return;
@@ -2013,6 +2038,12 @@ export function CodexWakeupContent({
     setTestModel(resolvedModelSelection.model);
     setTestModelReasoningEffort(resolvedModelSelection.modelReasoningEffort);
   }, [cancelRunningTest, resolvedModelSelection, testing]);
+
+  useEscClose(showRuntimeGuideModal, closeRuntimeGuideModal);
+  useEscClose(showPresetModal, closePresetModal);
+  useEscClose(showTaskModal, closeTaskModal);
+  useEscClose(showTestModal, closeTestModal);
+  useEscClose(showHistoryModal, () => setShowHistoryModal(false));
 
   const persistTasks = useCallback(
     async (
@@ -2145,6 +2176,8 @@ export function CodexWakeupContent({
       last_failure_count: existingTask?.last_failure_count,
       last_duration_ms: existingTask?.last_duration_ms,
       next_run_at: existingTask?.next_run_at,
+      execution_mode: taskDraft.executionMode,
+      confirm_timeout_minutes: taskDraft.executionMode === 'confirm' ? taskDraft.confirmTimeoutMinutes : undefined,
     };
 
     const nextTasks = taskDraft.id
@@ -2178,6 +2211,7 @@ export function CodexWakeupContent({
       }
 
       const runId = crypto.randomUUID();
+      setExecutionSessionFromHistory(false);
       setExecutionSession(
         buildExecutionSession(
           runId,
@@ -2274,6 +2308,7 @@ export function CodexWakeupContent({
     activeTestRunTokenRef.current = runToken;
     activeTestScopeIdRef.current = cancelScopeId;
     const promptValue = testPrompt.trim() || undefined;
+    setExecutionSessionFromHistory(false);
     setExecutionSession(
       buildExecutionSession(
         runId,
@@ -2434,7 +2469,7 @@ export function CodexWakeupContent({
           <button className="btn btn-primary" onClick={() => void openNewTaskModal()} disabled={oauthAccounts.length === 0}>
             <Plus size={16} /> {t('codex.wakeup.addTask')}
           </button>
-          <button className="btn btn-secondary" onClick={openPresetModal}>
+          <button className="btn btn-secondary" onClick={() => openPresetModal('page')}>
             {t('codex.wakeup.managePresets')}
           </button>
           <button className="btn btn-secondary" onClick={() => void openTestModal()} disabled={oauthAccounts.length === 0}>
@@ -2444,17 +2479,6 @@ export function CodexWakeupContent({
             {historyBatches.length > 0
               ? `${t('codex.wakeup.historyTitle')} (${historyBatches.length})`
               : t('codex.wakeup.historyTitle')}
-          </button>
-          <button className="btn btn-secondary" onClick={() => void refreshRuntime().catch(() => undefined)}>
-            <RefreshCw size={16} /> {t('codex.wakeup.refreshRuntime')}
-          </button>
-          <button
-            className="btn btn-secondary icon-only"
-            onClick={openRuntimeGuideModal}
-            title={t('codex.wakeup.runtimeConfigTitle')}
-            aria-label={t('codex.wakeup.runtimeConfigTitle')}
-          >
-            <Settings size={14} />
           </button>
         </div>
       </div>
@@ -2584,6 +2608,15 @@ export function CodexWakeupContent({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="modal-header">
+              <button
+                className="btn btn-secondary icon-only"
+                onClick={closeRuntimeGuideModal}
+                title={t('common.back', '返回')}
+                aria-label={t('common.back', '返回')}
+                disabled={runtimeGuideRefreshing}
+              >
+                <ChevronLeft size={14} />
+              </button>
               <h2>{runtimeGuideTitle}</h2>
               <button className="modal-close" onClick={closeRuntimeGuideModal} disabled={runtimeGuideRefreshing}>
                 <X />
@@ -2678,6 +2711,17 @@ export function CodexWakeupContent({
         <div className="modal-overlay codex-wakeup-preset-overlay" onClick={closePresetModal}>
           <div className="modal modal-lg wakeup-modal codex-wakeup-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
+              {presetModalSource !== 'page' && (
+                <button
+                  className="btn btn-secondary icon-only"
+                  onClick={closePresetModal}
+                  title={t('common.back', '返回')}
+                  aria-label={t('common.back', '返回')}
+                  disabled={saving}
+                >
+                  <ChevronLeft size={14} />
+                </button>
+              )}
               <h2>{t('codex.wakeup.presetManagerTitle')}</h2>
               <button className="modal-close" onClick={closePresetModal} disabled={saving}>
                 <X />
@@ -2824,6 +2868,7 @@ export function CodexWakeupContent({
         <div className="modal-overlay" onClick={closeTaskModal}>
           <div className="modal modal-lg wakeup-modal codex-wakeup-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
+              <button className="btn btn-secondary icon-only" onClick={closeTaskModal} title={t('common.back', '返回')} aria-label={t('common.back', '返回')}><ChevronLeft size={14} /></button>
               <h2>{taskDraft.id ? t('codex.wakeup.editTaskTitle') : t('codex.wakeup.createTaskTitle')}</h2>
               <button className="modal-close" onClick={closeTaskModal}>
                 <X />
@@ -2889,7 +2934,7 @@ export function CodexWakeupContent({
                   </div>
                 ) : (
                   <div className="wakeup-chip-list codex-wakeup-account-list">
-                    {filteredTaskAccounts.map((account) => {
+                    {taskAccountPagination.pageItems.map((account) => {
                     const checked = taskDraft.accountIds.includes(account.id);
                     return renderWakeupAccountOption(account, checked, () =>
                       setTaskDraft((current) => ({
@@ -2902,12 +2947,28 @@ export function CodexWakeupContent({
                   })}
                   </div>
                 )}
+                {filteredTaskAccounts.length > 0 && (
+                  <PaginationControls
+                    totalItems={taskAccountPagination.totalItems}
+                    currentPage={taskAccountPagination.currentPage}
+                    totalPages={taskAccountPagination.totalPages}
+                    pageSize={taskAccountPagination.pageSize}
+                    pageSizeOptions={taskAccountPagination.pageSizeOptions}
+                    rangeStart={taskAccountPagination.rangeStart}
+                    rangeEnd={taskAccountPagination.rangeEnd}
+                    canGoPrevious={taskAccountPagination.canGoPrevious}
+                    canGoNext={taskAccountPagination.canGoNext}
+                    onPageSizeChange={taskAccountPagination.setPageSize}
+                    onPreviousPage={taskAccountPagination.goToPreviousPage}
+                    onNextPage={taskAccountPagination.goToNextPage}
+                  />
+                )}
               </div>
 
               <div className="wakeup-form-group">
                 <div className="codex-wakeup-inline-header">
                   <label>{t('codex.wakeup.taskModelLabel')}</label>
-                  <button type="button" className="btn btn-secondary" onClick={openPresetModal}>
+                  <button type="button" className="btn btn-secondary" onClick={() => openPresetModal('task')}>
                     {t('codex.wakeup.managePresets')}
                   </button>
                 </div>
@@ -3143,6 +3204,43 @@ export function CodexWakeupContent({
               )}
 
               <div className="wakeup-form-group">
+                <label>{t('wakeup.form.executionMode')}</label>
+                <select
+                  className="wakeup-select"
+                  value={taskDraft.executionMode}
+                  onChange={(event) =>
+                    setTaskDraft((current) => ({
+                      ...current,
+                      executionMode: event.target.value as 'auto' | 'confirm',
+                    }))
+                  }
+                >
+                  <option value="auto">{t('wakeup.form.executionModeAuto')}</option>
+                  <option value="confirm">{t('wakeup.form.executionModeConfirm')}</option>
+                </select>
+              </div>
+
+              {taskDraft.executionMode === 'confirm' && (
+                <div className="wakeup-form-group">
+                  <label>{t('wakeup.form.confirmTimeout')}</label>
+                  <div className="wakeup-input-with-unit">
+                    <input
+                      className="wakeup-input"
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={taskDraft.confirmTimeoutMinutes}
+                      onChange={(event) => {
+                        const value = Math.min(60, Math.max(1, Number(event.target.value)));
+                        setTaskDraft((current) => ({ ...current, confirmTimeoutMinutes: value }));
+                      }}
+                    />
+                    <span>{t('settings.general.minutes')}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="wakeup-form-group">
                 <label>{t('codex.wakeup.promptLabel')}</label>
                 <textarea
                   className="token-input codex-wakeup-prompt-input"
@@ -3193,6 +3291,7 @@ export function CodexWakeupContent({
         <div className="modal-overlay" onClick={closeTestModal}>
           <div className="modal modal-lg wakeup-modal wakeup-test-modal codex-wakeup-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
+              <button className="btn btn-secondary icon-only" onClick={closeTestModal} title={t('common.back', '返回')} aria-label={t('common.back', '返回')}><ChevronLeft size={14} /></button>
               <h2>{t('codex.wakeup.testTitle')}</h2>
               <button className="modal-close" onClick={closeTestModal}>
                 <X />
@@ -3223,7 +3322,7 @@ export function CodexWakeupContent({
                   </div>
                 ) : (
                   <div className="wakeup-chip-list codex-wakeup-account-list">
-                    {filteredTestAccounts.map((account) => {
+                    {testAccountPagination.pageItems.map((account) => {
                     const checked = testAccountIds.includes(account.id);
                     return renderWakeupAccountOption(account, checked, () =>
                       setTestAccountIds((current) =>
@@ -3235,11 +3334,27 @@ export function CodexWakeupContent({
                   })}
                   </div>
                 )}
+                {filteredTestAccounts.length > 0 && (
+                  <PaginationControls
+                    totalItems={testAccountPagination.totalItems}
+                    currentPage={testAccountPagination.currentPage}
+                    totalPages={testAccountPagination.totalPages}
+                    pageSize={testAccountPagination.pageSize}
+                    pageSizeOptions={testAccountPagination.pageSizeOptions}
+                    rangeStart={testAccountPagination.rangeStart}
+                    rangeEnd={testAccountPagination.rangeEnd}
+                    canGoPrevious={testAccountPagination.canGoPrevious}
+                    canGoNext={testAccountPagination.canGoNext}
+                    onPageSizeChange={testAccountPagination.setPageSize}
+                    onPreviousPage={testAccountPagination.goToPreviousPage}
+                    onNextPage={testAccountPagination.goToNextPage}
+                  />
+                )}
               </div>
               <div className="wakeup-form-group">
                 <div className="codex-wakeup-inline-header">
                   <label>{t('codex.wakeup.testModelLabel')}</label>
-                  <button type="button" className="btn btn-secondary" onClick={openPresetModal}>
+                  <button type="button" className="btn btn-secondary" onClick={() => openPresetModal('test')}>
                     {t('codex.wakeup.managePresets')}
                   </button>
                 </div>
@@ -3305,6 +3420,7 @@ export function CodexWakeupContent({
         <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
           <div className="modal wakeup-modal wakeup-history-modal codex-wakeup-history-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
+              <button className="btn btn-secondary icon-only" onClick={() => setShowHistoryModal(false)} title={t('common.back', '返回')} aria-label={t('common.back', '返回')}><ChevronLeft size={14} /></button>
               <h2>{t('codex.wakeup.historyTitle')}</h2>
               <button className="modal-close" onClick={() => setShowHistoryModal(false)}>
                 <X />
@@ -3346,6 +3462,7 @@ export function CodexWakeupContent({
                               className="btn btn-secondary codex-wakeup-history-detail-btn"
                               onClick={() => {
                                 setShowHistoryModal(false);
+                                setExecutionSessionFromHistory(true);
                                 setExecutionSession(buildExecutionSessionFromHistory(batch));
                               }}
                             >
@@ -3392,6 +3509,7 @@ export function CodexWakeupContent({
           onClick={() => {
             if (!executionSession.running) {
               setExecutionSession(null);
+              setExecutionSessionFromHistory(false);
             }
           }}
         >
@@ -3400,10 +3518,17 @@ export function CodexWakeupContent({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="modal-header">
+              {executionSessionFromHistory && !executionSession.running && (
+                <button className="btn btn-secondary icon-only" onClick={() => {
+                  setExecutionSession(null);
+                  setExecutionSessionFromHistory(false);
+                  setShowHistoryModal(true);
+                }} title={t('common.back', '返回')} aria-label={t('common.back', '返回')}><ChevronLeft size={14} /></button>
+              )}
               <h2>{t('codex.wakeup.resultsTitle')}</h2>
               <button
                 className="modal-close"
-                onClick={() => setExecutionSession(null)}
+                onClick={() => { setExecutionSession(null); setExecutionSessionFromHistory(false); }}
                 disabled={executionSession.running}
               >
                 <X />
@@ -3487,23 +3612,16 @@ export function CodexWakeupContent({
               </div>
 
               <div className="codex-wakeup-results-runtime-meta">
-                <span>{t('codex.wakeup.runtimeCardTitle')}</span>
+                <span>{t('codex.wakeup.officialChatRuntimeTitle')}</span>
                 <strong className="codex-wakeup-runtime-path">
-                  {executionSession.runtime?.binary_path || t('codex.wakeup.runtimeUnknownPath')}
+                  {t('codex.wakeup.officialChatRuntimePath')}
                 </strong>
-                {(executionSession.runtime?.version ||
-                  executionSession.runtime?.source ||
-                  executionSession.runtime?.message) && (
-                  <span>
-                    {[
-                      executionSession.runtime?.version,
-                      executionSession.runtime?.source,
-                      executionSession.runtime?.message,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
-                )}
+                <span>
+                  {[
+                    t('codex.wakeup.officialChatRuntimeSource'),
+                    t('codex.wakeup.officialChatRuntimeMessage'),
+                  ].join(' · ')}
+                </span>
               </div>
 
               {executionSession.runtime && !executionSession.runtime.available && (
@@ -3590,7 +3708,7 @@ export function CodexWakeupContent({
               )}
               <button
                 className="btn btn-primary codex-wakeup-results-close-btn"
-                onClick={() => setExecutionSession(null)}
+                onClick={() => { setExecutionSession(null); setExecutionSessionFromHistory(false); }}
                 disabled={executionSession.running}
               >
                 {t('common.close', '关闭')}

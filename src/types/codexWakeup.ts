@@ -19,6 +19,13 @@ export interface CodexCliStatus {
 export type CodexWakeupScheduleKind = 'daily' | 'weekly' | 'interval' | 'quota_reset' | 'startup';
 export type CodexWakeupQuotaResetWindow = 'either' | 'primary_window' | 'secondary_window';
 export type CodexWakeupReasoningEffort = 'low' | 'medium' | 'high' | 'xhigh';
+export type WakeupTaskExecutionMode = 'auto' | 'confirm';
+export type WakeupTaskHistoryStatus =
+  | 'success'
+  | 'failed'
+  | 'skipped_timeout'
+  | 'skipped_app_closed'
+  | 'skipped_manual';
 
 export interface CodexWakeupSchedule {
   kind: CodexWakeupScheduleKind;
@@ -40,6 +47,8 @@ export interface CodexWakeupTask {
   model_display_name?: string;
   model_reasoning_effort?: CodexWakeupReasoningEffort;
   schedule: CodexWakeupSchedule;
+  execution_mode?: WakeupTaskExecutionMode;
+  confirm_timeout_minutes?: number;
   created_at: number;
   updated_at: number;
   last_run_at?: number;
@@ -84,6 +93,7 @@ export interface CodexWakeupHistoryItem {
   account_email: string;
   account_context_text?: string;
   success: boolean;
+  status?: WakeupTaskHistoryStatus;
   prompt?: string;
   model?: string;
   model_display_name?: string;

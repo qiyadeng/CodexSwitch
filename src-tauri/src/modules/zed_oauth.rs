@@ -101,7 +101,7 @@ fn html_success() -> &'static str {
     "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n\
 <html><body style='font-family:sans-serif;background:#0f172a;color:#e2e8f0;padding:32px;text-align:center;'>\
 <h2 style='color:#22c55e;'>Zed 登录已完成</h2>\
-<p>可以关闭此窗口并返回 Cockpit Tools。</p>\
+<p>可以关闭此窗口并返回 Codex Switch。</p>\
 <script>setTimeout(function(){ window.close(); }, 1200);</script>\
 </body></html>"
 }

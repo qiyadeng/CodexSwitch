@@ -14,6 +14,7 @@
     "close": "Tutup",
     "open": "Buka",
     "copy": "Salin",
+    "copied": "Disalin",
     "add": "Tambah",
     "enable": "Aktifkan",
     "disable": "Nonaktifkan",
@@ -35,7 +36,7 @@
         "plan": "Paket",
         "addOnPromptCredits": "Kredit prompt tambahan",
         "credits": "Kredit",
-        "email": "Email",
+        "email": "Email​",
         "promptCredits": "Kredit prompt pengguna",
         "creditPackage": "Paket Kredit",
         "sharedCreditPackage": "Paket Kredit Bersama",
@@ -52,11 +53,11 @@
       },
       "filter": {
         "all": "Semua ({{count}})",
-        "enterprise": "ENTERPRISE ({{count}})",
-        "free": "FREE ({{count}})",
-        "pro": "PRO ({{count}})",
-        "business": "BUSINESS ({{count}})",
-        "individual": "INDIVIDUAL ({{count}})",
+        "enterprise": "ENTERPRISE ({{count}})​",
+        "free": "FREE ({{count}})​",
+        "pro": "PRO ({{count}})​",
+        "business": "BUSINESS ({{count}})​",
+        "individual": "INDIVIDUAL ({{count}})​",
         "validAccounts": "Akun valid ({{count}})"
       },
       "filterLabel": "Penyaring",
@@ -104,7 +105,7 @@
         "viewAccounts": "Lihat Akun Codex",
         "copyErrors": "Salin error",
         "copied": "Disalin",
-        "unknownItem": "Item #{{index}}",
+        "unknownItem": "Item #{{index}}​",
         "versionUnsupportedTitle": "Versi aplikasi terlalu rendah",
         "versionUnsupportedDesc": "Metode ini belum didukung. Silakan unduh versi terbaru.",
         "checkUpdate": "Periksa Pembaruan",
@@ -169,7 +170,7 @@
       "addModal": {
         "import": "Impor Lokal",
         "oauth": "Otorisasi OAuth",
-        "token": "Token / JSON"
+        "token": "Token / JSON​"
       },
       "overview": {
         "title": "Ringkasan Akun"
@@ -184,13 +185,13 @@
       },
       "subtitle": "Pantau status kuota seluruh akun secara real-time.",
       "time": {
-        "lessThanMinute": "<1m",
+        "lessThanMinute": "<1m​",
         "relativeDays": "{{days}}h",
         "relativeDaysHours": "{{days}}h {{hours}}j",
         "relativeHours": "{{hours}}j",
         "relativeHoursMinutes": "{{hours}}j {{minutes}}m",
-        "relativeMinutes": "{{minutes}}m",
-        "relativeWithAbsolute": "{{relative}} ({{absolute}})"
+        "relativeMinutes": "{{minutes}}m​",
+        "relativeWithAbsolute": "{{relative}} ({{absolute}})​"
       },
       "credits": {
         "leftInline": "{{left}} tersisa",
@@ -234,8 +235,8 @@
     "accountPreview": "Pratinjau akun",
     "plan": "Paket",
     "cycle": "Siklus",
-    "status": "Status",
-    "pager": "{{current}} / {{total}}",
+    "status": "Status​",
+    "pager": "{{current}} / {{total}}​",
     "badges": {
       "recommended": "Direkomendasikan"
     },
@@ -273,22 +274,23 @@
     }
   },
   "nav": {
-    "overview": "Antigravity",
+    "overview": "Antigravity IDE​",
     "accounts": "Akun",
     "wakeup": "Tugas Bangun",
-    "fingerprints": "Sidik Jari",
     "settings": "Pengaturan",
-    "codex": "Codex",
-    "zed": "Zed",
-    "codebuddy": "CodeBuddy",
-    "githubCopilot": "GitHub Copilot",
-    "windsurf": "Windsurf",
-    "gemini": "Gemini Cli",
+    "codex": "Codex​",
+    "zed": "Zed​",
+    "codebuddy": "CodeBuddy​",
+    "githubCopilot": "GitHub Copilot​",
+    "windsurf": "Windsurf​",
+    "gemini": "Gemini Cli​",
     "dashboard": "Dasbor",
     "morePlatforms": "Platform Lainnya",
     "collapseSidebar": "Ciutkan bilah sisi",
     "expandSidebar": "Perluas bilah sisi",
     "logs": "Log",
+    "sponsors": "Sponsor",
+    "sponsorAppreciation": "Dukung",
     "instances": "Multi-Instansi",
     "manual": "Panduan Pengguna",
     "quickUpdate": {
@@ -296,15 +298,26 @@
       "restart": "Mulai Ulang",
       "installing": "Memasang"
     },
-    "qoder": "Qoder",
-    "trae": "Trae",
-    "codebuddyCn": "CodeBuddy CN",
+    "qoder": "Qoder​",
+    "trae": "Trae​",
+    "codebuddyCn": "CodeBuddy CN​",
     "switchClassicLayoutEntry": "Beralih ke tata letak klasik",
     "switchClassicLayoutTitle": "Beralih ke tata letak bilah sisi klasik",
     "switchClassicLayoutDesc": "Tata letak klasik menampilkan navigasi platform secara lengkap dan mendukung penciutan bilah sisi. Anda dapat beralih kembali kapan saja di Pengaturan > Umum > Tata Letak Bilah Sisi.",
     "switchClassicLayoutDontAskAgain": "Jangan tampilkan pesan ini lagi",
     "switchClassicLayoutConfirm": "Beralih sekarang",
-    "2faManager": "2FA"
+    "2faManager": "2FA​",
+    "apiRelay": "Relay API"
+  },
+  "sponsors": {
+    "pageTitle": "Sponsor",
+    "pageDesc": "Terima kasih kepada sponsor berikut yang mendukung Codex Switch.",
+    "loading": "Memuat sponsor...",
+    "emptyTitle": "Belum ada sponsor",
+    "emptyDesc": "Modul sponsor jarak jauh saat ini dinonaktifkan.",
+    "listAriaLabel": "Daftar sponsor",
+    "defaultDescription": "Terima kasih telah mendukung Codex Switch.",
+    "openSponsor": "Buka"
   },
   "platformLayout": {
     "title": "Tata Letak Platform",
@@ -312,15 +325,16 @@
     "sidebarSelectedUnlimited": "Bilah sisi dipilih {{count}}",
     "reset": "Atur ulang ke bawaan",
     "tip": "Seret untuk mengurutkan ulang. Maksimal tiga platform dapat ditampilkan di bilah sisi. Jika hanya satu yang dipilih, hanya satu yang ditampilkan.",
-    "tipWithGroups": "Seret untuk mengurutkan ulang. Maksimal tiga entri dapat muncul di bilah sisi. Anak grup tidak memiliki toggle bilah sisi/dasbor dan hanya digunakan untuk visibilitas tray dan pengalihan platform bawaan.",
+    "tipWithGroups": "Seret untuk mengurutkan. Maksimal {{max}} entri dapat ditampilkan di bilah sisi. Anak grup tidak memiliki sakelar bilah sisi/dasbor dan hanya digunakan untuk bilah menu serta pemilihan platform default.",
     "tipWithGroupsUnlimited": "Seret untuk mengurutkan ulang. Jumlah entri di bilah sisi tidak dibatasi. Anak grup tidak memiliki toggle bilah sisi/dasbor dan hanya digunakan untuk visibilitas tray dan pengalihan platform bawaan.",
     "addGroup": "Tambah grup",
-    "editGroup": "Edit",
+    "editGroup": "Edit​",
     "deleteGroup": "Hapus grup",
     "groupBadge": "Grup",
     "sidebarToggle": "Tampilkan di bilah sisi",
     "dashboardToggle": "Tampilkan di dasbor",
     "trayToggle": "Tampilkan di tray",
+    "apiRelayTrayDisabled": "Relay belum dapat tampil di tray",
     "groupDefault": "Platform bawaan",
     "groupName": "Nama grup",
     "groupNamePlaceholder": "Contoh: CodeBuddy Suite",
@@ -385,7 +399,7 @@
       "start": "Jalankan",
       "stop": "Hentikan",
       "openFolder": "Buka Folder",
-      "edit": "Edit",
+      "edit": "Edit​",
       "openRootDir": "Buka Folder",
       "selectPath": "Pilih Folder",
       "openWindow": "Buka Jendela",
@@ -423,7 +437,8 @@
       "instance": "Instansi",
       "email": "Akun",
       "quota": "Kuota",
-      "actions": "Tindakan"
+      "actions": "Tindakan",
+      "speed": "Kecepatan"
     },
     "empty": {
       "title": "Belum ada instansi",
@@ -501,7 +516,11 @@
           "contextWindowInvalid": "Jendela konteks harus berupa bilangan bulat yang lebih besar dari 0.",
           "autoCompactInvalid": "Batas pemadatan otomatis harus berupa bilangan bulat yang lebih besar dari 0."
         }
-      }
+      },
+      "appSpeed": "Kecepatan",
+      "appSpeedDesc": "Menulis kecepatan pilihan sebelum menjalankan Codex resmi",
+      "autoSyncThreads": "Sinkron sesi otomatis",
+      "autoSyncThreadsDesc": "Saat mati, sesi multi-instance tetap terisolasi. Saat aktif, memulai atau menutup instance otomatis menggabungkan catatan sesi lokal hanya setelah semua instance Codex berhenti."
     },
     "quota": {
       "unbound": "Tidak ada akun tertaut",
@@ -522,7 +541,8 @@
       "allAlreadyRunning": "Semua instansi sudah berjalan",
       "noneRunning": "Tidak ditemukan instansi yang sedang berjalan",
       "syncThreadsNeedTwo": "Diperlukan setidaknya dua instansi untuk menyinkronkan thread",
-      "launchPrepared": "Perintah peluncuran siap"
+      "launchPrepared": "Perintah peluncuran siap",
+      "speedUpdated": "Kecepatan diperbarui"
     },
     "runningDialog": {
       "title": "Instansi sudah berjalan",
@@ -560,7 +580,7 @@
       "force": {
         "title": "Mulai ulang paksa",
         "principle": "Cocokkan proses berdasarkan --user-data-dir dan hentikan secara paksa (SIGKILL / taskkill /F), lalu luncurkan ulang instansi target.",
-        "commandMac": "macOS/Linux: pkill -9 -f \"--user-data-dir <dir>\"",
+        "commandMac": "macOS/Linux: pkill -9 -f \"--user-data-dir <dir>\"​",
         "commandWin": "Windows: taskkill /F /PID <pid> (sesuai --user-data-dir)",
         "pros": "Dapat memulai ulang satu instansi secara tepat.",
         "cons": "Dapat memicu pesan \"keluar tidak terduga\" dan berisiko kehilangan data yang belum disimpan."
@@ -588,7 +608,8 @@
     "tabs": {
       "general": "Umum",
       "network": "Jaringan",
-      "about": "Tentang"
+      "about": "Tentang",
+      "data": "Manajemen Data"
     },
     "general": {
       "appearance": "Tampilan",
@@ -606,7 +627,7 @@
       "uiScale": "Skala Antarmuka",
       "uiScaleDesc": "Sesuaikan skala antarmuka",
       "accountManagement": "Akun",
-      "autoRefresh": "Penyegaran Otomatis Kuota Antigravity",
+      "autoRefresh": "Penyegaran Otomatis Kuota Antigravity IDE",
       "codexAutoRefresh": "Penyegaran Otomatis Kuota Codex",
       "autoRefreshDesc": "Frekuensi pembaruan latar belakang",
       "codexAutoRefreshDesc": "Frekuensi pembaruan latar belakang",
@@ -632,6 +653,10 @@
       "hideDockIconDesc": "Kontrol visibilitas ikon Dock secara independen; tidak terpengaruh oleh perilaku perkecil jendela",
       "hideDockIconOff": "Tidak (Tampilkan ikon Dock)",
       "hideDockIconOn": "Ya (Sembunyikan ikon Dock)",
+      "trayIconStyle": "Gaya ikon bilah menu (khusus macOS)",
+      "trayIconStyleDesc": "Pilih ikon template sistem atau ikon app asli berwarna",
+      "trayIconStyleTemplate": "Ikon template",
+      "trayIconStyleColor": "Ikon berwarna",
       "floatingCardStartup": "Tampilkan kartu mengambang saat mulai",
       "floatingCardStartupDesc": "Tampilkan kartu akun mengambang secara otomatis setelah aplikasi diluncurkan",
       "floatingCardAlwaysOnTop": "Kartu mengambang selalu di atas secara bawaan",
@@ -646,8 +671,8 @@
       "floatingCardShowNowAction": "Tampilkan kartu mengambang",
       "dataDir": "Direktori Data",
       "dataDirDesc": "Lokasi penyimpanan akun dan berkas konfigurasi.",
-      "fpDir": "Penyimpanan Antigravity",
-      "fpDirDesc": "Lokasi penyimpanan berkas data Antigravity.",
+      "topRightAdVisible": "Tampilkan promo atas",
+      "topRightAdVisibleDesc": "Sembunyikan slot promo atas di aplikasi. Halaman Sponsor tidak terpengaruh.",
       "opencodeTitle": "Integrasi OpenCode",
       "opencodeAuthOverwrite": "Timpa login OpenCode saat mengganti Codex",
       "opencodeAuthOverwriteDesc": "Jika dinonaktifkan, hanya Codex yang diganti dan OpenCode mempertahankan status login saat ini",
@@ -665,16 +690,21 @@
       "codexAppPathPlaceholder": "Jalur bawaan",
       "codexPathSelect": "Pilih",
       "codexPathReset": "Atur ulang ke bawaan",
+      "codexSyncWsl": "Sinkronkan Codex ke WSL",
+      "codexSyncWslDesc": "Setelah mengganti akun Codex default, auth.json dan config.toml juga ditulis ke direktori Codex di WSL.",
+      "codexWslConfigDir": "Direktori Codex WSL",
+      "codexWslConfigDirDesc": "Masukkan direktori .codex di dalam WSL. Path \\\\wsl.localhost\\ didukung.",
+      "codexWslConfigDirPlaceholder": "Contoh: \\\\wsl.localhost\\Ubuntu-24.04\\home\\user\\.codex",
       "vscodeTitle": "Peluncuran VS Code",
       "vscodeAppPath": "Jalur Aplikasi VS Code",
       "vscodeAppPathDesc": "Biarkan kosong untuk menggunakan jalur bawaan",
       "vscodeAppPathPlaceholder": "Jalur bawaan",
       "vscodePathSelect": "Pilih",
       "vscodePathReset": "Atur ulang ke bawaan",
-      "antigravityAppPath": "Jalur Aplikasi Antigravity",
-      "antigravityTitle": "Peluncuran Antigravity",
+      "antigravityAppPath": "Jalur Aplikasi Antigravity IDE",
+      "antigravityTitle": "Peluncuran Antigravity IDE",
       "commonTitle": "Umum",
-      "antigravitySettingsTitle": "Pengaturan Antigravity",
+      "antigravitySettingsTitle": "Pengaturan Antigravity IDE",
       "codexSettingsTitle": "Pengaturan Codex",
       "githubCopilotSettingsTitle": "Pengaturan GitHub Copilot",
       "ghcpAutoRefresh": "Penyegaran Otomatis Kuota GitHub Copilot",
@@ -704,8 +734,8 @@
       "codebuddyPathSelect": "Pilih",
       "codebuddyPathReset": "Atur ulang ke bawaan",
       "cursorPathReset": "Atur ulang bawaan",
-      "antigravityStartupWakeup": "Jalankan bangun Antigravity setelah mulai",
-      "antigravityStartupWakeupDesc": "Jalankan tugas bangun Antigravity yang diaktifkan sekali setelah aplikasi dimulai",
+      "antigravityStartupWakeup": "Jalankan bangun Antigravity IDE setelah mulai",
+      "antigravityStartupWakeupDesc": "Jalankan tugas bangun Antigravity IDE yang diaktifkan sekali setelah aplikasi dimulai",
       "codexLaunchOnSwitch": "Luncurkan Aplikasi Codex saat mengganti Codex",
       "codexLaunchOnSwitchDesc": "Mulai atau mulai ulang Aplikasi Codex setelah mengganti akun",
       "autoSwitchAccountScope": "Cakupan penggantian akun otomatis",
@@ -756,9 +786,9 @@
       "ghcpOpencodeRestart": "Mulai ulang OpenCode saat mengganti GitHub Copilot",
       "ghcpLaunchOnSwitch": "Luncurkan Aplikasi GitHub Copilot saat mengganti GitHub Copilot",
       "antigravityDualSwitchNoRestart": "Penggantian ganda tanpa mulai ulang",
-      "antigravityDualSwitchNoRestartDesc": "Saat mengganti, tulis data akun lokal dan panggil penggantian mulus ekstensi dalam satu alur, tanpa memulai ulang Antigravity.",
+      "antigravityDualSwitchNoRestartDesc": "Saat mengganti, tulis data akun lokal dan panggil penggantian mulus ekstensi dalam satu alur, tanpa memulai ulang Antigravity IDE.",
       "defaultTerminal": "Terminal default",
-      "defaultTerminalDesc": "Terminal yang digunakan saat membuka Codex CLI.",
+      "defaultTerminalDesc": "Terminal yang digunakan saat membuka Gemini CLI.",
       "terminalSystem": "Ikuti sistem",
       "currentAccountRefreshRequiresAutoRefresh": "Aktifkan terlebih dahulu \"Penyegaran Kuota Otomatis\" untuk mengatur penyegaran akun saat ini.",
       "codebuddyCnAppPath": "Path Aplikasi CodeBuddy CN",
@@ -787,7 +817,14 @@
       "codexSpecifiedAppPath": "Path aplikasi tertentu",
       "codexSpecifiedAppPathDesc": "Path aplikasi yang ikut dimulai ulang saat ganti Codex.",
       "codexSpecifiedAppPathPlaceholder": "Contoh /Applications/Host.app",
-      "codexSpecifiedAppPathClear": "Kosongkan"
+      "codexSpecifiedAppPathClear": "Kosongkan",
+      "codexAppSpeed": "Kecepatan Codex",
+      "codexAppSpeedDesc": "Menyimpan kecepatan mulai resmi Codex dan menulisnya sebelum tiap peluncuran dari app ini.",
+      "codexAppSpeedStandard": "Standar",
+      "codexAppSpeedFast": "Cepat",
+      "codexAppSpeedLaunch": "Mulai ulang Codex",
+      "codexAppSpeedSaveFailed": "Gagal menyimpan kecepatan Codex: {{error}}",
+      "codexAppSpeedLaunchFailed": "Gagal memulai ulang Codex: {{error}}"
     },
     "network": {
       "apiTitle": "API Antigravity Cockpit",
@@ -822,21 +859,21 @@
       "proxyEnabledDesc": "Masukkan variabel lingkungan proxy ke proses platform yang dikelola oleh Cockpit.",
       "proxyUrl": "URL Proxy",
       "proxyUrlDesc": "Contoh: http://127.0.0.1:7890 atau socks5://127.0.0.1:7890",
-      "proxyUrlPlaceholder": "http://127.0.0.1:7890",
+      "proxyUrlPlaceholder": "http://127.0.0.1:7890​",
       "proxyNoProxy": "Daftar NO_PROXY",
       "proxyNoProxyDesc": "Dipisahkan koma; host yang cocok akan melewati proxy.",
-      "proxyNoProxyPlaceholder": "127.0.0.1,localhost,::1",
+      "proxyNoProxyPlaceholder": "127.0.0.1,localhost,::1​",
       "proxyUrlRequired": "URL Proxy tidak boleh kosong saat proxy global diaktifkan."
     },
     "about": {
       "appName": "Codex Switch",
       "slogan": "Solusi Akun Profesional",
       "author": "Pengembang",
-      "wechat": "WeChat",
-      "github": "GitHub",
-      "alipay": "Alipay",
-      "wechatpay": "WeChat Pay",
-      "sponsor": "Sponsor",
+      "wechat": "WeChat​",
+      "github": "GitHub​",
+      "alipay": "Alipay​",
+      "wechatpay": "WeChat Pay​",
+      "sponsor": "Sponsor​",
       "sponsorDesc": "Dukung pengembangan",
       "feedback": "Umpan Balik",
       "feedbackDesc": "Laporkan masalah/saran",
@@ -956,6 +993,66 @@
         "unsupportedLegacyFile": "Format cadangan akun lama ini tidak dikenali",
         "unsupportedVersion": "Versi aplikasi ini tidak mendukung versi bundel tersebut"
       }
+    },
+    "webdav": {
+      "groupTitle": "Sinkronisasi WebDAV",
+      "enabledTitle": "Sinkronisasi Cadangan WebDAV",
+      "enabledDesc": "Default Jianguoyun, dapat diubah ke layanan WebDAV apa pun.",
+      "urlTitle": "Alamat Layanan",
+      "urlDesc": "Alamat default Jianguoyun: https://dav.jianguoyun.com/dav/",
+      "usernameTitle": "Akun",
+      "usernameDesc": "Jianguoyun menggunakan email akun Anda.",
+      "usernamePlaceholder": "Email atau nama pengguna",
+      "passwordTitle": "Kata Sandi Aplikasi",
+      "passwordDesc": "Disimpan secara lokal; biarkan kosong untuk mempertahankan kata sandi saat ini.",
+      "passwordPlaceholder": "Kata sandi aplikasi pihak ketiga Jianguoyun",
+      "passwordSavedPlaceholder": "Disimpan; biarkan kosong untuk mempertahankan",
+      "clearPassword": "Bersihkan",
+      "remoteDirTitle": "Folder Jarak Jauh",
+      "remoteDirDesc": "Hanya file cadangan Cockpit di folder ini yang dikelola.",
+      "statusTitle": "Status Sinkronisasi",
+      "statusDesc": "Pemulihan jarak jauh memerlukan pemilihan manual dan tidak pernah menimpa data lokal secara diam-diam.",
+      "lastUpload": "Unggahan terakhir: {{time}}",
+      "lastDownload": "Pemulihan terakhir: {{time}}",
+      "never": "Belum disinkronkan",
+      "testAction": "Uji/Simpan Konfigurasi",
+      "uploadAction": "Buat & Unggah",
+      "syncAction": "Sinkronisasi Konfigurasi",
+      "syncLatestConfirm": "Apakah Anda yakin ingin mengunduh cadangan jarak jauh terbaru {{name}} dan menyinkronkannya secara lokal? Ini akan menimpa data lokal yang ada.",
+      "remoteListTitle": "Cadangan Jarak Jauh",
+      "remoteListDesc": "Hanya file JSON dan ZIP yang cocok dengan nama cadangan otomatis/manual Cockpit yang ditampilkan.",
+      "emptyTitle": "Tidak ada cadangan jarak jauh",
+      "emptyDesc": "Simpan pengaturan, lalu buat dan unggah cadangan.",
+      "unknownTime": "Tidak diketahui",
+      "restoreAction": "Pulihkan",
+      "restoreConfirm": "Pulihkan data dari cadangan jarak jauh {{name}}?",
+      "deleteConfirm": "Hapus cadangan jarak jauh {{name}}?",
+      "feedback": {
+        "testingAndSaving": "Menyimpan dan menguji koneksi WebDAV...",
+        "saveAndTestSuccess": "Konfigurasi disimpan dan uji koneksi berhasil!",
+        "saveSuccessTestFailed": "Konfigurasi disimpan, tetapi uji koneksi gagal: {{message}}",
+        "saveAndTestFailed": "Gagal menyimpan dan menguji koneksi: {{error}}",
+        "uploading": "Membuat dan mengunggah cadangan...",
+        "uploadSuccess": "Berhasil mengunggah {{count}} file, membersihkan {{deleted}} cadangan jarak jauh yang kedaluwarsa",
+        "uploadFailed": "Unggahan WebDAV gagal: {{error}}",
+        "listFailed": "Gagal memuat cadangan jarak jauh: {{error}}",
+        "loadSettingsFailed": "Gagal memuat pengaturan WebDAV: {{error}}",
+        "restoring": "Membaca cadangan jarak jauh dan mengimpor...",
+        "restoreEmpty": "Tidak ada data yang dipulihkan dari cadangan jarak jauh",
+        "deleteSuccess": "Cadangan jarak jauh dihapus",
+        "deleteFailed": "Gagal menghapus cadangan jarak jauh: {{error}}",
+        "syncingLatest": "Menyinkronkan konfigurasi jarak jauh terbaru...",
+        "syncFailed": "Gagal menyinkronkan konfigurasi terbaru: {{error}}",
+        "noRemoteBackup": "Tidak ada file cadangan yang dapat dipulihkan di remote"
+      },
+      "errors": {
+        "notEnabled": "Aktifkan sinkronisasi WebDAV terlebih dahulu"
+      },
+      "retentionTitle": "Remote Retention Days",
+      "retentionDesc": "Backups older than this on the cloud will be removed during the next sync.",
+      "retentionUnit": "days",
+      "collapseAll": "Collapse remote backups",
+      "expandAll": "Expand all remote backups ({{count}} more)"
     }
   },
   "appPath": {
@@ -971,7 +1068,7 @@
   },
   "accounts": {
     "title": "Akun",
-    "subtitle": "Kelola daftar akun Antigravity Anda.",
+    "subtitle": "Kelola daftar akun Antigravity IDE Anda.",
     "total": "{{count}} akun",
     "search": "Cari akun...",
     "addAccount": "Tambah Akun",
@@ -984,10 +1081,9 @@
     "deleteAccount": "Hapus Akun",
     "confirmDelete": "Yakin ingin menghapus akun {{email}}?",
     "columns": {
-      "email": "Email",
+      "email": "Email​",
       "subscription": "Langganan",
       "quota": "Status Kuota",
-      "fingerprint": "Sidik Jari",
       "lastUsed": "Terakhir Digunakan",
       "actions": "Tindakan"
     },
@@ -996,14 +1092,14 @@
       "disabled": "Nonaktif",
       "authInvalid": "Kredensial tidak valid",
       "refreshFailed": "Penyegaran gagal",
-      "normal": "Normal",
-      "forbidden": "403",
+      "normal": "Normal​",
+      "forbidden": "403​",
       "forbidden_tooltip": "API mengembalikan 403 Forbidden, akun tidak memiliki akses ke Gemini Code Assist",
       "forbidden_msg": "Akun diblokir, penyegaran otomatis dilewati"
     },
     "tier": {
-      "pro": "PRO",
-      "ultra": "ULTRA"
+      "pro": "PRO​",
+      "ultra": "ULTRA​"
     },
     "credits": {
       "label": "Kredit AI"
@@ -1025,8 +1121,8 @@
     "filterLabel": "Filter akun",
     "filter": {
       "all": "Semua ({{count}})",
-      "pro": "PRO ({{count}})",
-      "ultra": "ULTRA ({{count}})"
+      "pro": "PRO ({{count}})​",
+      "ultra": "ULTRA ({{count}})​"
     },
     "sortLabel": "Urutkan",
     "sort": {
@@ -1073,10 +1169,8 @@
     "actions": {
       "viewDetails": "Lihat detail",
       "viewError": "Lihat kesalahan",
-      "fingerprint": "Sidik Jari",
       "switch": "Ganti akun",
       "switchTo": "Ganti ke akun ini",
-      "selectFingerprint": "Pilih sidik jari",
       "delete": "Hapus",
       "deleteSelected": "Hapus yang Dipilih",
       "export": "Ekspor",
@@ -1087,14 +1181,14 @@
       "empty": "Belum ada riwayat penggantian",
       "success": "Berhasil",
       "failed": "Gagal",
-      "target": "Target: {{email}}",
+      "target": "Target: {{email}}​",
       "trigger": "Pemicu: {{trigger}}",
       "triggerManual": "Penggantian manual",
       "triggerAuto": "Penggantian otomatis",
       "triggerUnknown": "Tidak diketahui",
       "origin": "Inisiator: {{origin}}",
-      "originDesktop": "Desktop",
-      "originPlugin": "Plugin",
+      "originDesktop": "Desktop​",
+      "originPlugin": "Plugin​",
       "originUnknown": "Tidak diketahui",
       "autoReasonLabel": "Alasan otomatis: {{reason}}",
       "autoReason": "Aturan: {{rule}}; ambang kuota: {{quotaThreshold}}%; ambang kredit: {{creditsThreshold}}; cakupan: {{scope}}; grup yang dipantau: {{selectedGroups}}; grup yang terpicu: {{hitGroups}}; kredit saat ini: {{currentCredits}}; kandidat: {{candidates}}",
@@ -1120,7 +1214,7 @@
     },
     "tabs": {
       "oauth": "Otorisasi OAuth",
-      "token": "Refresh Token",
+      "token": "Refresh Token​",
       "import": "Impor"
     },
     "oauth": {
@@ -1164,6 +1258,8 @@
       "noGroups": "Tidak Ada Grup",
       "noGroupsDesc": "Buat grup untuk mengelola akun Anda secara berkelompok",
       "manage": "Kelola",
+      "refresh": "Segarkan grup",
+      "refreshEmpty": "Tidak ada akun yang dapat disegarkan di grup ini",
       "error": {
         "duplicate": "Nama grup sudah ada",
         "createFailed": "Gagal membuat grup: {{error}}",
@@ -1223,111 +1319,13 @@
     "currentAccount": "Sedang digunakan",
     "switchTo": "Ganti ke akun ini",
     "switching": "Mengganti...",
-    "fingerprint": "Sidik Jari",
     "bound": "Tertaut",
-    "brandTitle": "Akun Antigravity"
-  },
-  "fingerprints": {
-    "title": "Sidik Jari",
-    "subtitle": "Kelola sidik jari perangkat yang ditautkan ke akun.",
-    "toolbar": {
-      "generate": "Buat Baru",
-      "capture": "Tangkap Saat Ini",
-      "import": "Impor",
-      "deleteUnbound": "Hapus yang Tidak Tertaut",
-      "folder": "Folder kerja",
-      "delete": "Hapus"
-    },
-    "table": {
-      "name": "Nama Sidik Jari",
-      "machineId": "ID Mesin",
-      "accounts": "Akun Tertaut",
-      "actions": "Tindakan",
-      "accountCount": "{{count}} akun",
-      "apply": "Terapkan",
-      "noData": "Tidak ada data sidik jari",
-      "preview": "Pratinjau",
-      "rename": "Ubah Nama"
-    },
-    "modals": {
-      "generate": {
-        "title": "Buat Sidik Jari",
-        "btn": "Buat"
-      },
-      "capture": {
-        "title": "Tangkap Sidik Jari",
-        "btn": "Tangkap"
-      },
-      "rename": {
-        "title": "Ubah Nama Sidik Jari",
-        "label": "Nama Sidik Jari"
-      },
-      "import": {
-        "title": "Impor Sidik Jari",
-        "fromTools": "Impor dari Antigravity Tools",
-        "desc": "Impor dari ~/.antigravity_tools/",
-        "fromJsonBtn": "Impor dari JSON",
-        "jsonExample": "Contoh format:",
-        "jsonPlaceholder": "Sidik jari kerja",
-        "orPasteJson": "Atau tempel JSON"
-      },
-      "bound": {
-        "title": "Akun Tertaut",
-        "add": "Tambah Akun",
-        "empty": "Tidak ada akun yang tertaut",
-        "emptyAll": "Semua akun sudah tertaut",
-        "select": "Pilih akun untuk ditambahkan",
-        "from": "Dari: {{name}}",
-        "back": "Kembali"
-      },
-      "detail": {
-        "title": "Detail Sidik Jari",
-        "created": "Dibuat pada {{time}}"
-      }
-    },
-    "messages": {
-      "deleteConfirm": "Hapus sidik jari ini? Akun yang tertaut akan dikembalikan ke semula.",
-      "batchDeleteConfirm": "Hapus {{count}} sidik jari? Akun yang tertaut akan dikembalikan ke semula.",
-      "deleteUnboundConfirm": "Hapus {{count}} sidik jari yang tidak memiliki akun tertaut?",
-      "generated": "Sidik jari baru berhasil dibuat",
-      "captured": "Sidik jari saat ini berhasil ditangkap",
-      "renamed": "Berhasil diubah namanya",
-      "deleted": "Sidik jari berhasil dihapus",
-      "deletedUnbound": "{{count}} sidik jari tidak tertaut berhasil dihapus",
-      "imported": "{{count}} sidik jari berhasil diimpor",
-      "noUnboundToDelete": "Tidak ada sidik jari tidak tertaut untuk dihapus",
-      "addedAccounts": "{{count}} akun berhasil ditambahkan",
-      "enterName": "Masukkan nama sidik jari",
-      "previewNotReady": "Pratinjau belum siap, silakan tunggu",
-      "duplicate": "Sidik jari duplikat ditemukan: {{name}}",
-      "autoGeneratedSuffix": "(Tidak ditemukan di sumber, dibuat otomatis)",
-      "readOnly": "Hanya-baca",
-      "current": "Saat Ini",
-      "addCount": "{{count}} akun berhasil ditambahkan",
-      "addFailed": "Gagal menambahkan",
-      "adding": "Menambahkan...",
-      "applyFailed": "Gagal menerapkan",
-      "boundCount": "{{count}} akun tertaut",
-      "captureFailed": "Gagal menangkap",
-      "count": "{{count}}",
-      "deleteFailed": "Gagal menghapus",
-      "fpLabel": "Sidik Jari:",
-      "generateFailed": "Gagal membuat",
-      "importFailed": "Gagal mengimpor",
-      "importing": "Mengimpor...",
-      "loadFailed": "Gagal memuat daftar sidik jari",
-      "processing": "Memproses...",
-      "renameFailed": "Gagal mengubah nama",
-      "serviceMachineIdEmpty": "Kosong",
-      "importPartialFailed": "{{failCount}} gagal: {{failList}}",
-      "refreshingQuota": "Menyegarkan kuota {{done}}/{{total}} (Anda dapat menutup dialog ini)",
-      "quotaRefreshDone": "Penyegaran kuota selesai"
-    }
+    "brandTitle": "Akun Antigravity IDE"
   },
   "modals": {
     "addAccount": {
       "title": "Tambah Akun",
-      "desc": "Tambahkan akun Antigravity Anda melalui Google OAuth",
+      "desc": "Tambahkan akun Antigravity IDE Anda melalui Google OAuth",
       "loginBtn": "Otorisasi Google OAuth",
       "waiting": "Menunggu..."
     },
@@ -1335,7 +1333,7 @@
       "title": "Impor Akun",
       "desc": "Pilih metode impor",
       "local": "Impor Akun Lokal",
-      "localDesc": "Impor akun yang sedang masuk dari Antigravity Client",
+      "localDesc": "Impor akun yang sedang masuk dari Antigravity IDE Client",
       "tools": "Impor Antigravity Tools",
       "toolsDesc": "Impor dari direktori ~/.antigravity_tools/",
       "jsonDivider": "atau Tempel JSON",
@@ -1348,7 +1346,7 @@
       "fromExtension": "Impor dari Plugin",
       "syncBadge": "Sinkronkan akun plugin Antigravity Cockpit",
       "fromLocalDB": "Impor dari DB Lokal",
-      "localDBDesc": "Baca akun login dari Antigravity Client di mesin ini",
+      "localDBDesc": "Baca akun login dari Antigravity IDE Client di mesin ini",
       "toolsDescMigrate": "Migrasi akun dari ~/.antigravity_tools/",
       "importingTools": "Mengimpor dari Antigravity Tools...",
       "importingLocal": "Mengimpor akun lokal...",
@@ -1357,15 +1355,6 @@
       "fromFiles": "Impor dari Berkas Lokal",
       "fromFilesDesc": "Pilih berkas JSON untuk mengimpor akun (berbagai format didukung)",
       "importingFiles": "Mengimpor {{count}} berkas..."
-    },
-    "fingerprint": {
-      "title": "Pilih Sidik Jari",
-      "desc": "Pilih sidik jari untuk akun <1>{{email}}</1>",
-      "original": "Sidik Jari Asli",
-      "new": "Tambah Sidik Jari Baru",
-      "bind": "Konfirmasi Tautan",
-      "selectLabel": "Pilih Sidik Jari",
-      "boundCount": "akun"
     },
     "quota": {
       "title": "Detail Kuota",
@@ -1391,8 +1380,15 @@
   "messages": {
     "deleteConfirm": "Yakin ingin menghapus akun ini?",
     "batchDeleteConfirm": "Yakin ingin menghapus {{count}} akun yang dipilih?",
+    "cleanErrorAccountsAction": "Bersihkan akun ERROR",
+    "cleanErrorAccountsConfirm": "Hapus {{count}} akun ERROR dalam cakupan saat ini?",
+    "selectAllFilteredAccounts": "Pilih {{count}} yang cocok",
+    "selectedAllFilteredAccounts": "Semua yang cocok dipilih: {{count}}",
+    "deleteFilteredAccountsConfirm": "Ini akan menghapus {{count}} akun Codex yang cocok dengan filter saat ini, bukan hanya halaman ini. Lanjutkan?",
+    "clearSelection": "Hapus pilihan",
     "switched": "Beralih ke {{email}}",
     "switchFailed": "Penggantian gagal: {{error}}",
+    "antigravityLegacyUnsupported": "Antigravity 2.0.0 dan yang lebih baru tidak didukung di sini. Pilih versi Antigravity di bawah 2.0.0, atau gunakan Antigravity IDE.",
     "importSuccess": "Berhasil mengimpor {{count}} akun",
     "importLocalSuccess": "Berhasil mengimpor akun: {{email}}",
     "importFailed": "Impor gagal: {{error}}",
@@ -1403,7 +1399,7 @@
     "bindFailed": "Tautan gagal: {{error}}",
     "jsonRequired": "Silakan masukkan atau tempel konten JSON",
     "example": "Contoh",
-    "actionRunning": "{{action}}...",
+    "actionRunning": "{{action}}...​",
     "actionSuccess": "{{action}} berhasil",
     "actionFailed": "{{action}} gagal: {{error}}"
   },
@@ -1431,7 +1427,7 @@
       },
       "runHint": {
         "title": "Catatan verifikasi",
-        "line1": "Deteksi sekarang mengirim permintaan obrolan minimal dengan mensimulasikan Antigravity menggunakan gateway lokal dan protokol Language Server resmi.",
+        "line1": "Deteksi sekarang mengirim permintaan obrolan minimal dengan mensimulasikan Antigravity IDE menggunakan gateway lokal dan protokol Language Server resmi.",
         "line2": "Ini mengonsumsi sejumlah kecil token (biasanya satu dialog singkat). Penggunaan aktual tergantung pada model dan kebijakan akun.",
         "line3": "Operasi ini tidak mengubah pengaturan tugas bangun. Ini hanya memeriksa ketersediaan akun dan menulis catatan deteksi.",
         "line4": "Jika 403 dikembalikan, verifikasi akun atau pengajuan banding mungkin diperlukan. Hasilnya akan menyertakan URL dan tindakan cepat."
@@ -1448,7 +1444,7 @@
     "statusEnabled": "Aktif",
     "statusDisabled": "Nonaktif",
     "statusRunning": "Berjalan",
-    "edit": "Edit",
+    "edit": "Edit​",
     "defaultTaskName": "Tugas Bangun",
     "newTaskName": "Tugas Bangun Baru",
     "historyCount": "Riwayat Pemicu ({{count}})",
@@ -1475,20 +1471,20 @@
     },
     "format": {
       "noReply": "(Tidak ada balasan)",
-      "durationMs": "{{ms}}ms",
+      "durationMs": "{{ms}}ms​",
       "tokens": "token={{prompt}}+{{completion}}={{total}}",
-      "traceId": "traceId={{traceId}}",
-      "detailJoiner": ", ",
-      "message": "[[{{model}}]]: {{reply}}{{suffix}}",
-      "none": "--",
+      "traceId": "traceId={{traceId}}​",
+      "detailJoiner": ", ​",
+      "message": "[[{{model}}]]: {{reply}}{{suffix}}​",
+      "none": "--​",
       "today": "Hari ini {{time}}",
       "tomorrow": "Besok {{time}}",
-      "weekdayWithTime": "{{day}} {{time}}",
+      "weekdayWithTime": "{{day}} {{time}}​",
       "notSelected": "Tidak dipilih",
-      "joiner": ", ",
+      "joiner": ", ​",
       "moreItems": "{{items}} ({{total}} item)",
       "quotaReset": "Bangun otomatis saat reset kuota",
-      "crontab": "Crontab: {{expr}}",
+      "crontab": "Crontab: {{expr}}​",
       "daily": "Harian {{times}}{{suffix}}",
       "weekly": "Mingguan {{days}} {{times}}{{suffix}}",
       "interval": "Setiap {{hours}}j ({{start}}-{{end}})",
@@ -1532,7 +1528,7 @@
     },
     "triggerSource": {
       "scheduled": "Terjadwal",
-      "crontab": "Crontab",
+      "crontab": "Crontab​",
       "quotaReset": "Reset kuota",
       "startup": "Setelah mulai",
       "manual": "Jalankan Tes",
@@ -1562,6 +1558,7 @@
       "modeScheduled": "Ã°Å¸â€œâ€¦ Scheduled",
       "modeCrontab": "Ã°Å¸Â§Â© Crontab",
       "modeQuotaReset": "Ã°Å¸â€â€ž Quota reset",
+      "antigravityVersion": "Versi Antigravity IDE",
       "modelSelect": "Pilihan model",
       "modelHint": "Untuk grup kuota yang sama, pilih satu model. Beberapa model dipicu secara berurutan.",
       "modelsEmpty": "Tidak ada model yang direkomendasikan",
@@ -1569,7 +1566,7 @@
       "accountHint": "Pilih beberapa akun; bangun akan menggunakannya secara berurutan.",
       "accountsEmpty": "Tidak ada akun",
       "customPrompt": "Prompt kustom",
-      "promptPlaceholder": "Default {{word}}",
+      "promptPlaceholder": "Default {{word}}​",
       "promptHint": "Biarkan kosong untuk menggunakan prompt bawaan {{word}}.",
       "maxTokens": "Token output maksimal",
       "maxTokensHint": "Bawaan 0 (tidak terbatas).",
@@ -1601,7 +1598,11 @@
       "timeWindowFrom": "Dari",
       "timeWindowTo": "Ke",
       "fallbackTimes": "Waktu cadangan",
-      "saveTask": "Simpan tugas"
+      "saveTask": "Simpan tugas",
+      "executionMode": "Mode eksekusi",
+      "executionModeAuto": "Jalankan langsung",
+      "executionModeConfirm": "Perlu konfirmasi",
+      "confirmTimeout": "Batas waktu konfirmasi"
     },
     "test": {
       "modelsLabel": "Model yang akan dipicu",
@@ -1642,7 +1643,8 @@
     "authorizing": "Menunggu otorisasi sistem...",
     "installFailed": "Instalasi sistem gagal. Coba lagi nanti atau unduh secara manual.",
     "restartRequiredAfterInstall": "Pembaruan terpasang. Mulai ulang aplikasi secara manual untuk menyelesaikan peralihan.",
-    "stoppingApiService": "Menghentikan layanan API..."
+    "stoppingApiService": "Menghentikan layanan API...",
+    "stopApiServiceFailed": "Layanan API tidak dapat dihentikan. Nonaktifkan dulu, lalu coba lagi."
   },
   "closeDialog": {
     "title": "Tutup Jendela",
@@ -1661,7 +1663,7 @@
     "other_group": "Model Lainnya"
   },
   "codex": {
-    "title": "Codex Account",
+    "title": "Codex Account​",
     "newApi": {
       "quota": {
         "available": "Kuota",
@@ -1669,28 +1671,45 @@
         "usedHint": "Terpakai {{used}}"
       }
     },
-    "subtitle": "Real-time monitoring of all Codex account model quotas.",
+    "subtitle": "Real-time monitoring of all Codex account model quotas.​",
     "instances": {
-      "subtitle": "Independent configuration per instance, parallel operation with multiple accounts.",
-      "comingSoon": "Multi-Instance Coming Soon",
-      "comingSoonDesc": "Run multiple Codex.app instances with different accounts simultaneously, stay tuned.",
+      "subtitle": "Independent configuration per instance, parallel operation with multiple accounts.​",
+      "comingSoon": "Multi-Instance Coming Soon​",
+      "comingSoonDesc": "Run multiple Codex.app instances with different accounts simultaneously, stay tuned.​",
       "unsupported": {
-        "desc": "Codex multi-instance is currently available only on macOS."
+        "desc": "Codex multi-instance is currently available only on macOS.",
+        "title": "Unsupported on this system"
       },
       "quota": {
-        "hourly": "5h",
-        "weekly": "Weekly"
+        "hourly": "5h​",
+        "weekly": "Weekly​"
+      },
+      "syncAllRecords": {
+        "action": "Sinkronkan semua catatan instans",
+        "autoAction": "Sinkronkan otomatis semua catatan instans",
+        "autoDisabled": "Sinkronisasi otomatis semua catatan instans dimatikan",
+        "autoEnabled": "Sinkronisasi otomatis semua catatan instans diaktifkan",
+        "autoTooltip": "Sinkronkan otomatis semua catatan instans",
+        "autoDesc": "Saat dimatikan, catatan multi-instans tetap terpisah. Saat diaktifkan, memulai atau menutup instans akan menggabungkan catatan lokal secara otomatis hanya setelah semua instans Codex berhenti.",
+        "closeFirst": "Tutup semua instans Codex sebelum menyinkronkan catatan agar instans yang berjalan tidak menulis kembali catatan lama.",
+        "confirmMessage": "Catatan sesi lokal akan disinkronkan penuh di semua instans Codex. Sesi dengan ID yang sama akan digabung pada tingkat peristiwa, dan file penting tujuan serta file sesi lama akan dicadangkan sebelum ditulis. Lanjutkan?",
+        "needTwo": "Diperlukan minimal dua instans untuk menyinkronkan catatan",
+        "settingsSection": "Pengaturan sinkronisasi",
+        "settingsSubtitle": "Kelola cara sinkronisasi catatan multi-instans Codex",
+        "settingsTitle": "Pengaturan catatan instans",
+        "title": "Sinkronkan semua catatan instans",
+        "tooltip": "Sinkronkan semua catatan instans"
       },
       "restartStrategy": {
         "safe": {
-          "principle": "Send SIGTERM to the target Codex process so the app can save and exit, then relaunch that instance (force kill if needed).",
-          "commandMac": "macOS: kill -15 <pid> (match CODEX_HOME)",
-          "commandWin": "Windows: taskkill /F /PID <pid> (match CODEX_HOME)"
+          "principle": "Send SIGTERM to the target Codex process so the app can save and exit, then relaunch that instance (force kill if needed).​",
+          "commandMac": "macOS: kill -15 <pid> (match CODEX_HOME)​",
+          "commandWin": "Windows: taskkill /F /PID <pid> (match CODEX_HOME)​"
         },
         "force": {
-          "principle": "Match processes by CODEX_HOME and terminate them forcibly (SIGKILL / taskkill /F), then relaunch the target instance.",
-          "commandMac": "macOS: pkill -9 -f \"CODEX_HOME=<dir>\"",
-          "commandWin": "Windows: taskkill /F /PID <pid> (match CODEX_HOME)"
+          "principle": "Match processes by CODEX_HOME and terminate them forcibly (SIGKILL / taskkill /F), then relaunch the target instance.​",
+          "commandMac": "macOS: pkill -9 -f \"CODEX_HOME=<dir>\"​",
+          "commandWin": "Windows: taskkill /F /PID <pid> (match CODEX_HOME)​"
         }
       }
     },
@@ -1707,6 +1726,7 @@
       "refreshTokenExpired": "Otorisasi login Codex sudah kedaluwarsa dan tidak dapat disegarkan otomatis. Masuk lagi ke akun Codex.",
       "refreshTokenInvalidated": "Otorisasi login Codex dicabut oleh layanan dan tidak dapat disegarkan otomatis. Masuk lagi ke akun Codex.",
       "invalidGrant": "Otorisasi login Codex tidak valid dan tidak dapat disegarkan otomatis. Masuk lagi ke akun Codex.",
+      "staleAccount": "Akun ini tidak lagi ada di penyimpanan akun lokal. Daftar akun telah disegarkan. Impor ulang atau masuk lagi ke akun Codex ini.",
       "unsupportedCountryRegion": "Wilayah jaringan saat ini tidak mendukung penyegaran otorisasi Codex. Layanan otorisasi OpenAI menolak jalur keluar jaringan ini. Beralih ke wilayah yang didukung lalu coba lagi."
     },
     "current": "Saat Ini",
@@ -1724,16 +1744,22 @@
     },
     "oauth": {
       "desc": "Klik tombol di bawah ini dan selesaikan otorisasi OpenAI di peramban Anda",
+      "trialGuideTitle": "Tips daftar uji coba",
+      "trialGuideDesc": "Saat menyiapkan akun baru, utamakan alamat Gmail yang bisa diakses jangka panjang agar akun lebih mudah dipertahankan dan diverifikasi lagi.",
+      "trialGuideAliasDesc": "Satu Gmail utama dapat menyiapkan hingga 5 alamat alias untuk memisahkan catatan pendaftaran ChatGPT; gunakan sesuai aturan layanan tujuan.",
+      "trialGuideLink": "Lihat panduan uji coba",
+      "gmailAliasLink": "Buat alias Gmail",
       "preparing": "Menyiapkan tautan otorisasi...",
       "exchanging": "Menukar token...",
-      "portInUse": "Port {{port}} is already in use. Please close the app using this port and try again.",
+      "portInUse": "Port {{port}} is already in use. Please close the app using this port and try again.​",
       "portInUseTitle": "Port sedang digunakan",
       "portInUseConfirm": "Port {{port}} sedang digunakan. Tutup proses yang menggunakan port ini?",
       "portCloseFailed": "Gagal menutup port: {{error}}",
       "portStillInUse": "Port {{port}} masih digunakan.",
       "portInUseAction": "Tutup port dan coba lagi",
       "timeout": "Autentikasi habis waktu. Silakan klik",
-      "timeoutRetry": "Perbarui Link Auth"
+      "timeoutRetry": "Perbarui Link Auth",
+      "reauthEmailLabel": "Akun otorisasi ulang"
     },
     "token": {
       "desc": "Tempel auth.json, JSON akun, atau refresh_token.",
@@ -1758,18 +1784,28 @@
       "title": "Layanan API",
       "accountCount": "{{count}} akun",
       "baseUrl": "Alamat",
+      "addressKind": "Jenis alamat",
+      "addressLocal": "Lokal",
+      "addressLan": "Jaringan lokal",
+      "accessScopeLabel": "Cakupan akses",
+      "accessScopeLocalhost": "Lokal saja",
+      "accessScopeLan": "Jaringan lokal",
+      "accessScopeLocalhostShort": "Lokal saja",
+      "accessScopeLanShort": "Lokal+jaringan",
+      "accessScopeSaveSuccess": "Cakupan akses layanan API diperbarui",
       "apiKey": "Kunci",
       "statusRunning": "Berjalan",
       "statusStopped": "Berhenti",
       "statusDisabled": "Dinonaktifkan",
       "emptyMembers": "Belum ada akun di koleksi ini",
-      "footerHint": "Mendengarkan lokal dan LAN",
+      "footerHint": "Cakupan akses: {{scope}}",
       "manageAccounts": "Kelola akun",
       "rotateKey": "Putar kunci",
       "rotateConfirmMessage": "Setelah direset, kunci layanan API saat ini akan langsung tidak berlaku, dan permintaan yang sedang berjalan mungkin menjadi tidak tersedia. Lanjutkan?",
       "disableService": "Nonaktifkan layanan",
       "enableService": "Aktifkan layanan",
       "saveSuccess": "Koleksi layanan API diperbarui",
+      "noEligibleAccountsSelected": "Akun yang dipilih tidak ada di lingkungan ini atau tidak dapat digunakan oleh layanan API. Impor akun Codex yang dapat digunakan di lingkungan ini terlebih dahulu.",
       "removeSuccess": "Akun dihapus dari layanan API",
       "rotateSuccess": "Kunci layanan API direset",
       "enabledSuccess": "Layanan API diaktifkan",
@@ -1780,7 +1816,7 @@
       "hideKey": "Sembunyikan kunci",
       "modal": {
         "title": "Tambahkan ke Layanan API",
-        "desc": "Pilih akun OAuth yang ingin dimasukkan ke koleksi layanan API. Akun yang ditambahkan akan disembunyikan dari tampilan biasa dan hanya dikelola dari kartu layanan API.",
+        "desc": "Pilih akun OAuth atau API Key yang ingin dimasukkan ke koleksi layanan API. Akun yang ditambahkan akan disembunyikan dari tampilan biasa dan hanya dikelola dari kartu layanan API.",
         "empty": "Tidak ada akun OAuth yang tersedia",
         "selected": "Di layanan API",
         "available": "Tampilan biasa",
@@ -1788,6 +1824,7 @@
         "freeNotice": "Akun gratis belum didukung. Akun gratis tidak dapat dipilih.",
         "freeUnsupported": "Akun gratis belum didukung",
         "restrictFreeToggle": "Batasi akun Free",
+        "chatApiKeyUnsupported": "Chat Completions tidak didukung",
         "freeNoticeRestricted": "Akun Free dibatasi. Nonaktifkan ini untuk memilihnya.",
         "freeNoticeUnstable": "Proxy akun Free bisa tidak stabil. Gunakan dengan hati-hati.",
         "restrictFreeDisableConfirmTitle": "Izinkan akun Free",
@@ -1795,10 +1832,28 @@
         "manageMembers": "Kelola anggota"
       },
       "entryAction": "Tambahkan ke Layanan API",
-      "testAction": "Uji Layanan API",
-      "testSuccess": "Pengujian layanan API berhasil ({{count}} model)",
-      "testTimeout": "Pengujian habis waktu. Pastikan layanan lokal sedang berjalan.",
+      "testAction": "Tes",
+      "testDialogTitle": "Uji Layanan API",
+      "testDialogDesc": "Mulai chat nyata bergaya playground melalui layanan API saat ini untuk memeriksa model, routing akun, dan respons upstream.",
+      "testProgressTitle": "Menguji layanan",
+      "testProgressDesc": "Sedang mengirim permintaan nyata ke layanan API lokal. Tunggu sebentar.",
+      "testOutputTitle": "Hasil yang dikembalikan",
+      "testResultTitle": "Hasil pemeriksaan layanan",
+      "testSuccess": "Pemeriksaan layanan berhasil: layanan lokal, kunci, dan respons upstream sehat ({{model}}, {{latency}}). Jika klien masih gagal, periksa Base URL, API Key, atau pengaturan proxy.",
+      "testFailureStage": "Tahap diagnosis",
+      "testFailureCause": "Penyebab gagal",
+      "testFailureSuggestion": "Saran perbaikan",
+      "testFailureStatus": "Status HTTP",
+      "testFailureModel": "Model uji",
+      "testFailureDetail": "Detail diagnosis",
+      "testFailureGatewayOutput": "Respons gateway",
+      "testTimeout": "Pemeriksaan dengan permintaan nyata kehabisan waktu. Periksa layanan lokal, proxy, atau jaringan upstream.",
       "testUnavailable": "URL layanan API saat ini tidak tersedia",
+      "testConnectFailed": "Tidak dapat terhubung ke {{url}}. Pastikan layanan API berjalan, port tidak berubah, dan tidak ada yang memblokirnya.",
+      "testAuthFailed": "Layanan dapat dijangkau, tetapi autentikasi gagal: {{detail}}. Periksa kunci layanan API atau status masuk akun.",
+      "testServiceUnavailable": "Layanan dapat dijangkau, tetapi saat ini tidak tersedia: {{detail}}. Periksa apakah layanan aktif, koleksi akun kosong, atau akun dapat digunakan.",
+      "testRateLimited": "Layanan dapat dijangkau, tetapi upstream dibatasi atau kuota habis: {{detail}}.",
+      "testHttpFailed": "Layanan dapat dijangkau, tetapi permintaan mengembalikan HTTP {{status}}: {{detail}}.",
       "activateAction": "Mulai Layanan API",
       "activateSuccess": "Beralih ke layanan API",
       "dashboardAction": "Panel layanan",
@@ -1813,12 +1868,12 @@
       "statsTitle": "Total",
       "accountStatsTitle": "Per akun",
       "statsEmpty": "Belum ada statistik",
-      "summaryMeta": "{{count}} akun · Lokal/LAN",
-      "summaryMetaUnconfigured": "Belum dikonfigurasi · Lokal/LAN",
+      "summaryMeta": "{{count}} akun · {{scope}}",
+      "summaryMetaUnconfigured": "Belum dikonfigurasi · {{scope}}",
       "memberTitle": "Anggota koleksi",
       "stats": {
         "requests": "Permintaan",
-        "requestsDetail": "Berhasil {{success}} / Gagal {{failed}}",
+        "requestsDetail": "OK {{success}} / Gagal {{failed}} / Batal {{canceled}} / Hulu {{upstreamFailed}} / Belum lengkap {{incomplete}}",
         "tokens": "Token",
         "tokensDetail": "Masuk {{input}} / Keluar {{output}}",
         "specialTokens": "Cache / Penalaran",
@@ -1828,7 +1883,11 @@
         "accountRequests": "{{count}} permintaan",
         "accountTokens": "{{count}} token",
         "accountResult": "Berhasil {{success}} / Gagal {{failed}}",
-        "accountTokensCompact": "{{value}}"
+        "accountTokensCompact": "{{value}}​",
+        "images": "Permintaan gambar",
+        "imagesDetail": "Buat {{generate}} / Edit {{edit}} / Izin {{blocked}}",
+        "estimatedCost": "Nilai estimasi",
+        "estimatedCostDetail": "Akumulasi dari snapshot harga tiap permintaan"
       },
       "routingLabel": "Rute",
       "routingSaveSuccess": "Rute layanan API diperbarui",
@@ -1855,7 +1914,8 @@
         "quotaLowFirst": "Kuota Rendah Dulu",
         "planHighFirst": "Paket Tinggi Dulu",
         "planLowFirst": "Paket Rendah Dulu",
-        "expirySoonFirst": "Kedaluwarsa Cepat Dulu"
+        "expirySoonFirst": "Kedaluwarsa Cepat Dulu",
+        "custom": "Kustom"
       },
       "statusUnconfigured": "Belum dikonfigurasi",
       "expandDetails": "Buka detail",
@@ -1888,12 +1948,119 @@
       "modelIdViewOnly": "Hanya lihat",
       "quotaPool": {
         "title": "Kumpulan kuota",
-        "hourlyShort": "5h",
+        "hourlyShort": "5h​",
         "weeklyShort": "Minggu",
         "viewFull": "Lihat statistik lengkap",
         "modalTitle": "Kumpulan kuota layanan API",
         "empty": "Belum ada statistik kuota"
-      }
+      },
+      "oauthBinding": {
+        "desc": "Opsional. Hanya akun OAuth dengan refresh_token yang dapat dipilih. Tanpa tautan, layanan API tetap memakai alur API Key lama; setelah ditautkan, status masuk memakai akun OAuth dan Provider memakai konfigurasi layanan API.",
+        "currentService": "Layanan API: {{name}}"
+      },
+      "customRoutingEdit": "Edit routing kustom",
+      "customRoutingTitle": "Routing kustom",
+      "customRoutingDesc": "Atur prioritas dan bobot per akun untuk mengontrol urutan pemilihan akun dan pembagian beban pada prioritas yang sama.",
+      "customRoutingPriorityTitle": "Prioritas",
+      "customRoutingPriorityDesc": "Nilai lebih tinggi dipilih lebih dahulu; akun prioritas lebih rendah hanya dicoba saat prioritas tinggi tidak tersedia.",
+      "customRoutingWeightTitle": "Bobot",
+      "customRoutingWeightDesc": "Dipakai untuk menyeimbangkan beban dalam prioritas yang sama. Bobot lebih tinggi berarti lebih banyak permintaan.",
+      "customRoutingSearch": "Cari email, paket, atau ID akun",
+      "customRoutingSelected": "{{count}} dipilih",
+      "customRoutingPriorityShort": "Prioritas",
+      "customRoutingWeightShort": "Bobot",
+      "customRoutingApplyBatch": "Terapkan ke pilihan",
+      "customRoutingReset": "Reset​",
+      "customRoutingAccountColumn": "Akun",
+      "customRoutingQuotaColumn": "Kuota",
+      "customRoutingEmpty": "Tidak ada akun yang dapat dikonfigurasi di koleksi layanan API saat ini",
+      "customRoutingSave": "Simpan routing",
+      "customRoutingSaveSuccess": "Routing kustom layanan API diperbarui",
+      "upstreamProxyLabel": "URL proxy API",
+      "upstreamProxySaveSuccess": "URL proxy API diperbarui",
+      "upstreamProxyUrlPlaceholder": "Kosong = proxy global",
+      "upstreamProxySaveAction": "Simpan proxy",
+      "imageGenerationLabel": "Alat image_generation",
+      "imageGenerationDesc": "Mengatur apakah chat teks mendeklarasikan alat gambar dan apakah endpoint gambar tersedia.",
+      "imageGenerationSaveSuccess": "Pengaturan image_generation diperbarui",
+      "apiKeysTitle": "Kunci klien",
+      "apiKeyAdd": "Tambah kunci",
+      "apiKeyLabel": "Nama kunci",
+      "apiKeySaveLabel": "Simpan nama",
+      "apiKeyDefaultLabel": "Klien {{index}}",
+      "apiKeyCreateSuccess": "API Key dibuat",
+      "apiKeyUpdateSuccess": "API Key diperbarui",
+      "apiKeyRotateSuccess": "API Key direset",
+      "apiKeyDeleteSuccess": "API Key dihapus",
+      "apiKeyRotateConfirm": "API Key ini akan langsung tidak valid setelah direset. Lanjutkan?",
+      "apiKeyDeleteConfirm": "Hapus API Key ini?",
+      "apiKeyDelete": "Hapus kunci",
+      "apiKeyDisable": "Nonaktifkan kunci",
+      "apiKeyEnable": "Aktifkan kunci",
+      "modelStatsTitle": "Per model",
+      "apiKeyStatsTitle": "Per kunci",
+      "healthAvailable": "Tersedia",
+      "healthUnavailable": "Tidak tersedia",
+      "healthCooldown": "Jeda {{count}}",
+      "healthImageUnavailable": "Gambar tidak tersedia",
+      "requestLogTitle": "Log permintaan",
+      "requestLogEmpty": "Belum ada log permintaan",
+      "requestLogSuccess": "Berhasil",
+      "requestLogFailed": "Gagal",
+      "requestLogTokens": "{{value}} token",
+      "imageGenerationMode": {
+        "enabled": "Aktif",
+        "imagesOnly": "Gambar saja",
+        "disabled": "Nonaktif"
+      },
+      "requestKind": {
+        "text": "Teks",
+        "imageGeneration": "Gambar",
+        "imageEdit": "Edit​",
+        "other": "Lainnya"
+      },
+      "testSuccessInline": "Uji layanan API berhasil",
+      "gatewayModeLabel": "Mode gateway",
+      "gatewayModeLegacyShort": "Lama",
+      "gatewayModeSidecarShort": "Baru",
+      "gatewayModeNewLabel": "Layanan API-Baru",
+      "gatewayModeOldLabel": "Layanan API-Lama",
+      "gatewayModeSaveSuccess": "Mode gateway layanan API telah diperbarui",
+      "gatewayGuideTitle": "Ganti gateway di sini",
+      "gatewayGuideDesc": "Gateway baru menjadi default. Jika ada masalah kompatibilitas atau error permintaan klien, kembali ke gateway lama dari sini.",
+      "gatewayGuideAction": "Mengerti",
+      "upstreamProxyUrlPlaceholderLegacy": "Kosongkan untuk memakai proxy global, proxy environment, atau proxy sistem",
+      "upstreamProxyUrlPlaceholderSidecar": "Kosongkan untuk memakai proxy global",
+      "debugLogsLabel": "Log debug",
+      "debugLogsDescription": "Keluarkan log debug layanan API untuk mendiagnosis gateway dan streaming",
+      "debugLogsEnabledSuccess": "Log debug diaktifkan",
+      "debugLogsDisabledSuccess": "Log debug dinonaktifkan",
+      "debugLogsEnableConfirmTitle": "Aktifkan Log Debug",
+      "debugLogsEnableConfirmMessage": "Saat aktif, layanan API akan mengeluarkan log debug untuk mendiagnosis masalah gateway, proxy, permintaan upstream, dan respons streaming. Ini dapat menambah sedikit beban performa saat konkurensi tinggi atau streaming panjang. Matikan setelah selesai mendiagnosis. Aktifkan?",
+      "debugLogsEnableConfirmAction": "Aktifkan",
+      "debugLogsDisableConfirmTitle": "Nonaktifkan Log Debug",
+      "debugLogsDisableConfirmMessage": "Saat nonaktif, layanan API berhenti mengeluarkan log debug sehingga kebisingan log dan beban tambahan berkurang. Anda dapat mengaktifkannya lagi saat mendiagnosis gateway, proxy, atau streaming. Nonaktifkan?",
+      "debugLogsDisableConfirmAction": "Nonaktifkan",
+      "clientBaseUrlHostLabel": "Alamat klien",
+      "clientBaseUrlHostDesc": "Hanya memengaruhi Base URL yang ditulis ke Codex Provider dan disalin ke klien; alamat listen layanan tidak berubah.",
+      "clientBaseUrlHostSaveSuccess": "Alamat klien diperbarui",
+      "accountPoolHealth": {
+        "title": "Pool Akun",
+        "allAvailable": "Semua OK {{count}}",
+        "availableRatio": "Baik {{available}}/{{total}}",
+        "issueSummary": "Error {{abnormal}} · Jeda {{cooldown}}",
+        "detail": "OK {{available}}/{{total}}, error {{abnormal}}, jeda {{cooldown}}, hilang {{missing}}, auth {{authError}}, kuota {{quotaLimited}}"
+      },
+      "testChatModel": "Model uji",
+      "testChatClear": "Hapus chat",
+      "testChatEmpty": "Kirim pesan untuk memulai chat nyata melalui layanan API saat ini.",
+      "testChatLatency": "{{latency}} berlalu",
+      "testChatSending": "Meminta API",
+      "testChatInputPlaceholder": "Ketik pesan uji, Enter untuk kirim",
+      "testChatSend": "Kirim",
+      "testChatInputRequired": "Masukkan pesan uji",
+      "testChatModelRequired": "Pilih ID model",
+      "testChatEmptyResponse": "Respons kosong"
     },
     "api": {
       "baseUrl": "URL Dasar",
@@ -1922,68 +2089,88 @@
       },
       "providers": {
         "openai_official": {
-          "name": "OpenAI Official"
+          "name": "OpenAI Official​"
         },
         "azure_openai": {
-          "name": "Azure OpenAI"
+          "name": "Azure OpenAI​"
         },
         "packycode": {
-          "name": "PackyCode"
+          "name": "PackyCode​"
         },
         "cubence": {
-          "name": "Cubence"
+          "name": "Cubence​"
         },
         "aigocode": {
-          "name": "AIGoCode"
+          "name": "AIGoCode​"
         },
         "rightcode": {
-          "name": "RightCode"
+          "name": "RightCode​"
         },
         "sssaicode": {
-          "name": "SSSAiCode"
+          "name": "SSSAiCode​"
         },
         "micu": {
-          "name": "Micu"
+          "name": "Micu​"
         },
         "x_code_api": {
-          "name": "X-Code API"
+          "name": "X-Code API​"
         },
         "ctok_ai": {
-          "name": "CTok.ai"
+          "name": "CTok.ai​"
         },
         "aihubmix": {
-          "name": "AiHubMix"
+          "name": "AiHubMix​"
         },
         "dmxapi": {
-          "name": "DMXAPI"
+          "name": "DMXAPI​"
         },
         "compshare": {
-          "name": "Compshare"
+          "name": "Compshare​"
         },
         "openrouter": {
-          "name": "OpenRouter"
+          "name": "OpenRouter​"
         },
         "aicodemirror": {
-          "name": "AICodeMirror"
+          "name": "AICodeMirror​"
         },
         "aicoding": {
-          "name": "AICoding"
+          "name": "AICoding​"
         },
         "crazyrouter": {
-          "name": "CrazyRouter"
+          "name": "CrazyRouter​"
         },
         "deepseek": {
-          "name": "DeepSeek"
+          "name": "DeepSeek​"
         },
         "moonshot": {
-          "name": "Moonshot"
+          "name": "Moonshot​"
         },
         "siliconflow": {
-          "name": "SiliconFlow"
+          "name": "SiliconFlow​"
         },
         "cockpit_api": {
           "name": "Newbee API"
         }
+      },
+      "oauthBinding": {
+        "label": "Tautan OAuth",
+        "unbound": "Belum tertaut",
+        "action": "Tautkan OAuth",
+        "actionShort": "Tautkan",
+        "title": "Tautkan Akun OAuth",
+        "desc": "Opsional. Hanya akun OAuth dengan refresh_token yang dapat dipilih. Tanpa tautan, akun ini beralih dengan alur API Key lama; setelah ditautkan, status masuk memakai akun OAuth dan Provider memakai konfigurasi akun API Key ini.",
+        "currentAccount": "Akun API Key: {{name}}",
+        "selectLabel": "Pilih akun OAuth",
+        "empty": "Belum ada akun OAuth. Tambahkan akun berotorisasi OAuth terlebih dahulu.",
+        "emptyEligible": "Tidak ada akun OAuth dengan refresh_token. Otorisasi ulang lewat OAuth atau tambahkan akun OAuth yang memenuhi syarat.",
+        "validationRequired": "Pilih akun OAuth",
+        "validationSubscriptionRequired": "Hanya akun OAuth dengan refresh_token yang dapat ditautkan",
+        "saveSuccess": "Tautan OAuth diperbarui",
+        "saveFailed": "Gagal menautkan OAuth: {{error}}",
+        "switchRequiresBinding": "Tautkan akun OAuth terlebih dahulu",
+        "clearAction": "Lepas tautan",
+        "clearSuccess": "Tautan OAuth dihapus.",
+        "clearFailed": "Gagal menghapus tautan OAuth: {{error}}"
       }
     },
     "local": {
@@ -2017,11 +2204,11 @@
       "requestFailedManualRetry": "Periksa jaringan. Kuota terbaru belum diambil. Segarkan untuk mencoba lagi."
     },
     "plan": {
-      "free": "FREE",
-      "plus": "PLUS",
-      "pro": "PRO",
-      "team": "TEAM",
-      "enterprise": "ENTERPRISE"
+      "free": "FREE​",
+      "plus": "PLUS​",
+      "pro": "PRO​",
+      "team": "TEAM​",
+      "enterprise": "ENTERPRISE​"
     },
     "list": {
       "showCodeReviewQuota": "Tampilkan kuota Code Review"
@@ -2029,20 +2216,20 @@
     "time": {
       "today": "Hari ini {{time}}",
       "tomorrow": "Besok {{time}}",
-      "dateTime": "{{date}} {{time}}"
+      "dateTime": "{{date}} {{time}}​"
     },
     "view": {
       "compact": "Tampilan ringkas"
     },
     "filter": {
-      "plus": "PLUS ({{count}})",
-      "team": "TEAM ({{count}})"
+      "plus": "PLUS ({{count}})​",
+      "team": "TEAM ({{count}})​"
     },
     "sort": {
       "weekly": "Kuota mingguan",
       "hourly": "Kuota 5 jam",
       "weeklyReset": "Waktu reset mingguan",
-      "hourlyReset": "5-hour reset time",
+      "hourlyReset": "5-hour reset time​",
       "subscriptionExpiry": "Akhir langganan",
       "custom": "Urutan kustom",
       "customModalTitle": "Urutan akun kustom",
@@ -2056,8 +2243,8 @@
     "opencodeSwitchDesc": "Sinkronkan info akun Codex di OpenCode",
     "opencodeSwitchFailed": "Gagal memperbarui sakelar OpenCode: {{error}}",
     "columns": {
-      "hourly": "5-hour quota",
-      "weekly": "Weekly quota"
+      "hourly": "5-hour quota​",
+      "weekly": "Weekly quota​"
     },
     "filterTags": "Filter Tag",
     "filterTagsCount": "Tag",
@@ -2123,7 +2310,7 @@
       "schedule": {
         "daily": "Harian",
         "weekly": "Mingguan",
-        "interval": "Interval",
+        "interval": "Interval​",
         "quota_reset": "Setelah reset kuota"
       },
       "scheduleQuotaResetHint": "Saat wakeup reset kuota diaktifkan, penyegaran otomatis akan disesuaikan untuk berjalan setiap 2 menit.",
@@ -2170,7 +2357,7 @@
       "executionPendingDesc": "Menunggu akun sebelumnya selesai sebelum yang ini dimulai.",
       "executionRunningDesc": "Menjalankan perintah bangun sekarang. Harap tunggu.",
       "resultsTitle": "Hasil eksekusi",
-      "resultsTotal": "Total",
+      "resultsTotal": "Total​",
       "resultsSuccess": "Berhasil",
       "resultsFailed": "Gagal",
       "historyTitle": "Riwayat pemicu",
@@ -2233,13 +2420,17 @@
       "selectReasoningPlaceholder": "Pilih upaya penalaran",
       "modelValuePreview": "Nilai model aktual: {{model}}",
       "modelSummaryLabel": "Model: {{model}} · Penalaran: {{reasoning}}",
-      "modelDefault": "Default",
+      "modelDefault": "Default​",
       "reasoningEfforts": {
         "low": "Rendah",
         "medium": "Sedang",
         "high": "Tinggi",
         "xhigh": "Sangat Tinggi"
-      }
+      },
+      "officialChatRuntimeTitle": "Langsung resmi",
+      "officialChatRuntimePath": "Chat Codex resmi ChatGPT",
+      "officialChatRuntimeSource": "Langsung resmi",
+      "officialChatRuntimeMessage": "Chat langsung akun OAuth"
     },
     "sessionManager": {
       "title": "Manajer Sesi",
@@ -2318,7 +2509,13 @@
         "website": "Situs web (opsional)",
         "apiKeyUrl": "Halaman API Key (opsional)",
         "newApiKeyName": "Nama key baru (opsional)",
-        "newApiKey": "API Key baru"
+        "newApiKey": "API Key baru",
+        "wireApi": "Protokol",
+        "enableMode": "Mode aktif",
+        "modelCatalog": "Katalog Model",
+        "visionCapability": "Input gambar",
+        "visionModels": "Model visual",
+        "visionRoutingModel": "Model gambar"
       },
       "validation": {
         "nameRequired": "Nama penyedia wajib diisi.",
@@ -2333,6 +2530,19 @@
       "confirmDelete": "Hapus penyedia \"{{name}}\"?",
       "deleteFailed": "Gagal menghapus penyedia: {{error}}",
       "deleteApiKeyFailed": "Gagal menghapus API Key: {{error}}",
+      "enableAsBackend": "Pakai sebagai backend Codex",
+      "enabling": "Mengaktifkan...",
+      "enableSuccess": "{{name}} diaktifkan dan {{instance}} dimulai.",
+      "enableFailed": "Gagal mengaktifkan penyedia: {{error}}",
+      "status": {
+        "active": "Backend saat ini",
+        "available": "Siap"
+      },
+      "enableMode": {
+        "label": "Mode koneksi",
+        "gatewayMode": "Mode gateway",
+        "directMode": "Mode langsung"
+      },
       "selectSavedProvider": "Penyedia tersimpan",
       "selectSavedApiKey": "API Key tersimpan",
       "noSavedProviders": "Belum ada penyedia tersimpan. Anda bisa mengisi field secara langsung dan data akan disimpan otomatis.",
@@ -2391,7 +2601,108 @@
         "partialDetected": "Hanya satu bidang terkelola yang saat ini disetel: model_context_window={{context}}, model_auto_compact_token_limit={{compact}}. Menyimpan akan menulis ulang kedua bidang menggunakan skema saat ini.",
         "notSet": "Tidak disetel"
       },
-      "managePresets": "Preset model"
+      "managePresets": "Preset model",
+      "wireApi": {
+        "responses": "Responses native",
+        "chatCompletions": "Protokol Chat Completions",
+        "help": "Gunakan Responses untuk sebagian besar penyedia. Beralih ke Chat Completions hanya jika penyedia secara jelas hanya mendukung protokol itu. Jika ragu, pilih Responses terlebih dahulu.",
+        "helpAria": "Lihat bantuan protokol"
+      },
+      "testing": "Menguji...",
+      "testSuccess": "Koneksi penyedia normal: {{protocol}}, {{model}}, {{latency}}.",
+      "testFailed": "Gagal menguji penyedia: {{error}}",
+      "testFailure": {
+        "credential": "API Key tidak tersedia",
+        "url": "Base URL tidak valid",
+        "network": "Koneksi jaringan gagal",
+        "models": "Endpoint model bermasalah",
+        "parse": "Gagal membaca respons",
+        "httpStatus": "Status {{status}}",
+        "message": "{{title}}: {{detail}}. {{suggestion}}​"
+      },
+      "testSuggestion": {
+        "addApiKey": "Tambahkan API Key untuk penyedia ini sebelum menguji.",
+        "checkBaseUrl": "Pastikan Base URL memuat jalur versi yang benar, misalnya /v1.",
+        "checkNetwork": "Periksa URL penyedia, proxy, firewall, atau status layanan upstream.",
+        "checkApiKey": "Periksa apakah API Key valid dan memiliki akses ke endpoint model.",
+        "checkProviderStatus": "Periksa status layanan penyedia, proxy, atau kompatibilitas API.",
+        "checkModelsApi": "Pastikan penyedia mengembalikan daftar model yang kompatibel dengan OpenAI."
+      },
+      "enableAndStart": "Mulai",
+      "instance": {
+        "label": "Instans",
+        "default": "Instans default",
+        "running": "Berjalan",
+        "targetHint": "Target: {{instance}}​",
+        "uninitializedHint": "Instans target belum diinisialisasi. Jalankan sekali dari halaman Multi-Instance terlebih dahulu.",
+        "shortLabel": "Instans",
+        "saveFailed": "Gagal menyimpan ikatan instans: {{error}}"
+      },
+      "modelCatalog": "Model",
+      "modelCatalogEmpty": "Tidak ada katalog model",
+      "gatewayHint": "Penyedia pihak ketiga dimulai melalui gateway lokal untuk isolasi instans dan konversi protokol. Penyedia resmi OpenAI tetap langsung.",
+      "vision": {
+        "providerDefault": "Provider ini mendukung input gambar secara default",
+        "providerDefaultHint": "Jika mati, hanya model di bawah yang boleh menerima gambar; model lain ditolak oleh gateway lokal.",
+        "modelsHint": "Satu model per baris. Cocok jika hanya sebagian model provider mendukung gambar tempel.",
+        "routingModelHint": "Jika model saat ini tidak membaca gambar, permintaan memakai model ini; kosong berarti otomatis memakai satu-satunya model visual.",
+        "allModels": "Gambar",
+        "partialModels": "Sebagian gambar",
+        "textOnly": "Teks saja"
+      },
+      "sponsorRecommended": "Relay pilihan",
+      "builtinProviders": "Penyedia Bawaan",
+      "sponsorHint": "URL layanan relay eksklusif sudah diisi. Setelah API Key dimasukkan, kartu akan otomatis membaca saldo dan penggunaan.",
+      "integration": {
+        "sub2api": "Kompatibel Sub2API",
+        "newApi": "Kompatibel New API"
+      },
+      "usage": {
+        "title": "Ringkasan Kuota",
+        "remaining": "Sisa",
+        "today": "Hari ini",
+        "total": "Keseluruhan",
+        "requests": "Permintaan hari ini",
+        "loading": "Membaca kuota...",
+        "failed": "Gagal membaca kuota: {{error}}",
+        "pending": "Menunggu pembacaan kuota",
+        "noKey": "Tidak ada kuota yang dapat dicek",
+        "used": "Terpakai",
+        "limit": "Batas",
+        "viewDetail": "Detail",
+        "detailTitle": "Panel layanan",
+        "rawFields": "Data layanan",
+        "fields": {
+          "status": "Keadaan",
+          "planName": "Paket",
+          "remaining": "Sisa kuota",
+          "balance": "Saldo",
+          "todayRequests": "Permintaan hari ini",
+          "todayTokens": "Token hari ini",
+          "todayCost": "Biaya hari ini",
+          "totalRequests": "Total permintaan",
+          "totalTokens": "Total Token",
+          "totalCost": "Total biaya",
+          "hardLimitUsd": "Batas keras",
+          "softLimitUsd": "Batas lunak",
+          "systemHardLimitUsd": "Batas sistem",
+          "accessUntil": "Akses hingga",
+          "totalUsage": "Total penggunaan",
+          "quotaUnlimited": "Tak terbatas",
+          "expiresAt": "Kedaluwarsa",
+          "totalGranted": "Diberikan",
+          "totalAvailable": "Tersedia",
+          "modelLimitsEnabled": "Batas model"
+        },
+        "accountBalance": "Saldo akun",
+        "unlimitedQuota": "Tak terbatas",
+        "booleanTrue": "Ya",
+        "booleanFalse": "Tidak"
+      },
+      "oauthBinding": {
+        "desc": "Opsional. Akun OAuth apa pun yang memiliki refresh_token dapat ditautkan. Tanpa tautan, penyedia tetap memakai alur API Key aslinya.",
+        "currentProvider": "Penyedia: {{name}}"
+      }
     },
     "quickSwitch": {
       "action": "Alih cepat penyedia",
@@ -2418,6 +2729,7 @@
       "column": "Berakhir",
       "unknown": "Otorisasi ulang",
       "missingDetail": "Otorisasi ulang untuk ambil",
+      "refresh": "Segarkan langganan",
       "expired": "Kedaluwarsa",
       "hoursLeft": "{{count}} jam",
       "daysLeft": "{{count}} hr",
@@ -2438,6 +2750,7 @@
       "repairing": "Memperbaiki visibilitas sesi Codex...",
       "repairFailed": "Perbaikan otomatis gagal. Anda dapat mencoba lagi nanti dari Manajemen Sesi > Perbaiki Visibilitas.",
       "type": {
+        "api": "Mode API",
         "apiKey": "Kunci API",
         "apiService": "Layanan API",
         "account": "Akun"
@@ -2468,6 +2781,228 @@
       "noStats": "Belum ada statistik",
       "refreshHint": "Klik segarkan untuk menyinkronkan statistik kunci API ini.",
       "dailyStats": "Statistik harian"
+    },
+    "speed": {
+      "title": "Kecepatan",
+      "standard": "Standar",
+      "standardDesc": "Kecepatan bawaan, pemakaian normal",
+      "fast": "Cepat",
+      "fastDesc": "Kecepatan 1,5x, pemakaian lebih tinggi",
+      "saveSuccess": "Kecepatan diperbarui",
+      "saveFailed": "Gagal menyimpan kecepatan: {{error}}"
+    },
+    "apiService": {
+      "navTitle": "Layanan API Codex",
+      "title": "Layanan API Codex",
+      "openPage": "Buka layanan API",
+      "openFullPage": "Lihat semua fitur",
+      "tabs": {
+        "overview": "Ringkasan Layanan",
+        "keys": "Kunci klien",
+        "accounts": "Kumpulan akun",
+        "models": "Model dan kemampuan",
+        "logs": "Statistik dan log"
+      },
+      "healthTitle": "Kesehatan layanan",
+      "compat": {
+        "title": "Kompatibilitas Protokol",
+        "desc": "URL layanan API yang sama mendukung entri OpenAI Chat, Responses, Anthropic Messages, Gemini, dan Ollama.",
+        "openaiTitle": "Kompatibel OpenAI",
+        "openaiNote": "Base URL memakai /v1.",
+        "responsesTitle": "Entri Responses",
+        "responsesNote": "Entri Responses native Codex.",
+        "anthropicTitle": "Pesan Anthropic",
+        "anthropicNote": "Gunakan key layanan yang sama.",
+        "geminiTitle": "Entri Gemini",
+        "geminiNote": "Base URL memakai /v1beta.",
+        "ollamaTitle": "Jembatan Ollama",
+        "ollamaNote": "Gunakan Authorization: Bearer.",
+        "modelCatalogLabel": "Katalog Model"
+      },
+      "health": {
+        "availableAccounts": "Akun tersedia",
+        "cooldowns": "Cooldown",
+        "imageUnavailable": "Gambar tidak tersedia",
+        "keys": "Kunci klien"
+      },
+      "accountHealth": {
+        "failures": "{{count}} kegagalan beruntun",
+        "image": "Gambar {{status}}"
+      },
+      "models": {
+        "availableTitle": "Model tersedia",
+        "capabilityTitle": "Sakelar kemampuan",
+        "capabilityDesc": "gpt-image-2 ditampilkan atau disembunyikan otomatis berdasarkan sakelar layanan, paket akun, dan status kemampuan gambar yang tercatat.",
+        "rulesTitle": "Aturan Model",
+        "aliasTitle": "Alias Model",
+        "aliasPlaceholder": "gpt-5 => g5; tambah + untuk mempertahankan model asli",
+        "excludedTitle": "Model Tersembunyi",
+        "excludedPlaceholder": "Satu model atau pola per baris, mis. gpt-5-*",
+        "saveRules": "Simpan Aturan",
+        "rulesSaved": "Aturan model tersimpan",
+        "pricingAction": "Harga",
+        "pricingTitle": "Harga Model",
+        "pricingDesc": "USD / 1M token, hanya untuk statistik nilai lokal.",
+        "pricingModel": "Nama model",
+        "pricingInput": "Masuk",
+        "pricingCache": "Input cache",
+        "pricingOutput": "Keluar",
+        "pricingSource": "Sumber",
+        "pricingActions": "Aksi",
+        "pricingCachePlaceholder": "Sama input",
+        "pricingCustom": "Kustom",
+        "pricingPreset": "Prasetel",
+        "pricingUnset": "Belum diatur",
+        "pricingReset": "Atur ulang",
+        "pricingSaved": "Harga tersimpan",
+        "pricingInvalid": "Harga harus berupa angka lebih besar atau sama dengan 0"
+      },
+      "keys": {
+        "policyTitle": "Kebijakan Model",
+        "advancedPolicyTitle": "Lanjutan: Kebijakan Model",
+        "modelPrefix": "Prefiks Model",
+        "modelPrefixPlaceholder": "Contoh: codex",
+        "allowedModels": "Model Diizinkan",
+        "allowedModelsPlaceholder": "Kosong berarti semua; satu model atau pola per baris",
+        "excludedModels": "Model Dikecualikan",
+        "excludedModelsPlaceholder": "Satu model atau pola per baris",
+        "savePolicy": "Simpan Kebijakan",
+        "policySaved": "Kebijakan model Key tersimpan"
+      },
+      "routing": {
+        "optionsTitle": "Opsi Routing",
+        "sessionAffinity": "Afinitas Sesi",
+        "sessionAffinityTtl": "TTL Afinitas",
+        "maxRetryCredentials": "Akun retry",
+        "maxRetryInterval": "Tunggu retry",
+        "disableCooling": "Matikan cooldown",
+        "saveOptions": "Simpan Opsi",
+        "optionsSaved": "Opsi routing tersimpan"
+      },
+      "validation": {
+        "numberRange": "Masukkan angka dari {{min}} hingga {{max}}"
+      },
+      "logs": {
+        "allKinds": "Semua Jenis",
+        "allStatuses": "Semua Status",
+        "allGatewayModes": "Semua mode",
+        "modelFilter": "Model layanan",
+        "modelPlaceholder": "ID model",
+        "accountFilter": "Akun",
+        "accountPlaceholder": "Email atau ID akun",
+        "apiKeyFilter": "Kunci API",
+        "apiKeyPlaceholder": "Nama atau ID",
+        "kindFilter": "Jenis",
+        "statusFilter": "Keadaan",
+        "gatewayModeFilter": "Mode layanan",
+        "errorFilter": "Kesalahan",
+        "errorPlaceholder": "Kategori error",
+        "clearFilters": "Hapus Filter",
+        "loading": "Memuat log permintaan",
+        "gatewayModeUnknown": "Mode tidak diketahui",
+        "requestIdShort": "ID permintaan {{id}}",
+        "httpStatus": "Status HTTP {{status}}"
+      },
+      "timeouts": {
+        "entryLabel": "Lanjutan",
+        "openAction": "Timeout & Coba Lagi",
+        "title": "Timeout & Coba Lagi",
+        "desc": "Nilai dalam detik. Menyimpan akan memulai ulang atau memuat ulang layanan API sesuai mode gateway saat ini.",
+        "sidecarTitle": "Layanan API Baru",
+        "legacyTitle": "Layanan API Lama",
+        "streamOpen": "Buka Stream",
+        "streamIdle": "Idle Stream",
+        "imageOpen": "Buka Gambar",
+        "imageIdle": "Idle Gambar",
+        "openAttempts": "Percobaan Buka",
+        "keepalive": "Sinyal koneksi",
+        "requestRead": "Baca Request",
+        "connect": "Koneksi Upstream",
+        "streamTotal": "Total Stream",
+        "resetDefaults": "Pulihkan Default",
+        "saved": "Timeout dan coba lagi disimpan",
+        "totalGteIdle": "Timeout total stream API lama tidak boleh lebih kecil dari timeout idle stream",
+        "bootstrapRetries": "Coba ulang mulai",
+        "websocketTitle": "Pengaturan WebSocket",
+        "websocketConnect": "Batas koneksi",
+        "websocketInitial": "Batas pesan awal",
+        "websocketIdle": "Batas idle",
+        "websocketHeartbeat": "Interval heartbeat",
+        "sendRetryAttempts": "Coba ulang kirim",
+        "sendRetryBaseDelay": "Jeda dasar kirim (ms)",
+        "sendRetryMaxDelay": "Jeda maks kirim (ms)",
+        "singleStatusAttempts": "Coba ulang satu akun",
+        "singleStatusBaseDelay": "Jeda dasar akun (ms)",
+        "singleStatusMaxDelay": "Jeda maks akun (ms)",
+        "maxDelayGteBase": "Jeda maksimum tidak boleh lebih kecil dari jeda dasar",
+        "longWaitPreset": "Preset tunggu lama",
+        "shortWaitPreset": "Preset tunggu singkat",
+        "presetTitle": "Preset parameter",
+        "presetSelect": "Pilih preset",
+        "presetName": "Nama preset",
+        "presetNamePlaceholder": "Preset kustom baru",
+        "saveAsPreset": "Simpan sebagai preset",
+        "updatePreset": "Perbarui preset",
+        "deletePreset": "Hapus preset",
+        "presetSaved": "Preset disimpan",
+        "presetUpdated": "Preset diperbarui",
+        "presetDeleted": "Preset dihapus",
+        "presetNameRequired": "Masukkan nama preset",
+        "deletePresetConfirm": "Hapus preset kustom ini?",
+        "deletePresetTitle": "Hapus preset"
+      },
+      "accountModelRules": {
+        "action": "Blokir Model",
+        "title": "Blokir Model Akun",
+        "desc": "Akun yang cocok dengan aturan akan dilewati untuk permintaan model tersebut. Satu model atau wildcard per baris.",
+        "bulkLabel": "Aturan Massal",
+        "placeholder": "Contoh:\ngpt-5.4-mini\ngpt-5.3-*",
+        "applySelected": "Terapkan ke Pilihan",
+        "selectAll": "Pilih Akun",
+        "clearSelection": "Hapus Pilihan",
+        "saveSuccess": "Blokir model akun tersimpan",
+        "cardCount": "{{count}} diblokir"
+      }
+    },
+    "apiKey": {
+      "renameSuccess": "Berhasil diganti nama",
+      "renameFailed": "Gagal mengganti nama"
+    },
+    "batchImport": {
+      "title": "Impor massal Codex",
+      "resultSubtitle": "Hasil impor",
+      "previewSubtitle": "Pilih akun untuk disimpan",
+      "scanSubtitle": "Mengurai dan memeriksa akun satu per satu",
+      "parseSubtitle": "Mengurai file akun",
+      "cancelling": "Membatalkan...",
+      "scanDone": "Pemindaian selesai",
+      "parseDone": "Penguraian selesai",
+      "scanning": "Memindai",
+      "parsing": "Mengurai",
+      "current": "Saat ini",
+      "imported": "Diimpor",
+      "failed": "Gagal",
+      "quotaOk": "Akun OK",
+      "quotaFailed": "Bermasalah",
+      "checkQuotaToggle": "Periksa akun",
+      "preparing": "Menyiapkan impor...",
+      "importSelected": "Impor akun terpilih",
+      "noSelection": "Pilih akun terlebih dahulu",
+      "groups": {
+        "ready": "Siap",
+        "quotaFailed": "Bermasalah",
+        "existing": "Sudah ada",
+        "invalid": "Tidak valid"
+      },
+      "cancelScan": "Batalkan pemindaian",
+      "cancelParse": "Batalkan penguraian",
+      "cancelled": "Dibatalkan",
+      "resumeScan": "Lanjutkan pemindaian",
+      "resumeParse": "Lanjutkan penguraian",
+      "selectedCount": "Dipilih {{count}}/{{total}}",
+      "selectAllAccounts": "Pilih semua akun",
+      "selectReady": "Pilih akun OK",
+      "clearSelection": "Hapus pilihan"
     }
   },
   "codebuddy": {
@@ -2482,48 +3017,48 @@
     },
     "nickname": "Nama panggilan",
     "enterprise": "Perusahaan",
-    "usage": "Usage Status",
-    "creditsBalance": "Credits Balance",
+    "usage": "Usage Status​",
+    "creditsBalance": "Credits Balance​",
     "usageNormal": "Status normal",
-    "usageAbnormal": "Abnormal",
-    "usageViewDetail": "View details",
-    "usageDetailTitle": "Usage Status Details",
-    "oauthWaiting": "Waiting for authorization...",
+    "usageAbnormal": "Abnormal​",
+    "usageViewDetail": "View details​",
+    "usageDetailTitle": "Usage Status Details​",
+    "oauthWaiting": "Waiting for authorization...​",
     "oauthDesc": "Klik tombol di bawah ini untuk membuka halaman otorisasi CodeBuddy di peramban Anda.",
     "oauthDescWebview": "Klik tombol di bawah ini untuk membuka halaman otorisasi CodeBuddy di WebView bawaan.",
     "oauthFeature": {
       "oauth": {
-        "title": "IDE sign-in only",
-        "item1": "Add the account after completing OAuth in your browser, then use it for IDE switching.",
-        "item2": "Resource-package quota data will refresh automatically after authorization.",
-        "item3": "Account cards show quota amount, progress, and refresh/expiry time by resource package."
+        "title": "IDE sign-in only​",
+        "item1": "Add the account after completing OAuth in your browser, then use it for IDE switching.​",
+        "item2": "Resource-package quota data will refresh automatically after authorization.​",
+        "item3": "Account cards show quota amount, progress, and refresh/expiry time by resource package.​"
       }
     },
-    "oauthWebviewTab": "WebView OAuth",
-    "oauthOpenWebview": "Open in WebView",
-    "oauthOpenWebviewIncognito": "Open in Incognito WebView",
-    "oauthOpenWebviewFailed": "Failed to open WebView: {{error}}",
-    "oauthOpenBrowserFallback": "Open in Browser (Fallback)",
-    "oauthOpenBrowserFailed": "Failed to open browser: {{error}}",
-    "oauthWebviewProgressHint": "A horizontal step bar is shown at the top of the WebView to locate stuck stages.",
+    "oauthWebviewTab": "WebView OAuth​",
+    "oauthOpenWebview": "Open in WebView​",
+    "oauthOpenWebviewIncognito": "Open in Incognito WebView​",
+    "oauthOpenWebviewFailed": "Failed to open WebView: {{error}}​",
+    "oauthOpenBrowserFallback": "Open in Browser (Fallback)​",
+    "oauthOpenBrowserFailed": "Failed to open browser: {{error}}​",
+    "oauthWebviewProgressHint": "A horizontal step bar is shown at the top of the WebView to locate stuck stages.​",
     "oauthFlow": {
-      "prepare": "Prepare OAuth link",
-      "authorize": "Open authorization link and confirm",
-      "bind": "Poll auth result and bind account",
-      "retryPrepare": "Regenerate OAuth link",
-      "retryAuthorize": "Request authorization link again",
-      "retryBind": "Retry auth polling",
-      "error": "Flow error: {{error}}"
+      "prepare": "Prepare OAuth link​",
+      "authorize": "Open authorization link and confirm​",
+      "bind": "Poll auth result and bind account​",
+      "retryPrepare": "Regenerate OAuth link​",
+      "retryAuthorize": "Request authorization link again​",
+      "retryBind": "Retry auth polling​",
+      "error": "Flow error: {{error}}​"
     },
     "oauthWebviewOverlay": {
       "steps": {
-        "prepare": "1 Prepare OAuth link",
-        "authorize": "2 Open authorization link and confirm",
-        "bind": "3 Poll auth result and bind account",
-        "complete": "5 Done (close manually)"
+        "prepare": "1 Prepare OAuth link​",
+        "authorize": "2 Open authorization link and confirm​",
+        "bind": "3 Poll auth result and bind account​",
+        "complete": "5 Done (close manually)​"
       },
       "status": {
-        "loginConfirm": "Please complete sign-in and authorization on this page."
+        "loginConfirm": "Please complete sign-in and authorization on this page.​"
       }
     },
     "tokenDesc": "Tempel token akses CodeBuddy Anda:",
@@ -2534,39 +3069,39 @@
     },
     "search": "Cari akun CodeBuddy...",
     "quota": {
-      "usedOfTotal": "{{used}} / {{total}}"
+      "usedOfTotal": "{{used}} / {{total}}​"
     },
     "quotaQuery": {
-      "failedRefreshCompact": "Quota query failed",
-      "sectionTitle": "Quota Query",
-      "empty": "No quota data available",
-      "packageUnknown": "Unknown package",
-      "quotaLabel": "Remaining quota",
-      "updatedAt": "Next refresh time: {{time}}",
-      "cycleRange": "Cycle: {{start}} - {{end}}",
-      "cycleUnknown": "Cycle info unavailable",
-      "expireAt": "Expires at: {{time}}",
-      "expireUnknown": "Expires at: N/A",
+      "failedRefreshCompact": "Quota query failed​",
+      "sectionTitle": "Quota Query​",
+      "empty": "No quota data available​",
+      "packageUnknown": "Unknown package​",
+      "quotaLabel": "Remaining quota​",
+      "updatedAt": "Next refresh time: {{time}}​",
+      "cycleRange": "Cycle: {{start}} - {{end}}​",
+      "cycleUnknown": "Cycle info unavailable​",
+      "expireAt": "Expires at: {{time}}​",
+      "expireUnknown": "Expires at: N/A​",
       "packageTitle": {
-        "base": "Base Experience Package",
-        "activity": "Activity Gift Package",
+        "base": "Base Experience Package​",
+        "activity": "Activity Gift Package​",
         "pro": "Langganan Pro"
       }
     },
     "extraCredit": {
-      "title": "Credit Package"
+      "title": "Credit Package​"
     },
-    "oauthUrlInputPlaceholder": "You can enter an authorization URL manually",
-    "oauthInvalidUrl": "Invalid authorization URL. Please enter a full URL.",
-    "oauthGotoWebview": "Navigate opened WebView to input URL",
-    "oauthGotoWebviewSuccess": "Requested WebView to navigate to the input URL.",
-    "oauthGotoWebviewFailed": "Failed to navigate WebView: {{error}}",
-    "oauthWebviewInlineUrlPlaceholder": "Enter a URL to navigate within this WebView",
-    "oauthWebviewInlineGo": "Go",
-    "oauthSuccessClosePrompt": "Account added successfully. Close this WebView now?\nChoose \"Close WebView\" to close now, or \"Later\" to keep it open.",
-    "oauthSuccessCloseTitle": "Account Added",
-    "oauthSuccessCloseNowLabel": "Close WebView",
-    "oauthSuccessCloseLaterLabel": "Later",
+    "oauthUrlInputPlaceholder": "You can enter an authorization URL manually​",
+    "oauthInvalidUrl": "Invalid authorization URL. Please enter a full URL.​",
+    "oauthGotoWebview": "Navigate opened WebView to input URL​",
+    "oauthGotoWebviewSuccess": "Requested WebView to navigate to the input URL.​",
+    "oauthGotoWebviewFailed": "Failed to navigate WebView: {{error}}​",
+    "oauthWebviewInlineUrlPlaceholder": "Enter a URL to navigate within this WebView​",
+    "oauthWebviewInlineGo": "Go​",
+    "oauthSuccessClosePrompt": "Account added successfully. Close this WebView now?\nChoose \"Close WebView\" to close now, or \"Later\" to keep it open.​",
+    "oauthSuccessCloseTitle": "Account Added​",
+    "oauthSuccessCloseNowLabel": "Close WebView​",
+    "oauthSuccessCloseLaterLabel": "Later​",
     "oauthSuccessCloseNowStatus": "Ã¢Å“â€¦ Account added. Closing window...",
     "oauthSuccessCloseLaterStatus": "Ã¢Å“â€¦ Account added. This WebView stays open."
   },
@@ -2609,36 +3144,51 @@
       "included": "Termasuk",
       "usedOfTotal": "{{used}} dari {{total}}"
     },
-    "injectToVSCode": "Switch to VS Code",
-    "injectSuccess": "Token injected to VS Code successfully. VS Code is launching.",
+    "injectToVSCode": "Switch to VS Code​",
+    "injectSuccess": "Token injected to VS Code successfully. VS Code is launching.​",
     "injectRequireClose": "Silakan tutup VS Code sebelum injeksi.",
     "flowNotice": {
-      "title": "GitHub Copilot account guide (click to expand/collapse)",
-      "desc": "Switching accounts requires reading VS Code local auth storage and using the system credential service for decrypt/write-back. Data is processed locally only.",
+      "title": "GitHub Copilot account guide (click to expand/collapse)​",
+      "desc": "Switching accounts requires reading VS Code local auth storage and using the system credential service for decrypt/write-back. Data is processed locally only.​",
       "inject": "One-click switching: This tool reads local VS Code encryption material (DPAPI/Keychain/Secret Service), decrypts the auth session in state.vscdb, replaces the GitHub Copilot token, and re-encrypts it Ã¢â‚¬â€ all locally on your machine.",
-      "reason": "Permission scope: read VS Code auth database (state.vscdb) and call system credential capability (Windows DPAPI / macOS Keychain / Linux Secret Service) for decrypt/write-back.",
+      "reason": "Permission scope: read VS Code auth database (state.vscdb) and call system credential capability (Windows DPAPI / macOS Keychain / Linux Secret Service) for decrypt/write-back.​",
       "storage": "Cakupan data: impor lokal membaca sesi masuk GitHub di VS Code, dan pergantian akun memperbarui entri yang sama; OAuth, impor token, validasi impor lokal, dan penyegaran kuota memanggil API resmi GitHub dengan bidang autentikasi yang diperlukan. state.vscdb dan kunci sistem tidak diunggah."
+    }
+  },
+  "runtime": {
+    "installedVersion": {
+      "loading": "Mendeteksi versi terpasang",
+      "missing": "Tidak ada versi terpasang yang terdeteksi",
+      "detecting": "Mendeteksi",
+      "notFound": "Versi tidak terdeteksi"
     }
   },
   "dashboard": {
     "title": "Dasbor Akun",
+    "apiRelay": {
+      "localConfig": "Konfigurasi lokal",
+      "localConfigDesc": "Kelola setelan relay lokal, pengecekan API Key, dan penyiapan klien sekali klik.",
+      "status": "Status konfigurasi",
+      "enabledByConfig": "Diaktifkan oleh konfigurasi remote",
+      "openLocalConfig": "Buka konfigurasi lokal"
+    },
     "summary": {
       "label": "Ringkasan",
       "title": "Snapshot Akun",
-      "desc": "Lihat Antigravity dan Codex sekilas"
+      "desc": "Lihat Antigravity IDE dan Codex sekilas"
     },
     "stats": {
-      "antigravity": "Akun Antigravity",
+      "antigravity": "Akun Antigravity IDE",
       "codex": "Akun Codex",
-      "currentAntigravity": "Antigravity Saat Ini",
+      "currentAntigravity": "Antigravity IDE Saat Ini",
       "currentCodex": "Codex Saat Ini",
       "providers": "Penyedia",
       "totalAccounts": "Total akun"
     },
     "panels": {
-      "antigravity": "Antigravity",
-      "codex": "Codex",
-      "githubCopilot": "GitHub Copilot",
+      "antigravity": "Antigravity IDE​",
+      "codex": "Codex​",
+      "githubCopilot": "GitHub Copilot​",
       "planDistribution": "Distribusi paket",
       "current": "Akun saat ini",
       "recommended": "Akun yang direkomendasikan",
@@ -2651,7 +3201,7 @@
     },
     "emptyAccount": "Tidak ada akun",
     "sections": {
-      "antigravity": "Akun Antigravity",
+      "antigravity": "Akun Antigravity IDE",
       "codex": "Akun Codex"
     },
     "actions": {
@@ -2659,16 +3209,16 @@
       "viewAll": "Semua akun"
     },
     "badges": {
-      "recommended": "Recommended"
+      "recommended": "Recommended​"
     },
-    "totalAccounts": "Total accounts",
-    "current": "Current account",
-    "recommended": "Recommended account",
-    "noAccount": "No account",
-    "switch": "Switch",
-    "switchTo": "Switch to this account",
-    "noRecommendation": "No better recommendation",
-    "noData": "No data",
+    "totalAccounts": "Total accounts​",
+    "current": "Current account​",
+    "recommended": "Recommended account​",
+    "noAccount": "No account​",
+    "switch": "Switch​",
+    "switchTo": "Switch to this account​",
+    "noRecommendation": "No better recommendation​",
+    "noData": "No data​",
     "viewAllAccounts": "Lihat semua akun"
   },
   "error": {
@@ -2684,12 +3234,12 @@
   },
   "quickSettings": {
     "antigravity": {
-      "title": "Antigravity Settings",
-      "appPath": "Launch Path"
+      "title": "Antigravity IDE Settings​",
+      "appPath": "Launch Path​"
     },
     "codex": {
-      "title": "Codex Settings",
-      "appPath": "Launch Path",
+      "title": "Codex Settings​",
+      "appPath": "Launch Path​",
       "configToml": "File konfigurasi Codex",
       "openConfigToml": "Buka file",
       "openConfigHint": "Buka cepat file Codex config.toml yang sedang aktif.",
@@ -2720,15 +3270,27 @@
           "contextWindowInvalid": "Jendela konteks harus berupa bilangan bulat yang lebih besar dari 0.",
           "autoCompactInvalid": "Batas pemadatan otomatis harus berupa bilangan bulat yang lebih besar dari 0."
         }
+      },
+      "appSpeed": {
+        "title": "Kecepatan Codex",
+        "desc": "Disimpan sebagai kecepatan mulai; ditulis sebelum Codex dibuka.",
+        "standard": "Standar",
+        "fast": "Cepat",
+        "launch": "Mulai ulang",
+        "loadFailed": "Gagal memuat kecepatan Codex: {{error}}",
+        "saveSuccess": "Kecepatan mulai Codex disimpan.",
+        "saveFailed": "Gagal menyimpan kecepatan Codex: {{error}}",
+        "launchSuccess": "Codex dimulai ulang dengan kecepatan tersimpan.",
+        "launchFailed": "Gagal memulai ulang Codex: {{error}}"
       }
     },
     "githubCopilot": {
-      "title": "GitHub Copilot Settings",
-      "appPath": "VS Code Path"
+      "title": "GitHub Copilot Settings​",
+      "appPath": "VS Code Path​"
     },
-    "refreshInterval": "Quota Auto Refresh",
-    "codexRefreshInterval": "Quota Auto Refresh",
-    "ghcpRefreshInterval": "Quota Auto Refresh",
+    "refreshInterval": "Quota Auto Refresh​",
+    "codexRefreshInterval": "Quota Auto Refresh​",
+    "ghcpRefreshInterval": "Quota Auto Refresh​",
     "autoSwitch": {
       "title": "Penggantian Otomatis",
       "enable": "Aktifkan Penggantian Otomatis",
@@ -2737,11 +3299,11 @@
       "creditsEnable": "Pantau kredit",
       "creditsThreshold": "Ambang kredit",
       "creditsThresholdDesc": "Juga ganti otomatis saat kredit tersisa berada pada atau di bawah nilai ini",
-      "triggerModel": "Trigger Model",
-      "scopeAnyGroup": "Any model group",
-      "scopeSelectedGroups": "Selected model groups",
-      "selectedGroups": "Selected groups",
-      "selectedGroupsEmpty": "No model groups available",
+      "triggerModel": "Trigger Model​",
+      "scopeAnyGroup": "Any model group​",
+      "scopeSelectedGroups": "Selected model groups​",
+      "selectedGroups": "Selected groups​",
+      "selectedGroupsEmpty": "No model groups available​",
       "hint": "Ganti otomatis saat grup model yang dipantau mencapai ambang; jika pemantauan kredit diaktifkan, ini juga akan terpicu saat kredit tersisa turun di bawah ambang."
     },
     "quotaAlert": {
@@ -2752,34 +3314,36 @@
       "hint": "Saat kuota model akun saat ini turun di bawah ambang batas, kirim notifikasi native dan tampilkan tindakan penggantian cepat di aplikasi."
     },
     "customInput": "Kustom",
-    "apply": "Apply",
-    "inputMinutes": "Enter minutes",
-    "inputPercent": "Enter percentage",
+    "apply": "Apply​",
+    "inputMinutes": "Enter minutes​",
+    "inputPercent": "Enter percentage​",
     "inputCredits": "Masukkan kredit",
     "windsurf": {
-      "title": "Windsurf Settings",
-      "appPath": "Windsurf Path"
+      "title": "Windsurf Settings​",
+      "appPath": "Windsurf Path​"
     },
-    "windsurfRefreshInterval": "Quota Auto Refresh",
+    "windsurfRefreshInterval": "Quota Auto Refresh​",
     "kiro": {
-      "title": "Kiro Settings",
-      "appPath": "Kiro Path"
+      "title": "Kiro Settings​",
+      "appPath": "Kiro Path​"
     },
-    "kiroRefreshInterval": "Auto refresh quota",
+    "kiroRefreshInterval": "Auto refresh quota​",
     "cursor": {
-      "title": "Cursor Settings",
-      "appPath": "Cursor Path"
+      "title": "Cursor Settings​",
+      "appPath": "Cursor Path​"
     },
-    "cursorRefreshInterval": "Quota Auto Refresh",
+    "cursorRefreshInterval": "Quota Auto Refresh​",
     "codebuddy": {
-      "title": "CodeBuddy Settings",
-      "appPath": "CodeBuddy Path"
+      "title": "CodeBuddy Settings​",
+      "appPath": "CodeBuddy Path​"
     },
     "gemini": {
-      "title": "Gemini Cli Settings",
-      "appPath": "Gemini Cli Path"
+      "title": "Gemini Cli Settings​",
+      "appPath": "Gemini Cli Path​",
+      "syncWsl": "Sinkronkan Konfigurasi WSL",
+      "syncWslDesc": "Otomatis menimpa konfigurasi .gemini di WSL saat mengganti akun"
     },
-    "geminiRefreshInterval": "Quota Auto Refresh",
+    "geminiRefreshInterval": "Quota Auto Refresh​",
     "error": {
       "loadFailed": "Gagal memuat konfigurasi: {{error}}",
       "saveFailed": "Gagal menyimpan konfigurasi: {{error}}",
@@ -2788,23 +3352,23 @@
       "openCodexConfigFailed": "Gagal membuka Codex config.toml: {{error}}"
     },
     "qoder": {
-      "title": "Qoder Settings",
-      "appPath": "Qoder Path"
+      "title": "Qoder Settings​",
+      "appPath": "Qoder Path​"
     },
     "zed": {
-      "title": "Zed Settings",
-      "appPath": "Zed Path"
+      "title": "Zed Settings​",
+      "appPath": "Zed Path​"
     },
     "trae": {
-      "title": "Trae Settings",
-      "appPath": "Trae Path"
+      "title": "Trae Settings​",
+      "appPath": "Trae Path​"
     },
     "codebuddyCn": {
-      "appPath": "CodeBuddy CN Path"
+      "appPath": "CodeBuddy CN Path​"
     },
     "workbuddy": {
-      "title": "WorkBuddy Settings",
-      "appPath": "WorkBuddy Path"
+      "title": "WorkBuddy Settings​",
+      "appPath": "WorkBuddy Path​"
     },
     "filterPersistence": {
       "title": "Simpan Filter",
@@ -2813,33 +3377,33 @@
     }
   },
   "quotaAlert": {
-    "bannerText": "Quota alert for {{email}} (threshold {{threshold}}%, lowest {{lowest}}%, models: {{models}})",
-    "switchAction": "Quick switch: {{email}}",
-    "switching": "Switching...",
-    "switchFailed": "Quick switch failed: {{error}}",
+    "bannerText": "Quota alert for {{email}} (threshold {{threshold}}%, lowest {{lowest}}%, models: {{models}})​",
+    "switchAction": "Quick switch: {{email}}​",
+    "switching": "Switching...​",
+    "switchFailed": "Quick switch failed: {{error}}​",
     "modal": {
-      "title": "Quota Alert",
+      "title": "Quota Alert​",
       "desc": "Kuota akun saat ini telah mencapai ambang peringatan. Silakan tangani segera.",
-      "unknownModel": "Unknown model",
+      "unknownModel": "Unknown model​",
       "platform": "Platform saat ini",
-      "account": "Current account",
-      "threshold": "Alert threshold",
-      "lowest": "Current lowest",
-      "models": "Triggered models",
-      "recommended": "Recommended switch",
-      "noRecommendation": "No switch candidate available",
-      "later": "Later",
-      "openSettings": "Adjust alert settings",
-      "switchNow": "Quick switch to {{email}}",
-      "switchFailedTitle": "Switch failed",
-      "switchFailedBody": "Quick switch failed: {{error}}"
+      "account": "Current account​",
+      "threshold": "Alert threshold​",
+      "lowest": "Current lowest​",
+      "models": "Triggered models​",
+      "recommended": "Recommended switch​",
+      "noRecommendation": "No switch candidate available​",
+      "later": "Later​",
+      "openSettings": "Adjust alert settings​",
+      "switchNow": "Quick switch to {{email}}​",
+      "switchFailedTitle": "Switch failed​",
+      "switchFailedBody": "Quick switch failed: {{error}}​"
     }
   },
   "windsurf": {
-    "title": "Windsurf Account",
+    "title": "Windsurf Account​",
     "instances": {
       "unsupported": {
-        "desc": "Windsurf multi-instance is available only on macOS."
+        "desc": "Windsurf multi-instance is available only on macOS.​"
       }
     },
     "empty": {
@@ -2870,7 +3434,7 @@
       "batchDelimiterSpace": "Spasi",
       "batchDelimiterComma": "Koma",
       "batchDelimiterPipe": "Garis tegak",
-      "batchDelimiterDash": "----",
+      "batchDelimiterDash": "----​",
       "batchDelimiterCustom": "Kustom",
       "batchJsonDesc": "Tempel array JSON yang tiap itemnya berisi email dan password.",
       "batchTextDesc": "Masukkan satu akun per baris dan parse ketat sesuai pemisah yang dipilih.",
@@ -2893,7 +3457,7 @@
       "batchPartial": "{{success}} berhasil, {{failed}} gagal",
       "batchFailed": "Impor massal gagal untuk {{failed}} akun",
       "batchFailureEntryWithLine": "Baris {{line}} ({{email}}): {{error}}",
-      "batchFailureEntry": "{{email}}: {{error}}",
+      "batchFailureEntry": "{{email}}: {{error}}​",
       "batchFailureMore": "{{count}} lainnya gagal"
     },
     "oauth": {
@@ -2907,7 +3471,7 @@
       "localClient": "Impor dari Windsurf lokal"
     },
     "credits": {
-      "title": "Plan",
+      "title": "Plan​",
       "renewMonthly": "Kredit diperbarui setiap bulan",
       "left": "{{value}} kredit tersisa",
       "leftUnknown": "Kredit tersisa -",
@@ -2941,44 +3505,44 @@
   },
   "kiro": {
     "account": {
-      "signedInWith": "Signed in with {{provider}}",
-      "providerUnknown": "Unknown",
-      "userId": "User ID"
+      "signedInWith": "Signed in with {{provider}}​",
+      "providerUnknown": "Unknown​",
+      "userId": "User ID​"
     },
     "credits": {
-      "estimatedResetOn": "Estimated Usage resets on {{date}}",
-      "bonusUsageLine": "{{used}} used / {{total}} total",
-      "planUsageCoveredLine": "{{used}} used / {{total}} covered in plan",
-      "expiryDays": "{{days}} days",
+      "estimatedResetOn": "Estimated Usage resets on {{date}}​",
+      "bonusUsageLine": "{{used}} used / {{total}} total​",
+      "planUsageCoveredLine": "{{used}} used / {{total}} covered in plan​",
+      "expiryDays": "{{days}} days​",
       "expiryUnknown": "Ã¢â‚¬â€",
-      "resetNow": "Reset soon",
-      "resetInHours": "Resets in {{hours}}h",
-      "resetInMinutes": "Resets in {{minutes}}m"
+      "resetNow": "Reset soon​",
+      "resetInHours": "Resets in {{hours}}h​",
+      "resetInMinutes": "Resets in {{minutes}}m​"
     },
     "columns": {
-      "bonusCredits": "Bonus Credits",
-      "estimatedUsage": "Estimated Usage",
-      "expiry": "Expiry",
-      "estUsage": "Est. Usage"
+      "bonusCredits": "Bonus Credits​",
+      "estimatedUsage": "Estimated Usage​",
+      "expiry": "Expiry​",
+      "estUsage": "Est. Usage​"
     },
     "plan": {
-      "free": "Kiro Free",
-      "individual": "Kiro Individual",
-      "pro": "Kiro Pro",
-      "business": "Kiro Business",
-      "enterprise": "Kiro Enterprise",
-      "unknown": "Unknown"
+      "free": "Kiro Free​",
+      "individual": "Kiro Individual​",
+      "pro": "Kiro Pro​",
+      "business": "Kiro Business​",
+      "enterprise": "Kiro Enterprise​",
+      "unknown": "Unknown​"
     },
     "flowNotice": {
-      "title": "Kiro account guide (click to expand/collapse)",
-      "desc": "Account switching reads and writes local Kiro auth files and instance settings on this device; OAuth login and quota refresh call Kiro official APIs. For Enterprise/IdC accounts, refresh also calls AWS IAM Identity Center OIDC APIs.",
-      "reason": "Processing paths include ~/.aws/sso/cache/kiro-auth-token.json, instance profile.json, and the kiro.kiroAgent entry in state.vscdb.",
-      "storage": "Processed data includes Kiro session and quota information; requests to Kiro official APIs send required auth fields (such as code, refreshToken, accessToken, and profileArn). Enterprise/IdC refresh additionally sends required OIDC fields (such as client_id, client_secret, and refresh_token)."
+      "title": "Kiro account guide (click to expand/collapse)​",
+      "desc": "Account switching reads and writes local Kiro auth files and instance settings on this device; OAuth login and quota refresh call Kiro official APIs. For Enterprise/IdC accounts, refresh also calls AWS IAM Identity Center OIDC APIs.​",
+      "reason": "Processing paths include ~/.aws/sso/cache/kiro-auth-token.json, instance profile.json, and the kiro.kiroAgent entry in state.vscdb.​",
+      "storage": "Processed data includes Kiro session and quota information; requests to Kiro official APIs send required auth fields (such as code, refreshToken, accessToken, and profileArn). Enterprise/IdC refresh additionally sends required OIDC fields (such as client_id, client_secret, and refresh_token).​"
     },
-    "title": "Kiro Account",
+    "title": "Kiro Account​",
     "instances": {
       "unsupported": {
-        "descPlatform": "Kiro multi-instance is available only on macOS, Windows and Linux."
+        "descPlatform": "Kiro multi-instance is available only on macOS, Windows and Linux.​"
       }
     },
     "empty": {
@@ -3000,15 +3564,15 @@
     "injectToVSCode": "Ganti ke Kiro"
   },
   "cursor": {
-    "subscription": "Subscription",
-    "injectToCursor": "Switch to Cursor",
+    "subscription": "Subscription​",
+    "injectToCursor": "Switch to Cursor​",
     "quota": {
       "onDemand": "Sesuai permintaan"
     },
-    "title": "Cursor Account",
+    "title": "Cursor Account​",
     "instances": {
       "unsupported": {
-        "descPlatform": "Cursor multi-instance is supported on macOS, Windows, and Linux only."
+        "descPlatform": "Cursor multi-instance is supported on macOS, Windows, and Linux only.​"
       }
     },
     "empty": {
@@ -3024,8 +3588,8 @@
       "desc": "Tempel Token Akses Cursor (JWT) atau data JSON yang diekspor.",
       "formatHint": "Bidang yang diperlukan & contoh (klik untuk perluas)",
       "formatRequired": "Token tunggal: tempel JWT langsung; impor batch: gunakan format array JSON",
-      "singleExample": "Single example (JWT)",
-      "batchExample": "Batch example (JSON)"
+      "singleExample": "Single example (JWT)​",
+      "batchExample": "Batch example (JSON)​"
     },
     "import": {
       "localDesc": "Impor data akun dari klien Cursor lokal atau berkas JSON.",
@@ -3039,33 +3603,33 @@
     }
   },
   "gemini": {
-    "injectToGemini": "Switch to Gemini Cli",
+    "injectToGemini": "Switch to Gemini Cli​",
     "updated": {
-      "label": "Updated {{relative}} ago"
+      "label": "Updated {{relative}} ago​"
     },
     "quota": {
-      "pro": "Pro",
-      "flash": "Flash",
-      "left": "{{value}}% left",
-      "resetsIn": "Resets in {{relative}}",
-      "resetsSoon": "Resets soon",
-      "resetsUnknown": "Reset time unknown",
-      "onDemand": "On-Demand"
+      "pro": "Pro​",
+      "flash": "Flash​",
+      "left": "{{value}}% left​",
+      "resetsIn": "Resets in {{relative}}​",
+      "resetsSoon": "Resets soon​",
+      "resetsUnknown": "Reset time unknown​",
+      "onDemand": "On-Demand​"
     },
-    "title": "Gemini Cli Account",
+    "title": "Gemini Cli Account​",
     "instances": {
-      "unsupported": "Gemini Cli multi-instance management is not supported yet.",
-      "unsupportedDescPlatform": "Gemini Cli multi-instance is supported on macOS, Windows, and Linux only.",
-      "launchDialogTitle": "Launch Instance",
+      "unsupported": "Gemini Cli multi-instance management is not supported yet.​",
+      "unsupportedDescPlatform": "Gemini Cli multi-instance is supported on macOS, Windows, and Linux only.​",
+      "launchDialogTitle": "Launch Instance​",
       "launchHint": "Salin perintah dan jalankan secara manual, atau jalankan langsung di terminal.",
       "runInTerminal": "Jalankan di Terminal",
       "workingDir": "Direktori kerja",
       "workingDirPlaceholder": "Gunakan direktori saat ini sebagai default",
-      "workingDirDesc": "Saat startup, Codex CLI akan berpindah ke direktori ini terlebih dahulu",
+      "workingDirDesc": "Saat startup, Gemini CLI akan berpindah ke direktori ini terlebih dahulu",
       "pickWorkingDir": "Pilih direktori kerja"
     },
     "switch": {
-      "success": "Account switched successfully"
+      "success": "Account switched successfully​"
     },
     "empty": {
       "description": "Klik \"Tambah Akun\" untuk mulai mengelola akun Gemini Cli Anda"
@@ -3080,25 +3644,25 @@
       "desc": "Tempel Token Akses Gemini Cli (JWT) atau data JSON yang diekspor.",
       "formatHint": "Bidang yang diperlukan & contoh (klik untuk perluas)",
       "formatRequired": "Token tunggal: tempel JWT langsung; impor batch: gunakan format array JSON",
-      "singleExample": "Single example (JWT)",
-      "batchExample": "Batch example (JSON)"
+      "singleExample": "Single example (JWT)​",
+      "batchExample": "Batch example (JSON)​"
     },
     "import": {
       "localDesc": "Impor data akun Gemini Cli dari direktori konfigurasi Gemini Cli lokal (~/.gemini) atau berkas JSON.",
       "localClient": "Impor dari Gemini Cli lokal"
     },
     "projectConfig": {
-      "button": "Set GCP Project",
-      "title": "Set GCP Project",
+      "button": "Set GCP Project​",
+      "title": "Set GCP Project​",
       "selectLabel": "Pilih proyek",
-      "loading": "Loading project list...",
-      "auto": "Auto-select (do not specify manually)",
-      "empty": "No available project found. Ensure this account has access to GCP projects.",
+      "loading": "Loading project list...​",
+      "auto": "Auto-select (do not specify manually)​",
+      "empty": "No available project found. Ensure this account has access to GCP projects.​",
       "hint": "Setelah menyimpan, proyek ini lebih diutamakan untuk permintaan kuota dan diinjeksi sebagai GOOGLE_CLOUD_PROJECT dalam perintah peluncuran.",
-      "current": "Project: {{projectId}}",
-      "saved": "Project saved: {{projectId}}",
-      "cleared": "Switched back to automatic project resolution",
-      "savedWithRefreshError": "Project saved, but quota refresh failed: {{error}}"
+      "current": "Project: {{projectId}}​",
+      "saved": "Project saved: {{projectId}}​",
+      "cleared": "Switched back to automatic project resolution​",
+      "savedWithRefreshError": "Project saved, but quota refresh failed: {{error}}​"
     },
     "flowNotice": {
       "title": "Panduan akun Gemini Cli (klik untuk perluas/ciutkan)",
@@ -3117,9 +3681,9 @@
       "leftOfTotal": "Sisa / Total",
       "usage": "Terpakai",
       "usageResets": "Reset penggunaan",
-      "usedPercent": "{{value}}%",
-      "remainingOfTotal": "{{remaining}} / {{total}}",
-      "resetAtWithRelative": "{{absolute}} ({{relative}})"
+      "usedPercent": "{{value}}%​",
+      "remainingOfTotal": "{{remaining}} / {{total}}​",
+      "resetAtWithRelative": "{{absolute}} ({{relative}})​"
     },
     "tierText": {
       "pro": "Gemini Code Assist di Google One AI Pro",
@@ -3128,56 +3692,56 @@
     }
   },
   "breakout": {
-    "gameOver": "Game Over",
-    "gameOverRank": "Local Rank #{{rank}}",
-    "startGame": "Start Game",
-    "startHint": "Click start or press Space",
-    "rankTitle": "Local Leaderboard",
-    "rankCurrent": "Current",
-    "rankNoData": "--",
-    "restart": "Restart",
+    "gameOver": "Game Over​",
+    "gameOverRank": "Local Rank #{{rank}}​",
+    "startGame": "Start Game​",
+    "startHint": "Click start or press Space​",
+    "rankTitle": "Local Leaderboard​",
+    "rankCurrent": "Current​",
+    "rankNoData": "--​",
+    "restart": "Restart​",
     "pause": "Jeda",
-    "resume": "Resume",
-    "paused": "Paused",
+    "resume": "Resume​",
+    "paused": "Paused​",
     "level": "Tingkat {{level}}",
-    "levelScore": "Level Score {{score}}",
-    "levelCleared": "Level Cleared",
-    "nextLevel": "Next Level",
-    "history": "History",
-    "historyShort": "Log",
-    "historyEmpty": "No records yet",
-    "historyClear": "Clear",
+    "levelScore": "Level Score {{score}}​",
+    "levelCleared": "Level Cleared​",
+    "nextLevel": "Next Level​",
+    "history": "History​",
+    "historyShort": "Log​",
+    "historyEmpty": "No records yet​",
+    "historyClear": "Clear​",
     "historyScoreShort": "Skor {{score}}",
-    "historyLevelShort": "Lv {{level}}",
-    "historyDurationShort": "Time {{duration}}",
-    "historyReasonGameOver": "Game Over",
-    "historyReasonManualExit": "Manual Exit",
-    "serveHint": "Press Space to launch the ball",
+    "historyLevelShort": "Lv {{level}}​",
+    "historyDurationShort": "Time {{duration}}​",
+    "historyReasonGameOver": "Game Over​",
+    "historyReasonManualExit": "Manual Exit​",
+    "serveHint": "Press Space to launch the ball​",
     "ranking": "Local Leaderboard",
-    "rankingShort": "Local",
+    "rankingShort": "Local​",
     "rankingEmpty": "No local ranking data yet",
     "rankingClear": "Clear Local Ranking",
-    "rankingRankShort": "#{{rank}}",
-    "minimize": "Minimize",
-    "resumeGameNav": "Resume Game",
-    "closeConfirmTitle": "End this run?",
-    "closeConfirmDesc": "Closing will end this run and progress will not be kept.",
-    "closeContinue": "Keep Playing",
-    "closeMinimize": "Minimize and Keep",
-    "closeEnd": "End and Close"
+    "rankingRankShort": "#{{rank}}​",
+    "minimize": "Minimize​",
+    "resumeGameNav": "Resume Game​",
+    "closeConfirmTitle": "End this run?​",
+    "closeConfirmDesc": "Closing will end this run and progress will not be kept.​",
+    "closeContinue": "Keep Playing​",
+    "closeMinimize": "Minimize and Keep​",
+    "closeEnd": "End and Close​"
   },
   "announcement": {
     "title": "Pemberitahuan",
-    "empty": "No notifications",
-    "markAllRead": "Mark all read",
+    "empty": "No notifications​",
+    "markAllRead": "Mark all read​",
     "gotIt": "Got it",
-    "later": "Later",
-    "new": "New",
+    "later": "Later​",
+    "new": "New​",
     "timeAgo": {
-      "justNow": "Just now",
-      "minutesAgo": "{count}m ago",
-      "hoursAgo": "{count}h ago",
-      "daysAgo": "{count}d ago"
+      "justNow": "Just now​",
+      "minutesAgo": "{count}m ago​",
+      "hoursAgo": "{count}h ago​",
+      "daysAgo": "{count}d ago​"
     },
     "type": {
       "feature": "Ã¢Å“Â¨ New Feature",
@@ -3185,37 +3749,36 @@
       "info": "Ã¢â€žÂ¹Ã¯Â¸Â Info",
       "urgent": "Ã°Å¸Å¡Â¨ Urgent"
     },
-    "refreshed": "Announcements refreshed ({count} total)",
-    "clickToClose": "Click to close",
-    "clickToEnlarge": "Click to enlarge",
-    "imageLoadFailed": "Image failed to load"
+    "refreshed": "Announcements refreshed ({count} total)​",
+    "clickToClose": "Click to close​",
+    "clickToEnlarge": "Click to enlarge​",
+    "imageLoadFailed": "Image failed to load​"
   },
   "manual": {
     "actions": {
-      "collapseAll": "Collapse all",
-      "expandAll": "Expand all",
-      "goAntigravity": "Go to Antigravity",
-      "goCodex": "Go to Codex",
-      "goDashboard": "Go to Dashboard",
-      "goFingerprints": "Go to Device Fingerprints",
-      "goGitHubCopilot": "Go to GitHub Copilot",
-      "goInstances": "Go to Multi-Instance",
-      "goKiro": "Go to Kiro",
-      "goSettings": "Go to Settings",
-      "goVerification": "Go to Wakeup Verification",
-      "goWakeup": "Go to Wakeup Tasks",
-      "goWindsurf": "Go to Windsurf",
-      "openLayout": "Open Platform Layout"
+      "collapseAll": "Collapse all​",
+      "expandAll": "Expand all​",
+      "goAntigravity": "Go to Antigravity IDE​",
+      "goCodex": "Go to Codex​",
+      "goDashboard": "Go to Dashboard​",
+      "goGitHubCopilot": "Go to GitHub Copilot​",
+      "goInstances": "Go to Multi-Instance​",
+      "goKiro": "Go to Kiro​",
+      "goSettings": "Go to Settings​",
+      "goVerification": "Go to Wakeup Verification​",
+      "goWakeup": "Go to Wakeup Tasks​",
+      "goWindsurf": "Go to Windsurf​",
+      "openLayout": "Open Platform Layout​"
     },
     "antigravity": {
       "cautions": {
-        "0": "If you see abnormal statuses (for example 403/refresh failed), refresh first, then decide whether to remove and re-login."
+        "0": "If you see abnormal statuses (for example 403/refresh failed), refresh first, then decide whether to remove and re-login.​"
       },
       "keywords": {
-        "0": "antigravity",
-        "1": "Account",
-        "2": "quota",
-        "3": "tags"
+        "0": "antigravity​",
+        "1": "Account​",
+        "2": "quota​",
+        "3": "tags​"
       },
       "outcomes": {
         "0": "Mendukung OAuth, impor, ekspor, dan operasi massal.",
@@ -3226,8 +3789,8 @@
         "1": "Gunakan \"Segarkan Semua\" untuk menyinkronkan satu putaran penuh status kuota terlebih dahulu.",
         "2": "Urutkan berdasarkan kuota/waktu reset dan pilih akun yang ingin Anda gunakan sekarang."
       },
-      "summary": "Kelola siklus hidup akun Antigravity: tambah, segarkan kuota, ganti, kelompokkan, dan beri tag.",
-      "title": "Akun Antigravity"
+      "summary": "Kelola siklus hidup akun Antigravity IDE: tambah, segarkan kuota, ganti, kelompokkan, dan beri tag.",
+      "title": "Akun Antigravity IDE"
     },
     "blocks": {
       "cautions": "Kesalahan umum / catatan",
@@ -3239,10 +3802,10 @@
         "0": "Dasbor untuk gambaran besar. Untuk operasi terperinci, buka halaman platform spesifik."
       },
       "keywords": {
-        "0": "dashboard",
-        "1": "overview",
-        "2": "recommended switch",
-        "3": "dashboard"
+        "0": "dashboard​",
+        "1": "overview​",
+        "2": "recommended switch​",
+        "3": "dashboard​"
       },
       "outcomes": {
         "0": "Lihat \"akun saat ini / akun yang direkomendasikan / ringkasan kuota\" multi-platform di satu halaman.",
@@ -3263,14 +3826,14 @@
         "2": "Sebelum berbagi log, redaksi data sensitif. Jangan tempel token lengkap, cookie, email, dll."
       },
       "keywords": {
-        "0": "import",
-        "1": "export",
-        "2": "privacy",
-        "3": "email masking",
-        "4": "troubleshooting",
-        "5": "logs",
-        "6": "log directory",
-        "7": "app.log"
+        "0": "import​",
+        "1": "export​",
+        "2": "privacy​",
+        "3": "email masking​",
+        "4": "troubleshooting​",
+        "5": "logs​",
+        "6": "log directory​",
+        "7": "app.log​"
       },
       "outcomes": {
         "0": "Impor akun secara massal untuk migrasi lingkungan yang cepat.",
@@ -3293,39 +3856,17 @@
       "desc": "Coba kata kunci yang berbeda, misalnya \"instansi\", \"ganti\", \"pengaturan\", \"ekspor\".",
       "title": "Tidak ada konten yang cocok"
     },
-    "fingerprints": {
-      "cautions": {
-        "0": "Sebelum menghapus sidik jari, periksa jumlah akun yang terikat terlebih dahulu untuk menghindari mempengaruhi akun produksi secara tidak sengaja."
-      },
-      "keywords": {
-        "0": "fingerprint",
-        "1": "binding",
-        "2": "import",
-        "3": "capture"
-      },
-      "outcomes": {
-        "0": "Buat/tangkap sidik jari baru dan pertahankan metadata.",
-        "1": "Lihat akun yang terikat ke sidik jari dan tambah/hapus ikatan."
-      },
-      "steps": {
-        "0": "Buat atau impor sidik jari terlebih dahulu.",
-        "1": "Buka detail dan konfirmasi info sidik jari sudah benar.",
-        "2": "Dalam manajemen ikatan, ikat akun ke sidik jari target."
-      },
-      "summary": "Kelola template sidik jari dan ikatan akun. Mendukung pembuatan, penangkapan, impor, dan pemeliharaan ikatan.",
-      "title": "Sidik Jari Perangkat"
-    },
     "instances": {
       "cautions": {
         "0": "Sebelum menyalin dari instansi sumber, tutup sumber terlebih dahulu untuk menghindari inkonsistensi data.",
         "1": "Anda tidak dapat mengikat akun sebelum instansi kosong diinisialisasi. Ini adalah perilaku yang diharapkan."
       },
       "keywords": {
-        "0": "multi-instance",
-        "1": "instance",
-        "2": "isolation",
-        "3": "parallel",
-        "4": "initialization"
+        "0": "multi-instance​",
+        "1": "instance​",
+        "2": "isolation​",
+        "3": "parallel​",
+        "4": "initialization​"
       },
       "outcomes": {
         "0": "Isolasi lingkungan akun kerja/pribadi.",
@@ -3347,12 +3888,12 @@
         "1": "Beberapa platform atau kemampuan dibatasi sistem. Ikuti petunjuk di halaman."
       },
       "keywords": {
-        "0": "Codex / GitHub Copilot / Windsurf / Kiro platforms",
-        "1": "github copilot",
-        "2": "windsurf",
-        "3": "kiro",
-        "4": "inject",
-        "5": "account switch"
+        "0": "Codex / GitHub Copilot / Windsurf / Kiro platforms​",
+        "1": "github copilot​",
+        "2": "windsurf​",
+        "3": "kiro​",
+        "4": "inject​",
+        "5": "account switch​"
       },
       "outcomes": {
         "0": "Codex: penggantian akun + penyegaran kuota.",
@@ -3373,10 +3914,10 @@
         "1": "Jika jalur startup platform hilang, isi jalur di pengaturan sebelum melanjutkan."
       },
       "keywords": {
-        "0": "quick start",
-        "1": "beginner",
-        "2": "first run",
-        "3": "onboarding"
+        "0": "quick start​",
+        "1": "beginner​",
+        "2": "first run​",
+        "3": "onboarding​"
       },
       "outcomes": {
         "0": "Pertama periksa status global di Dasbor, lalu operasikan di halaman platform spesifik.",
@@ -3401,17 +3942,17 @@
         "1": "Ambang batas terlalu rendah memicu peringatan yang sering. Mulai sekitar 20%."
       },
       "keywords": {
-        "0": "settings",
-        "1": "path",
-        "2": "refresh",
-        "3": "threshold",
-        "4": "language",
-        "5": "theme"
+        "0": "settings​",
+        "1": "path​",
+        "2": "refresh​",
+        "3": "threshold​",
+        "4": "language​",
+        "5": "theme​"
       },
       "outcomes": {
-        "0": "Configure auto-refresh and quota alerts across platforms in one place.",
-        "1": "Set startup paths for each client and fix \"missing path\" issues.",
-        "2": "Adjust window behavior, language, and theme to fit your habits."
+        "0": "Configure auto-refresh and quota alerts across platforms in one place.​",
+        "1": "Set startup paths for each client and fix \"missing path\" issues.​",
+        "2": "Adjust window behavior, language, and theme to fit your habits.​"
       },
       "steps": {
         "0": "Di tab \"Umum\", selesaikan pengaturan bahasa/tema/jalur dasar terlebih dahulu.",
@@ -3419,21 +3960,21 @@
         "2": "Setelah perubahan port layanan jaringan, mulai ulang sesuai petunjuk untuk menerapkan."
       },
       "summary": "Manajemen terpusat untuk bahasa, tema, penyegaran otomatis, ambang peringatan, jalur aplikasi, dan pengaturan layanan jaringan.",
-      "title": "Settings & System Capabilities"
+      "title": "Settings & System Capabilities​"
     },
-    "subtitle": "Built-in instructions organized by task scenarios: know \"why to use\" first, then follow steps to \"use immediately\".",
-    "title": "User Manual",
+    "subtitle": "Built-in instructions organized by task scenarios: know \"why to use\" first, then follow steps to \"use immediately\".​",
+    "title": "User Manual​",
     "wakeup": {
       "cautions": {
         "0": "Untuk pengaturan pertama kali, pilih hanya sejumlah kecil akun. Perluas setelah stabilitas dikonfirmasi.",
         "1": "Jika hasil verifikasi abnormal, periksa kesalahan dan tautan verifikasi di detail terlebih dahulu."
       },
       "keywords": {
-        "0": "wakeup",
-        "1": "task",
-        "2": "verification",
-        "3": "schedule",
-        "4": "history"
+        "0": "wakeup​",
+        "1": "task​",
+        "2": "verification​",
+        "3": "schedule​",
+        "4": "history​"
       },
       "outcomes": {
         "0": "Buat tugas berulang dan catat hasil eksekusi historis.",
@@ -3464,8 +4005,8 @@
       "title": "Ringkasan Penggunaan",
       "viewDetails": "Lihat Detail",
       "includedCredits": "Kredit Termasuk",
-      "usedOfTotal": "{{used}} / {{total}}",
-      "usedEmpty": "-- / --",
+      "usedOfTotal": "{{used}} / {{total}}​",
+      "usedEmpty": "-- / --​",
       "upgradeHint": "Tingkatkan paket Anda untuk meningkatkan kuota bulanan",
       "upgradeAction": "Tingkatkan"
     },
@@ -3578,17 +4119,17 @@
       "jsonTab": "Berkas JSON"
     },
     "quota": {
-      "usedOfTotal": "${{used}} / ${{total}}",
+      "usedOfTotal": "${{used}} / ${{total}}​",
       "usageUnknown": "Penggunaan: --",
       "resetAt": "Reset langganan: {{date}}",
       "resetUnknown": "Reset langganan: --",
-      "statusUnknown": "Status: --",
-      "statusNormal": "Status: Normal",
+      "statusUnknown": "Status: --​",
+      "statusNormal": "Status: Normal​",
       "statusExhaustedFree": "Status: Penggunaan habis, disarankan upgrade",
       "statusExhaustedPro": "Status: Penggunaan habis, upgrade atau aktifkan penggunaan on-demand",
-      "bonusUsed": "Bonus: +{{amount}}",
+      "bonusUsed": "Bonus: +{{amount}}​",
       "bonusIncluded": "Bonus: Termasuk",
-      "bonusEmpty": "Bonus: --",
+      "bonusEmpty": "Bonus: --​",
       "packageConsuming": "Paket: Mengonsumsi",
       "packageAvailable": "Paket: Tersedia",
       "packageEmpty": "Paket: --",
@@ -3645,7 +4186,7 @@
     "usage": "Status Penggunaan",
     "creditsBalance": "Saldo Kredit",
     "usageNormal": "Status normal",
-    "usageAbnormal": "Abnormal",
+    "usageAbnormal": "Abnormal​",
     "usageViewDetail": "Lihat detail",
     "usageDetailTitle": "Detail Status Penggunaan",
     "oauthWaiting": "Menunggu otorisasi...",
@@ -3653,37 +4194,37 @@
     "oauthDescWebview": "Klik tombol di bawah ini untuk membuka halaman otorisasi WorkBuddy di WebView bawaan.",
     "oauthFeature": {
       "oauth": {
-        "title": "IDE sign-in only",
-        "item1": "Add the account after completing OAuth in your browser, then use it for IDE switching.",
-        "item2": "Resource-package quota data will refresh automatically after authorization.",
-        "item3": "Account cards show quota amount, progress, and refresh/expiry time by resource package."
+        "title": "IDE sign-in only​",
+        "item1": "Add the account after completing OAuth in your browser, then use it for IDE switching.​",
+        "item2": "Resource-package quota data will refresh automatically after authorization.​",
+        "item3": "Account cards show quota amount, progress, and refresh/expiry time by resource package.​"
       }
     },
-    "oauthWebviewTab": "WebView OAuth",
-    "oauthOpenWebview": "Open in WebView",
-    "oauthOpenWebviewIncognito": "Open in Incognito WebView",
-    "oauthOpenWebviewFailed": "Failed to open WebView: {{error}}",
-    "oauthOpenBrowserFallback": "Open in Browser (Fallback)",
-    "oauthOpenBrowserFailed": "Failed to open browser: {{error}}",
-    "oauthWebviewProgressHint": "A horizontal step bar is shown at the top of the WebView to locate stuck stages.",
+    "oauthWebviewTab": "WebView OAuth​",
+    "oauthOpenWebview": "Open in WebView​",
+    "oauthOpenWebviewIncognito": "Open in Incognito WebView​",
+    "oauthOpenWebviewFailed": "Failed to open WebView: {{error}}​",
+    "oauthOpenBrowserFallback": "Open in Browser (Fallback)​",
+    "oauthOpenBrowserFailed": "Failed to open browser: {{error}}​",
+    "oauthWebviewProgressHint": "A horizontal step bar is shown at the top of the WebView to locate stuck stages.​",
     "oauthFlow": {
-      "prepare": "Prepare OAuth link",
-      "authorize": "Open authorization link and confirm",
-      "bind": "Poll auth result and bind account",
-      "retryPrepare": "Regenerate OAuth link",
-      "retryAuthorize": "Request authorization link again",
-      "retryBind": "Retry auth polling",
-      "error": "Flow error: {{error}}"
+      "prepare": "Prepare OAuth link​",
+      "authorize": "Open authorization link and confirm​",
+      "bind": "Poll auth result and bind account​",
+      "retryPrepare": "Regenerate OAuth link​",
+      "retryAuthorize": "Request authorization link again​",
+      "retryBind": "Retry auth polling​",
+      "error": "Flow error: {{error}}​"
     },
     "oauthWebviewOverlay": {
       "steps": {
-        "prepare": "1 Prepare OAuth link",
-        "authorize": "2 Open authorization link and confirm",
-        "bind": "3 Poll auth result and bind account",
-        "complete": "5 Done (close manually)"
+        "prepare": "1 Prepare OAuth link​",
+        "authorize": "2 Open authorization link and confirm​",
+        "bind": "3 Poll auth result and bind account​",
+        "complete": "5 Done (close manually)​"
       },
       "status": {
-        "loginConfirm": "Please complete sign-in and authorization on this page."
+        "loginConfirm": "Please complete sign-in and authorization on this page.​"
       }
     },
     "tokenDesc": "Tempel token akses WorkBuddy Anda:",
@@ -3694,38 +4235,38 @@
     },
     "search": "Cari akun WorkBuddy...",
     "quota": {
-      "usedOfTotal": "{{used}} / {{total}}"
+      "usedOfTotal": "{{used}} / {{total}}​"
     },
     "quotaQuery": {
-      "failedRefreshCompact": "Quota query failed",
-      "sectionTitle": "Quota Query",
-      "empty": "No quota data available",
-      "packageUnknown": "Unknown package",
-      "quotaLabel": "Remaining quota",
-      "updatedAt": "Next refresh time: {{time}}",
-      "cycleRange": "Cycle: {{start}} - {{end}}",
-      "cycleUnknown": "Cycle info unavailable",
-      "expireAt": "Expires at: {{time}}",
-      "expireUnknown": "Expires at: N/A",
+      "failedRefreshCompact": "Quota query failed​",
+      "sectionTitle": "Quota Query​",
+      "empty": "No quota data available​",
+      "packageUnknown": "Unknown package​",
+      "quotaLabel": "Remaining quota​",
+      "updatedAt": "Next refresh time: {{time}}​",
+      "cycleRange": "Cycle: {{start}} - {{end}}​",
+      "cycleUnknown": "Cycle info unavailable​",
+      "expireAt": "Expires at: {{time}}​",
+      "expireUnknown": "Expires at: N/A​",
       "packageTitle": {
-        "base": "Base Experience Package",
-        "activity": "Activity Gift Package"
+        "base": "Base Experience Package​",
+        "activity": "Activity Gift Package​"
       }
     },
     "extraCredit": {
-      "title": "Credit Package"
+      "title": "Credit Package​"
     },
-    "oauthUrlInputPlaceholder": "You can enter an authorization URL manually",
-    "oauthInvalidUrl": "Invalid authorization URL. Please enter a full URL.",
-    "oauthGotoWebview": "Navigate opened WebView to input URL",
-    "oauthGotoWebviewSuccess": "Requested WebView to navigate to the input URL.",
-    "oauthGotoWebviewFailed": "Failed to navigate WebView: {{error}}",
-    "oauthWebviewInlineUrlPlaceholder": "Enter a URL to navigate within this WebView",
-    "oauthWebviewInlineGo": "Go",
-    "oauthSuccessClosePrompt": "Account added successfully. Close this WebView now?\nChoose \"Close WebView\" to close now, or \"Later\" to keep it open.",
-    "oauthSuccessCloseTitle": "Account Added",
-    "oauthSuccessCloseNowLabel": "Close WebView",
-    "oauthSuccessCloseLaterLabel": "Later",
+    "oauthUrlInputPlaceholder": "You can enter an authorization URL manually​",
+    "oauthInvalidUrl": "Invalid authorization URL. Please enter a full URL.​",
+    "oauthGotoWebview": "Navigate opened WebView to input URL​",
+    "oauthGotoWebviewSuccess": "Requested WebView to navigate to the input URL.​",
+    "oauthGotoWebviewFailed": "Failed to navigate WebView: {{error}}​",
+    "oauthWebviewInlineUrlPlaceholder": "Enter a URL to navigate within this WebView​",
+    "oauthWebviewInlineGo": "Go​",
+    "oauthSuccessClosePrompt": "Account added successfully. Close this WebView now?\nChoose \"Close WebView\" to close now, or \"Later\" to keep it open.​",
+    "oauthSuccessCloseTitle": "Account Added​",
+    "oauthSuccessCloseNowLabel": "Close WebView​",
+    "oauthSuccessCloseLaterLabel": "Later​",
     "oauthSuccessCloseNowStatus": "Ã¢Å“â€¦ Account added. Closing window...",
     "oauthSuccessCloseLaterStatus": "Ã¢Å“â€¦ Account added. This WebView stays open.",
     "instances": {
@@ -3796,30 +4337,30 @@
     "copySecret": "Salin Secret"
   },
   "twoFactorAuth": {
-    "pageTitle": "2FA",
-    "pageDescNew": "Securely store and manage your 2FA secrets and other sensitive authentication data. 2FA data is stored locally only. Deleting records, clearing cache, or replacing/losing your device may cause 2FA loss, so please keep your own backup.",
-    "panelQuery": "Workspace (Query Panel)",
+    "pageTitle": "2FA​",
+    "pageDescNew": "Securely store and manage your 2FA secrets and other sensitive authentication data. 2FA data is stored locally only. Deleting records, clearing cache, or replacing/losing your device may cause 2FA loss, so please keep your own backup.​",
+    "panelQuery": "Workspace (Query Panel)​",
     "inputSecretPlaceholder": "Tempel Secret 2FA di sini (mis. JBSWY3DPEHPK3PXP)",
-    "inputRemarkPlaceholder": "[Optional] Set a remark name for this secret",
-    "btnQuery": "Query",
-    "btnSaveToFavorites": "Save to List",
-    "refreshInSeconds": "Refresh in {{time}}s",
-    "emptyQueryData": "No query data yet",
-    "invalidSecretFormat": "Invalid secret format detected",
+    "inputRemarkPlaceholder": "[Optional] Set a remark name for this secret​",
+    "btnQuery": "Query​",
+    "btnSaveToFavorites": "Save to List​",
+    "refreshInSeconds": "Refresh in {{time}}s​",
+    "emptyQueryData": "No query data yet​",
+    "invalidSecretFormat": "Invalid secret format detected​",
     "tabSaved": "Ã¢Ëœâ€¦ Saved",
-    "tabHistory": "Recent Queries",
-    "btnImport": "Import",
-    "btnExport": "Export",
-    "btnClear": "Clear",
-    "tableRemark": "Remark",
-    "tableSecret": "Secret",
-    "tableCode": "Code",
-    "tableAddedTime": "Added Time",
-    "tableQueryTime": "Query Time",
-    "tableActions": "Actions",
-    "emptyHistory": "No query history",
-    "emptySaved": "No saved 2FA records yet",
-    "invalidSecretVal": "Invalid Secret",
+    "tabHistory": "Recent Queries​",
+    "btnImport": "Import​",
+    "btnExport": "Export​",
+    "btnClear": "Clear​",
+    "tableRemark": "Remark​",
+    "tableSecret": "Secret​",
+    "tableCode": "Code​",
+    "tableAddedTime": "Added Time​",
+    "tableQueryTime": "Query Time​",
+    "tableActions": "Actions​",
+    "emptyHistory": "No query history​",
+    "emptySaved": "No saved 2FA records yet​",
+    "invalidSecretVal": "Invalid Secret​",
     "actionCopy": "Salin Kode",
     "actionReload": "Muat Ulang ke Data Kueri",
     "actionDelete": "Hapus",
@@ -3845,5 +4386,139 @@
       "warn": "Peringatan",
       "error": "Galat"
     }
+  },
+  "mfaQuick": {
+    "title": "Kode 2FA",
+    "selectLabel": "Pilih kunci 2FA",
+    "unnamedSecret": "Kunci tanpa nama",
+    "invalidCode": "Kunci tidak valid",
+    "copyCode": "Salin kode",
+    "copied": "Disalin",
+    "refreshIn": "{{time}} dtk"
+  },
+  "relay": {
+    "pageTitle": "Relay eksklusif",
+    "pageDesc": "Layanan API mitra untuk pengguna Codex Switch yang dapat digunakan dengan akun API Key Codex.",
+    "loading": "Memuat relay...",
+    "emptyTitle": "Relay nonaktif",
+    "emptyDesc": "Konfigurasi jarak jauh belum mengaktifkan relay eksklusif.",
+    "defaultDescription": "Layanan relay API mitra.",
+    "getApiKey": "Dapatkan API Key",
+    "configTitle": "Aktifkan di Codex",
+    "apiKeyLabel": "Kunci API",
+    "apiKeyPlaceholder": "Tempel API Key dari relay",
+    "apiKeyRequired": "Masukkan API Key.",
+    "baseUrl": "URL API",
+    "protocol": "Protokol",
+    "vision": "Input gambar",
+    "testConnection": "Uji koneksi",
+    "saveAndEnable": "Simpan dan aktifkan",
+    "goCodex": "Ke Codex",
+    "statusUnavailable": "Konfigurasi relay tidak tersedia.",
+    "testing": "Menguji koneksi...",
+    "testSuccess": "Uji koneksi berhasil. API Key ini dapat digunakan dengan relay.",
+    "testFailed": "Uji koneksi gagal.",
+    "saving": "Menyimpan dan mengaktifkan di Codex...",
+    "saveSuccess": "Konfigurasi relay disimpan. Anda dapat menggunakannya di halaman akun Codex.",
+    "saveFailed": "Gagal menyimpan konfigurasi relay.",
+    "savedProvider": "Penyedia tersimpan: {{name}}",
+    "modelsTitle": "Model yang didukung",
+    "modelsEmpty": "Daftar model tetap belum dikonfigurasi dari jarak jauh. Setelah disimpan, Codex dapat memakai kemampuan layanan."
+  },
+  "apiKeyFun": {
+    "eyebrow": "Perantara",
+    "title": "Relay APIKEY.FUN",
+    "description": "Relay mitra resmi Cockpit menyediakan akses API model besar yang stabil, terbuka, dan hemat biaya. Layanan ini mendukung model utama seperti Claude, OpenAI, dan Gemini, serta cocok untuk konfigurasi terpadu di Codex, Gemini CLI, Claude Code, dan alat pengembang lainnya. Dengan mendaftar melalui tautan eksklusif Cockpit, Anda bisa mendapatkan diskon isi ulang permanen hingga 5%.",
+    "register": "Tautan eksklusif",
+    "docs": "Dokumen resmi",
+    "viewNow": "Lihat sekarang",
+    "queryTitle": "Kuota kunci",
+    "queryDesc": "Masukkan API Key APIKEY.FUN untuk memeriksa kuota otomatis.",
+    "keyNotSet": "Belum ada kunci",
+    "apiKeyLabel": "Kunci API",
+    "apiKeyPlaceholder": "Tempel API Key yang dibuat di konsol APIKEY.FUN",
+    "hideKey": "Sembunyikan",
+    "showKey": "Tampilkan",
+    "endpointLabel": "Titik akses",
+    "protocolLabel": "Protokol Codex",
+    "queryUsage": "Cek kuota",
+    "querying": "Memeriksa",
+    "saveToCodex": "Tulis ke Codex",
+    "saving": "Menulis",
+    "saveSuccess": "Ditulis ke Codex Provider: {{name}}",
+    "toolsTitle": "Tulis config klien",
+    "toolsDesc": "Menulis file konfigurasi klien lokal sesuai dokumen APIKEY.FUN dan tata letak CC Switch.",
+    "endpoint": {
+      "global": "Jalur global",
+      "globalDesc": "API Base resmi bawaan untuk sebagian besar jaringan.",
+      "direct": "Jalur langsung",
+      "directDesc": "Untuk skenario yang sensitif terhadap latensi."
+    },
+    "wireApi": {
+      "responses": "Protokol Responses",
+      "responsesDesc": "Disarankan untuk Codex, memakai protokol OpenAI Responses langsung.",
+      "chatCompletions": "Protokol Chat Completions",
+      "chatCompletionsDesc": "Kompatibel melalui gateway lokal."
+    },
+    "usage": {
+      "remaining": "Sisa",
+      "used": "Terpakai",
+      "todayRequests": "Hari ini",
+      "todayTokens": "Token hari ini",
+      "totalRequests": "Total permintaan",
+      "totalTokens": "Total Token"
+    },
+    "tool": {
+      "codexTitle": "Penyedia Codex",
+      "codexDesc": "Menulis Provider dengan Base URL /v1 dari endpoint saat ini.",
+      "envTitle": "Lingkungan",
+      "envDesc": "Referensi untuk Claude Code, Gemini CLI, Hermes, dan entri kompatibel OpenAI.",
+      "curlTitle": "Skrip API",
+      "curlDesc": "Memverifikasi cepat request kompatibel Chat Completions."
+    },
+    "docTool": {
+      "codex": "Dapat ditulis langsung ke Codex Provider.",
+      "claudeCode": "Salin parameter kompatibel Anthropic Messages.",
+      "geminiCli": "Salin Base URL kompatibel OpenAI dan API Key.",
+      "traeSolo": "Salin parameter relay dari dokumen resmi.",
+      "openClaw": "Salin parameter koneksi kompatibel OpenAI.",
+      "hermes": "Salin parameter untuk halaman model Hermes.",
+      "apiScript": "Salin parameter dasar untuk skrip."
+    },
+    "apply": {
+      "codexTitle": "Codex​",
+      "codexDesc": "Menulis ~/.codex/config.toml dan auth.json dengan protokol Responses dan API Key saat ini.",
+      "geminiTitle": "Config Gemini CLI",
+      "geminiDesc": "Menulis ~/.gemini/.env dan mengatur mode auth settings.json ke gemini-api-key.",
+      "openclawTitle": "Config OpenClaw",
+      "openclawDesc": "Menulis models.providers.apikeyfun di ~/.openclaw/openclaw.json.",
+      "hermesTitle": "Config Hermes",
+      "hermesDesc": "Menulis custom_providers di ~/.hermes/config.yaml dan beralih ke model default apikeyfun.",
+      "button": "Tulis config",
+      "applying": "Menulis",
+      "success": "File konfigurasi ditulis: {{paths}}",
+      "failed": "Gagal menulis konfigurasi: {{error}}"
+    },
+    "error": {
+      "missingApiKey": "Masukkan API Key.",
+      "queryFailed": "Gagal cek kuota: {{error}}",
+      "saveFailed": "Gagal menulis: {{error}}"
+    },
+    "keyManager": {
+      "title": "Kelola kunci",
+      "desc": "Simpan API Keys untuk beralih cepat dan memeriksa kuota otomatis.",
+      "saveButton": "Simpan kunci",
+      "savedButton": "Tersimpan",
+      "empty": "Belum ada kunci tersimpan.",
+      "lastRemaining": "Saldo terakhir {{value}}",
+      "notQueried": "Belum dicek",
+      "deleteButton": "Hapus",
+      "editAlias": "Edit alias​",
+      "renamePlaceholder": "Enter alias...​",
+      "createdAt": "Ditambahkan {{time}}",
+      "saveFlash": "Baru disimpan"
+    },
+    "copyKey": "Copy Key​",
+    "clearKey": "Clear input​"
   }
 }

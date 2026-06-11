@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 fn default_token_source_mode() -> String {
     "managed".to_string()
@@ -47,6 +48,28 @@ pub struct CodexQuickConfig {
     pub detected_auto_compact_token_limit: Option<i64>,
 }
 
+/// Codex 官方 App 推理速度
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum CodexAppSpeed {
+    Standard,
+    Fast,
+}
+
+impl Default for CodexAppSpeed {
+    fn default() -> Self {
+        Self::Standard
+    }
+}
+
+/// Codex 官方 App 推理速度配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CodexAppSpeedConfig {
+    pub speed: CodexAppSpeed,
+    pub global_state_path: String,
+}
+
 /// Codex 账号数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CodexAccount {
@@ -64,6 +87,18 @@ pub struct CodexAccount {
     pub api_provider_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub api_provider_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub api_model_catalog: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_wire_api: Option<String>,
+    #[serde(default)]
+    pub api_supports_vision: bool,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub api_model_vision_support: HashMap<String, bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_vision_routing_model: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bound_oauth_account_id: Option<String>,
     pub user_id: Option<String>,
     pub plan_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -78,6 +113,8 @@ pub struct CodexAccount {
     pub account_structure: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub account_note: Option<String>,
+    #[serde(default)]
+    pub app_speed: CodexAppSpeed,
     pub tokens: CodexTokens,
     #[serde(default)]
     pub token_generation: u64,
@@ -94,6 +131,14 @@ pub struct CodexAccount {
     pub quota_error: Option<CodexQuotaErrorInfo>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub usage_updated_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscription_query_last_attempt_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscription_query_last_success_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscription_query_next_retry_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscription_query_last_error: Option<String>,
     pub tags: Option<Vec<String>>,
     pub created_at: i64,
     pub last_used: i64,
@@ -259,6 +304,12 @@ impl CodexAccount {
             api_provider_mode: CodexApiProviderMode::OpenaiBuiltin,
             api_provider_id: None,
             api_provider_name: None,
+            api_model_catalog: Vec::new(),
+            api_wire_api: None,
+            api_supports_vision: false,
+            api_model_vision_support: HashMap::new(),
+            api_vision_routing_model: None,
+            bound_oauth_account_id: None,
             user_id: None,
             plan_type: None,
             subscription_active_until: None,
@@ -268,6 +319,7 @@ impl CodexAccount {
             account_name: None,
             account_structure: None,
             account_note: None,
+            app_speed: CodexAppSpeed::Standard,
             tokens,
             token_generation: 0,
             token_updated_at: Some(now),
@@ -277,6 +329,10 @@ impl CodexAccount {
             quota: None,
             quota_error: None,
             usage_updated_at: None,
+            subscription_query_last_attempt_at: None,
+            subscription_query_last_success_at: None,
+            subscription_query_next_retry_at: None,
+            subscription_query_last_error: None,
             tags: None,
             created_at: now,
             last_used: now,
@@ -291,6 +347,7 @@ impl CodexAccount {
         api_base_url: Option<String>,
         api_provider_id: Option<String>,
         api_provider_name: Option<String>,
+        api_model_catalog: Vec<String>,
     ) -> Self {
         let mut account = Self::new(
             id,
@@ -307,6 +364,11 @@ impl CodexAccount {
         account.api_base_url = api_base_url;
         account.api_provider_id = api_provider_id;
         account.api_provider_name = api_provider_name;
+        account.api_model_catalog = api_model_catalog;
+        account.api_wire_api = None;
+        account.api_supports_vision = false;
+        account.api_model_vision_support = HashMap::new();
+        account.api_vision_routing_model = None;
         account.plan_type = Some("API_KEY".to_string());
         account
     }

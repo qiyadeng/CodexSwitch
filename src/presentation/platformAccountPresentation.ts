@@ -35,8 +35,7 @@ import {
   formatCodexResetTime,
   getCodexCodeReviewQuotaMetric,
   getCodexEffectiveQuotaPercentages,
-  getCodexPlanBadgeClass,
-  getCodexPlanBadgeLabel,
+  getCodexPlanBadgePresentation,
   getCodexQuotaClass,
   getCodexQuotaWindows,
   isCodexApiKeyAccount,
@@ -515,39 +514,32 @@ export function getAntigravityQuotaDisplayItems(
   account: Account,
   displayGroups: DisplayGroup[],
 ): AgQuotaDisplayItem[] {
+  if (displayGroups.length > 0) {
+    const quotas = getAgAccountQuotas(account);
+    const settings = buildAgDisplayGroupSettings(displayGroups);
+    const groupedItems: AgQuotaDisplayItem[] = [];
+
+    for (const group of displayGroups) {
+      const percentage = calculateGroupQuota(group.id, quotas, settings);
+      if (percentage === null) continue;
+
+      const resetTimestamp = getAntigravityGroupResetTimestamp(account, group);
+      groupedItems.push({
+        key: `group:${group.id}`,
+        label: group.name,
+        percentage,
+        resetTime: resetTimestamp ? new Date(resetTimestamp).toISOString() : "",
+      });
+    }
+
+    if (groupedItems.length > 0) {
+      return groupedItems;
+    }
+  }
+
   const rawDisplayModels = getDisplayModels(account.quota);
   if (rawDisplayModels.length === 0) {
     return [];
-  }
-
-  if (displayGroups.length === 0) {
-    return rawDisplayModels.map((model) => ({
-      key: model.name,
-      label: getModelShortName(model.name),
-      percentage: model.percentage,
-      resetTime: model.reset_time,
-    }));
-  }
-
-  const quotas = getAgAccountQuotas(account);
-  const settings = buildAgDisplayGroupSettings(displayGroups);
-  const groupedItems: AgQuotaDisplayItem[] = [];
-
-  for (const group of displayGroups) {
-    const percentage = calculateGroupQuota(group.id, quotas, settings);
-    if (percentage === null) continue;
-
-    const resetTimestamp = getAntigravityGroupResetTimestamp(account, group);
-    groupedItems.push({
-      key: `group:${group.id}`,
-      label: group.name,
-      percentage,
-      resetTime: resetTimestamp ? new Date(resetTimestamp).toISOString() : "",
-    });
-  }
-
-  if (groupedItems.length > 0) {
-    return groupedItems;
   }
 
   return rawDisplayModels.map((model) => ({
@@ -677,6 +669,8 @@ export function buildCodexAccountPresentation(
   const displayName =
     isCodexApiKeyAccount(account) && apiKeyDisplayName
       ? apiKeyDisplayName
+      : isCodexNewApiAccount(account)
+        ? "Codex API"
       : account.email;
   const effectiveQuota = getCodexEffectiveQuotaPercentages(account.quota);
   const weeklyBlocksHourlyHint = effectiveQuota.weeklyBlocksHourly
@@ -717,12 +711,13 @@ export function buildCodexAccountPresentation(
       resetAt: codeReviewMetric.resetTime,
     });
   }
+  const planBadge = getCodexPlanBadgePresentation(account);
 
   return {
     id: account.id,
     displayName,
-    planLabel: getCodexPlanBadgeLabel(account),
-    planClass: getCodexPlanBadgeClass(account),
+    planLabel: planBadge.label,
+    planClass: planBadge.className,
     quotaItems,
   };
 }

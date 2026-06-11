@@ -134,3 +134,18 @@ pub async fn wakeup_verification_run_batch(
 pub fn wakeup_set_official_ls_version_mode(mode: Option<String>) -> Result<(), String> {
     modules::wakeup::set_official_ls_version_mode(mode.as_deref())
 }
+
+#[tauri::command]
+pub async fn confirm_wakeup_task(app: AppHandle, task_id: String) -> Result<(), String> {
+    modules::wakeup_scheduler::execute_pending_confirmation(&app, &task_id).await
+}
+
+#[tauri::command]
+pub async fn cancel_wakeup_task(task_id: String) -> Result<(), String> {
+    modules::wakeup_scheduler::cancel_pending_confirmation(&task_id)
+}
+
+#[tauri::command]
+pub async fn check_wakeup_timeouts(app: AppHandle) -> Result<(), String> {
+    modules::wakeup_scheduler::check_and_handle_timeouts(&app).await
+}

@@ -83,7 +83,8 @@ pub async fn start_oauth_login(app_handle: AppHandle) -> Result<models::Account,
         Some(user_info.email.clone()),
         None,
         user_info.id.clone(),
-    );
+    )
+    .with_oauth_metadata(token_res.oauth_client_key, token_res.id_token);
 
     let account = modules::upsert_account(
         user_info.email.clone(),
@@ -151,7 +152,8 @@ pub async fn complete_oauth_login(app_handle: AppHandle) -> Result<models::Accou
         Some(user_info.email.clone()),
         None,
         user_info.id.clone(),
-    );
+    )
+    .with_oauth_metadata(token_res.oauth_client_key, token_res.id_token);
 
     let account = modules::upsert_account(
         user_info.email.clone(),

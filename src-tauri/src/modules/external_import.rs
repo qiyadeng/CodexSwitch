@@ -18,6 +18,8 @@ pub struct ExternalProviderImportPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub import_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub api_base_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub min_app_version: Option<String>,
     pub auto_import: bool,
     #[serde(default)]
@@ -188,6 +190,13 @@ fn parse_external_import_url_with_reason(
         .or_else(|| query.get("importurl"))
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty());
+    let api_base_url = query
+        .get("api_base_url")
+        .or_else(|| query.get("apibaseurl"))
+        .or_else(|| query.get("base_url"))
+        .or_else(|| query.get("baseurl"))
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
     if token.is_empty() && import_url.is_none() {
         return Err(
             "缺少内容参数（token/import_token/payload/import_payload/import_url）".to_string(),
@@ -227,6 +236,7 @@ fn parse_external_import_url_with_reason(
         page: page.to_string(),
         token,
         import_url,
+        api_base_url,
         min_app_version,
         auto_import,
         activate,
@@ -289,6 +299,18 @@ fn emit_external_import_payload<R: Runtime>(
     ));
 }
 
+/// Skip argv[0] (the executable name) for sources where the first argument
+/// is guaranteed to be the process path rather than a deep link.
+/// On Linux/WSL the single-instance callback and startup args always include
+/// the binary name as the first element (e.g. `["cockpit-tools",
+/// "cockpit-tools://import?..."]`).  Consuming it wastes a log line, can
+/// mislead diagnostics (`is_deep_link=false, candidate='cockpit-tools'`),
+/// and on WSL where D-Bus is unreliable it is the *only* element received,
+/// causing an "未发现 Deep Link 参数" dead-end.
+fn should_skip_argv0(source: &str) -> bool {
+    matches!(source, "single-instance" | "startup")
+}
+
 pub fn handle_external_import_args<R: Runtime>(
     app: &AppHandle<R>,
     args: &[String],
@@ -299,8 +321,12 @@ pub fn handle_external_import_args<R: Runtime>(
         source,
         args.len()
     ));
+    let skip_argv0 = should_skip_argv0(source);
     let mut saw_deep_link = false;
-    for arg in args {
+    for (i, arg) in args.iter().enumerate() {
+        if skip_argv0 && i == 0 {
+            continue;
+        }
         let candidate = arg.trim();
         if candidate.is_empty() {
             continue;
@@ -360,7 +386,28 @@ pub fn handle_external_import_args<R: Runtime>(
 
 #[cfg(test)]
 mod tests {
-    use super::parse_external_import_url;
+    use super::{parse_external_import_url, should_skip_argv0};
+
+    // --- argv0 skip logic ---
+
+    #[test]
+    fn skip_argv0_for_single_instance() {
+        assert!(should_skip_argv0("single-instance"));
+    }
+
+    #[test]
+    fn skip_argv0_for_startup() {
+        assert!(should_skip_argv0("startup"));
+    }
+
+    #[test]
+    fn do_not_skip_argv0_for_deep_link_sources() {
+        assert!(!should_skip_argv0("deep-link-open-url"));
+        assert!(!should_skip_argv0("deep-link-current"));
+        assert!(!should_skip_argv0("run-event-opened"));
+    }
+
+    // --- URL parsing (existing) ---
 
     #[test]
     fn parse_basic_import_link() {
@@ -370,6 +417,7 @@ mod tests {
         assert_eq!(payload.page, "codex");
         assert_eq!(payload.token, "abc123");
         assert_eq!(payload.import_url, None);
+        assert_eq!(payload.api_base_url, None);
         assert_eq!(payload.min_app_version, None);
         assert!(!payload.auto_import);
     }
@@ -383,6 +431,7 @@ mod tests {
         assert_eq!(payload.page, "codebuddy-cn");
         assert_eq!(payload.token, "{}");
         assert_eq!(payload.import_url, None);
+        assert_eq!(payload.api_base_url, None);
         assert_eq!(payload.min_app_version, None);
         assert!(payload.auto_import);
     }
@@ -395,6 +444,7 @@ mod tests {
         assert_eq!(payload.page, "overview");
         assert_eq!(payload.token, "1//0gTokenDemo");
         assert_eq!(payload.import_url, None);
+        assert_eq!(payload.api_base_url, None);
         assert_eq!(payload.min_app_version, None);
         assert!(!payload.auto_import);
     }
@@ -410,8 +460,20 @@ mod tests {
             payload.import_url,
             Some("https://example.com/user/api/toolsImport/fetch?id=abc&token=def".to_string())
         );
+        assert_eq!(payload.api_base_url, None);
         assert_eq!(payload.min_app_version, None);
         assert!(payload.auto_import);
+    }
+
+    #[test]
+    fn parse_import_link_with_api_base_url() {
+        let raw = "cockpit-tools://provider-import?platform=codex&import_url=https%3A%2F%2Fchongflow.cn%2Fapi%2Fcockpit-tools%2Fimport%2Fabc&api_base_url=https%3A%2F%2Fchongflow.cn%2Fv1&auto_import=true";
+        let payload = parse_external_import_url(raw).expect("payload");
+        assert_eq!(payload.provider_id, "codex");
+        assert_eq!(
+            payload.api_base_url,
+            Some("https://chongflow.cn/v1".to_string())
+        );
     }
 
     #[test]

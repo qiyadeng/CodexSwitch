@@ -1,10 +1,18 @@
 export type CodexApiProviderMode = "openai_builtin" | "custom";
+export type CodexProviderWireApi = "responses" | "chat_completions";
 
 export interface CodexQuickConfig {
   context_window_1m: boolean;
   auto_compact_token_limit: number;
   detected_model_context_window?: number;
   detected_auto_compact_token_limit?: number;
+}
+
+export type CodexAppSpeed = "standard" | "fast";
+
+export interface CodexAppSpeedConfig {
+  speed: CodexAppSpeed;
+  globalStatePath: string;
 }
 
 /** Codex 账号数据 */
@@ -17,6 +25,12 @@ export interface CodexAccount {
   api_provider_mode?: CodexApiProviderMode;
   api_provider_id?: string;
   api_provider_name?: string;
+  api_model_catalog?: string[];
+  api_wire_api?: CodexProviderWireApi | null;
+  api_supports_vision?: boolean;
+  api_model_vision_support?: Record<string, boolean>;
+  api_vision_routing_model?: string | null;
+  bound_oauth_account_id?: string | null;
   user_id?: string;
   plan_type?: string;
   subscription_active_until?: string;
@@ -26,6 +40,7 @@ export interface CodexAccount {
   account_name?: string;
   account_structure?: string;
   account_note?: string;
+  app_speed?: CodexAppSpeed;
   tokens: CodexTokens;
   token_generation?: number;
   token_updated_at?: number;
@@ -74,6 +89,35 @@ export interface CodexQuota {
   raw_data?: unknown;
 }
 
+const COCKPIT_API_BASE_URLS = [
+  "https://api.newbeeapi.com",
+  "https://www.newbeeapi.com/v1",
+  "https://chongcodex.cn/v1",
+];
+
+function normalizeCodexApiBaseUrlForMatch(rawValue?: string | null): string {
+  const trimmed = (rawValue || "").trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "";
+    }
+    return `${parsed.origin}${parsed.pathname}`
+      .replace(/\/+$/, "")
+      .toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+export function isCodexCockpitApiBaseUrl(rawValue?: string | null): boolean {
+  const normalized = normalizeCodexApiBaseUrlForMatch(rawValue);
+  return COCKPIT_API_BASE_URLS.some(
+    (baseUrl) => normalized === normalizeCodexApiBaseUrlForMatch(baseUrl),
+  );
+}
+
 export interface CodexWorkspace {
   id: string;
   title: string;
@@ -98,6 +142,7 @@ export interface CodexInstanceThreadSyncItem {
   instanceId: string;
   instanceName: string;
   addedThreadCount: number;
+  updatedThreadCount: number;
   backupDir?: string | null;
 }
 
@@ -106,6 +151,8 @@ export interface CodexInstanceThreadSyncSummary {
   threadUniverseCount: number;
   mutatedInstanceCount: number;
   totalSyncedThreadCount: number;
+  totalAddedThreadCount: number;
+  totalUpdatedThreadCount: number;
   items: CodexInstanceThreadSyncItem[];
   backupDirs: string[];
   message: string;
@@ -117,6 +164,7 @@ export interface CodexSessionVisibilityRepairItem {
   targetProvider: string;
   changedRolloutFileCount: number;
   updatedSqliteRowCount: number;
+  addedSessionIndexEntryCount: number;
   skippedSqliteFile: boolean;
   backupDir?: string | null;
   running: boolean;
@@ -127,6 +175,7 @@ export interface CodexSessionVisibilityRepairSummary {
   mutatedInstanceCount: number;
   changedRolloutFileCount: number;
   updatedSqliteRowCount: number;
+  addedSessionIndexEntryCount: number;
   skippedSqliteFileCount: number;
   items: CodexSessionVisibilityRepairItem[];
   backupDirs: string[];
@@ -392,7 +441,9 @@ export function isCodexNewApiAccount(account: CodexAccount): boolean {
     isCodexApiKeyAccount(account) &&
     (providerId === "cockpit_api" ||
       providerId === "new_api" ||
+      isCodexCockpitApiBaseUrl(account.api_base_url) ||
       planType === "COCKPIT API" ||
+      planType === "NEWBEE API" ||
       planType === "NEW_API_EXCLUSIVE")
   );
 }
@@ -455,7 +506,7 @@ function normalizeCodexAuthFilePlanType(
   return undefined;
 }
 
-export function getCodexPlanBadgeLabel(account: CodexAccount): string {
+function getCodexPlanBadgeLabel(account: CodexAccount): string {
   if (isCodexNewApiAccount(account)) {
     return account.plan_type?.trim() || "Newbee API";
   }
@@ -475,7 +526,7 @@ export function getCodexPlanBadgeLabel(account: CodexAccount): string {
   return `${baseLabel} 20x`;
 }
 
-export function getCodexPlanBadgeClass(account: CodexAccount): string {
+function getCodexPlanBadgeClass(account: CodexAccount): string {
   if (isCodexNewApiAccount(account)) {
     return "api-key new-api-exclusive";
   }
@@ -495,6 +546,20 @@ export function getCodexPlanBadgeClass(account: CodexAccount): string {
   }
   // CPA 对齐：plan_type='pro' 默认视为 promax (20x)
   return "pro codex-pro-max";
+}
+
+export interface CodexPlanBadgePresentation {
+  label: string;
+  className: string;
+}
+
+export function getCodexPlanBadgePresentation(
+  account: CodexAccount,
+): CodexPlanBadgePresentation {
+  return {
+    label: getCodexPlanBadgeLabel(account),
+    className: getCodexPlanBadgeClass(account),
+  };
 }
 
 export function getCodexPlanFilterKey(account: CodexAccount): string {

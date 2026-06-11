@@ -1,10 +1,13 @@
-import { Settings, LayoutGrid, SlidersHorizontal, FileText, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Settings, Rocket, LayoutGrid, SlidersHorizontal, FileText, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
+import apiKeyFunIcon from '../../assets/icons/apikey-fun.png';
 import { Page } from '../../types/navigation';
 import { isMenuVisiblePlatform, PlatformId, PLATFORM_PAGE_MAP } from '../../types/platform';
 import {
+  API_RELAY_LAYOUT_ENTRY_ID,
+  ApiRelayLayoutEntryId,
   resolveGroupChildIcon,
   resolveGroupChildName,
   parseGroupEntryId,
@@ -15,26 +18,40 @@ import {
   resolveEntryIdForPlatform,
   usePlatformLayoutStore,
 } from '../../stores/usePlatformLayoutStore';
-import { ORIGINAL_SIDEBAR_ENTRY_LIMIT, useSideNavLayoutStore } from '../../stores/useSideNavLayoutStore';
+import { CLASSIC_SIDEBAR_ENTRY_LIMIT, ORIGINAL_SIDEBAR_ENTRY_LIMIT, useSideNavLayoutStore } from '../../stores/useSideNavLayoutStore';
 import { useGlobalModal } from '../../hooks/useGlobalModal';
 import { getPlatformLabel, renderPlatformIcon } from '../../utils/platformMeta';
+import { useAntigravityRuntimeTarget } from '../../hooks/useAntigravityRuntimeTarget';
+import { setAntigravityRuntimeTargetFromPlatform } from '../../utils/antigravityRuntimeTarget';
 
 interface SideNavProps {
   page: Page;
   setPage: (page: Page) => void;
   onOpenPlatformLayout: () => void;
+  easterEggClickCount: number;
+  onEasterEggTriggerClick: () => void;
+  hasBreakoutSession: boolean;
   updateActionState: 'hidden' | 'available' | 'downloading' | 'installing' | 'ready';
   updateProgress: number;
   onUpdateActionClick: () => void;
   updateRemindersEnabled: boolean;
+  sponsorEntryVisible: boolean;
   onOpenLogViewer: () => void;
 }
 
+interface FlyingRocket {
+  id: number;
+  x: number;
+}
+
+type SideNavEntryId = PlatformLayoutEntryId | ApiRelayLayoutEntryId;
+
 interface SideNavEntry {
-  id: PlatformLayoutEntryId;
+  id: SideNavEntryId;
+  kind: 'platform' | 'api-relay';
   label: string;
   hidden: boolean;
-  targetPlatformId: PlatformId;
+  targetPlatformId: PlatformId | null;
   platformIds: PlatformId[];
   group: PlatformLayoutGroup | null;
 }
@@ -42,6 +59,7 @@ interface SideNavEntry {
 const PAGE_PLATFORM_MAP: Partial<Record<Page, PlatformId>> = {
   overview: 'antigravity',
   codex: 'codex',
+  'codex-api-service': 'codex',
   zed: 'zed',
   'github-copilot': 'github-copilot',
   windsurf: 'windsurf',
@@ -55,11 +73,26 @@ const PAGE_PLATFORM_MAP: Partial<Record<Page, PlatformId>> = {
   workbuddy: 'workbuddy',
 };
 
+const APP_DISPLAY_NAME =
+  import.meta.env.VITE_COCKPIT_TOOLS_PROFILE === 'dev' ? 'Codex Switch Dev' : 'Codex Switch';
+
 const CLASSIC_NAV_MIN_SCALE = 0.5;
 const CLASSIC_NAV_SCALE_EPSILON = 0.004;
 const CLASSIC_NAV_SCROLL_EPSILON = 4;
 
 function renderEntryIcon(entry: SideNavEntry, size: number) {
+  if (entry.kind === 'api-relay') {
+    return (
+      <img
+        className="nav-item-icon"
+        src={apiKeyFunIcon}
+        alt=""
+        width={size}
+        height={size}
+      />
+    );
+  }
+
   if (entry.group && entry.group.iconKind === 'custom' && entry.group.iconCustomDataUrl) {
     return (
       <img
@@ -73,24 +106,29 @@ function renderEntryIcon(entry: SideNavEntry, size: number) {
 
   if (entry.group) {
     const iconPlatform = entry.group.iconPlatformId ?? entry.targetPlatformId;
-    return renderPlatformIcon(iconPlatform, size);
+    return iconPlatform ? renderPlatformIcon(iconPlatform, size) : null;
   }
 
-  return renderPlatformIcon(entry.targetPlatformId, size);
+  return entry.targetPlatformId ? renderPlatformIcon(entry.targetPlatformId, size) : null;
 }
 
 export function SideNav({
   page,
   setPage,
   onOpenPlatformLayout,
+  easterEggClickCount,
+  onEasterEggTriggerClick,
+  hasBreakoutSession,
   updateActionState,
   updateProgress,
   onUpdateActionClick,
   updateRemindersEnabled,
+  sponsorEntryVisible,
   onOpenLogViewer,
 }: SideNavProps) {
   const { t } = useTranslation();
   const { showModal } = useGlobalModal();
+  const [flyingRockets, setFlyingRockets] = useState<FlyingRocket[]>([]);
   const [showMore, setShowMore] = useState(false);
   const [classicAdaptiveScale, setClassicAdaptiveScale] = useState(1);
   const [classicNavNeedsScroll, setClassicNavNeedsScroll] = useState(false);
@@ -109,6 +147,7 @@ export function SideNav({
   const isClassicLayout = sideNavLayoutMode === 'classic';
   const isClassicCollapsed = isClassicLayout && classicCollapsed;
   const showClassicLabels = isClassicLayout && !classicCollapsed;
+  const rocketIdRef = useRef(0);
   const classicSwitchDontAskAgainRef = useRef(false);
   const sideNavRef = useRef<HTMLElement>(null);
   const updateEntryRef = useRef<HTMLDivElement>(null);
@@ -124,20 +163,31 @@ export function SideNav({
     hiddenEntryIds,
     sidebarEntryIds,
     platformGroups,
+    apiRelaySidebarVisible,
+    apiRelayEntryOrder,
   } = usePlatformLayoutStore();
 
-  const currentPlatformId = PAGE_PLATFORM_MAP[page] ?? null;
-  const currentEntryId = useMemo(
-    () => (currentPlatformId ? resolveEntryIdForPlatform(currentPlatformId, platformGroups) : null),
-    [currentPlatformId, platformGroups],
+  const antigravityRuntimeTarget = useAntigravityRuntimeTarget();
+  const currentPlatformId = page === 'overview'
+    ? antigravityRuntimeTarget
+    : PAGE_PLATFORM_MAP[page] ?? null;
+  const currentEntryId = useMemo<SideNavEntryId | null>(
+    () => {
+      if (page === 'api-relay') {
+        return API_RELAY_LAYOUT_ENTRY_ID;
+      }
+      return currentPlatformId ? resolveEntryIdForPlatform(currentPlatformId, platformGroups) : null;
+    },
+    [currentPlatformId, page, platformGroups],
   );
 
   const hiddenSet = useMemo(() => new Set(hiddenEntryIds), [hiddenEntryIds]);
   const sidebarSet = useMemo(() => new Set(sidebarEntryIds), [sidebarEntryIds]);
+  const apiRelayEntryVisible = sponsorEntryVisible && apiRelaySidebarVisible;
 
   const orderedEntries = useMemo<SideNavEntry[]>(() => {
-    return orderedEntryIds
-      .map((entryId) => {
+    const platformEntries: SideNavEntry[] = orderedEntryIds
+      .map<SideNavEntry | null>((entryId) => {
         const platformId = parsePlatformEntryId(entryId);
         if (platformId) {
           if (!isMenuVisiblePlatform(platformId)) {
@@ -145,6 +195,7 @@ export function SideNav({
           }
           return {
             id: entryId,
+            kind: 'platform' as const,
             label: getPlatformLabel(platformId, t),
             hidden: hiddenSet.has(entryId),
             targetPlatformId: platformId,
@@ -178,6 +229,7 @@ export function SideNav({
 
         return {
           id: entryId,
+          kind: 'platform' as const,
           label: group.name,
           hidden: hiddenSet.has(entryId),
           targetPlatformId,
@@ -186,21 +238,55 @@ export function SideNav({
         };
       })
       .filter((entry): entry is SideNavEntry => !!entry);
-  }, [orderedEntryIds, platformGroups, hiddenSet, t]);
+
+    if (!apiRelayEntryVisible) {
+      return platformEntries;
+    }
+
+    const result = [...platformEntries];
+    const insertIndex = Math.max(0, Math.min(apiRelayEntryOrder, result.length));
+    result.splice(insertIndex, 0, {
+      id: API_RELAY_LAYOUT_ENTRY_ID,
+      kind: 'api-relay',
+      label: t('nav.apiRelay', '中转站'),
+      hidden: false,
+      targetPlatformId: null,
+      platformIds: [],
+      group: null,
+    });
+    return result;
+  }, [apiRelayEntryOrder, apiRelayEntryVisible, orderedEntryIds, platformGroups, hiddenSet, t]);
 
   const sidebarVisibleEntries = useMemo(
-    () => orderedEntries.filter((entry) => sidebarSet.has(entry.id) && !entry.hidden),
+    () => orderedEntries.filter((entry) =>
+      entry.kind === 'api-relay' || sidebarSet.has(entry.id as PlatformLayoutEntryId),
+    ),
     [orderedEntries, sidebarSet],
   );
 
   const sidebarMenuEntries = useMemo(
     () => (
       isClassicLayout
-        ? sidebarVisibleEntries
+        ? sidebarVisibleEntries.slice(0, CLASSIC_SIDEBAR_ENTRY_LIMIT)
         : sidebarVisibleEntries.slice(0, ORIGINAL_SIDEBAR_ENTRY_LIMIT)
     ),
     [isClassicLayout, sidebarVisibleEntries],
   );
+
+  const navigateToPlatform = useCallback((platformId: PlatformId) => {
+    setAntigravityRuntimeTargetFromPlatform(platformId);
+    setPage(PLATFORM_PAGE_MAP[platformId]);
+  }, [setPage]);
+
+  const navigateToEntry = useCallback((entry: SideNavEntry) => {
+    if (entry.kind === 'api-relay') {
+      setPage('api-relay');
+      return;
+    }
+    if (entry.targetPlatformId) {
+      navigateToPlatform(entry.targetPlatformId);
+    }
+  }, [navigateToPlatform, setPage]);
 
   const classicScaleContentKey = useMemo(
     () => sidebarMenuEntries
@@ -215,7 +301,11 @@ export function SideNav({
   );
 
   const sidebarMenuPlatformIdSet = useMemo(
-    () => new Set(sidebarMenuEntries.map((entry) => entry.targetPlatformId)),
+    () => new Set(
+      sidebarMenuEntries
+        .map((entry) => entry.targetPlatformId)
+        .filter((platformId): platformId is PlatformId => !!platformId),
+    ),
     [sidebarMenuEntries],
   );
 
@@ -227,13 +317,16 @@ export function SideNav({
 
       return orderedEntries
         .map((entry) => {
+          if (entry.kind === 'api-relay') {
+            return sidebarMenuEntryIdSet.has(entry.id) ? null : entry;
+          }
           const remainingPlatformIds = entry.platformIds.filter(
             (platformId) => !sidebarMenuPlatformIdSet.has(platformId),
           );
           if (remainingPlatformIds.length === 0) {
             return null;
           }
-          const resolvedTargetPlatformId = remainingPlatformIds.includes(entry.targetPlatformId)
+          const resolvedTargetPlatformId = entry.targetPlatformId && remainingPlatformIds.includes(entry.targetPlatformId)
             ? entry.targetPlatformId
             : remainingPlatformIds[0];
           return {
@@ -437,6 +530,7 @@ export function SideNav({
   }, [isClassicLayout, recalculateClassicAdaptiveScale]);
 
   const classicMainIconSize = Math.max(14, Math.round(20 * classicAdaptiveScale));
+  const classicBrandLogoIconSize = Math.max(14, Math.round(20 * classicAdaptiveScale));
   const classicHandleIconSize = Math.max(12, Math.round(16 * classicAdaptiveScale));
 
   const classicScaleStyle = isClassicLayout
@@ -529,6 +623,26 @@ export function SideNav({
     };
   }, [isClassicLayout, isClassicCollapsed, shouldShowUpdateEntry]);
 
+  const handleLogoClick = useCallback(() => {
+    if (hasBreakoutSession) {
+      onEasterEggTriggerClick();
+      return;
+    }
+
+    const newRocket: FlyingRocket = {
+      id: rocketIdRef.current++,
+      x: (Math.random() - 0.5) * 40,
+    };
+
+    setFlyingRockets((prev) => [...prev, newRocket]);
+
+    setTimeout(() => {
+      setFlyingRockets((prev) => prev.filter((rocket) => rocket.id !== newRocket.id));
+    }, 1500);
+
+    onEasterEggTriggerClick();
+  }, [hasBreakoutSession, onEasterEggTriggerClick]);
+
   useEffect(() => {
     if (!showMore) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -611,9 +725,11 @@ export function SideNav({
       <div className="side-nav-more-title">{t('nav.morePlatforms', '更多平台')}</div>
       <div className="side-nav-more-list">
         {moreMenuEntries.map((entry) => {
-          const active = isClassicLayout
+          const active = entry.kind === 'api-relay'
             ? currentEntryId === entry.id
-            : !!currentPlatformId && entry.platformIds.includes(currentPlatformId);
+            : isClassicLayout
+              ? currentEntryId === entry.id
+              : !!currentPlatformId && entry.platformIds.includes(currentPlatformId);
           const showGroupParent =
             !entry.group || !sidebarMenuEntryIdSet.has(entry.id);
           return (
@@ -622,7 +738,7 @@ export function SideNav({
                 <button
                   className={`side-nav-more-item ${active ? 'active' : ''}`}
                   onClick={() => {
-                    setPage(PLATFORM_PAGE_MAP[entry.targetPlatformId]);
+                    navigateToEntry(entry);
                     setShowMore(false);
                   }}
                 >
@@ -652,7 +768,7 @@ export function SideNav({
                           showGroupParent ? 'side-nav-more-sub-item' : 'side-nav-more-item'
                         } ${currentPlatformId === platformId ? 'active' : ''}`}
                         onClick={() => {
-                          setPage(PLATFORM_PAGE_MAP[platformId]);
+                          navigateToPlatform(platformId);
                           setShowMore(false);
                         }}
                       >
@@ -741,15 +857,48 @@ export function SideNav({
         </div>
       )}
 
-      {isClassicLayout && (
-        <div className="nav-brand" ref={brandRef} style={{ position: 'relative', zIndex: 10 }}>
-          <div className="side-nav-brand-main" ref={logoRef}>
-            {!isClassicCollapsed && (
-              <div className="side-nav-brand-title">Codex Switch</div>
+      <div className="nav-brand" ref={brandRef} style={{ position: 'relative', zIndex: 10 }}>
+        <div className="side-nav-brand-main">
+          <div
+            ref={logoRef}
+            className={`brand-logo rocket-easter-egg${hasBreakoutSession ? ' rocket-easter-egg-active' : ''}`}
+            onClick={handleLogoClick}
+            title={hasBreakoutSession ? t('breakout.resumeGameNav', '继续游戏') : undefined}
+          >
+            <Rocket size={isClassicLayout ? classicBrandLogoIconSize : 20} />
+            {hasBreakoutSession && <span className="rocket-session-indicator" aria-hidden="true" />}
+            {!hasBreakoutSession && easterEggClickCount > 0 && (
+              <span className="rocket-click-count">{easterEggClickCount}</span>
             )}
           </div>
+
+          {isClassicLayout && !isClassicCollapsed && (
+            <div className="side-nav-brand-title">{APP_DISPLAY_NAME}</div>
+          )}
         </div>
-      )}
+
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+        >
+          {flyingRockets.map((rocket) => (
+            <span
+              key={rocket.id}
+              className="flying-rocket"
+              style={{ '--rocket-x': `${rocket.x}px` } as CSSProperties}
+            >
+              🚀
+            </span>
+          ))}
+        </div>
+
+      </div>
 
       <div
         className={`nav-items${isClassicLayout && !classicNavNeedsScroll ? ' nav-items-no-scroll' : ''}`}
@@ -761,7 +910,7 @@ export function SideNav({
             <button
               key={entry.id}
               className={`nav-item ${active ? 'active' : ''}`}
-              onClick={() => setPage(PLATFORM_PAGE_MAP[entry.targetPlatformId])}
+              onClick={() => navigateToEntry(entry)}
               title={entry.label}
             >
               {renderEntryIcon(entry, isClassicLayout ? classicMainIconSize : 20)}

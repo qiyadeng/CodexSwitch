@@ -138,6 +138,8 @@ struct AnnouncementResponse {
     pub announcements: Vec<Announcement>,
     #[serde(default)]
     pub top_right_ad: Option<TopRightAd>,
+    #[serde(default)]
+    pub top_right_ads: Vec<TopRightAd>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -166,6 +168,7 @@ pub struct AnnouncementState {
 #[serde(rename_all = "camelCase")]
 pub struct TopRightAdState {
     pub ad: Option<TopRightAd>,
+    pub ads: Vec<TopRightAd>,
 }
 
 fn default_target_versions() -> String {
@@ -251,11 +254,28 @@ fn load_cache() -> Result<Option<AnnouncementCache>, String> {
                 version: String::new(),
                 announcements: legacy.data,
                 top_right_ad: None,
+                top_right_ads: Vec::new(),
             },
         }));
     }
 
-    Err("解析公告缓存失败: 不支持的缓存格式".to_string())
+    match crate::modules::atomic_write::quarantine_file(&path, "invalid-json") {
+        Ok(Some(backup_path)) => logger::log_warn(&format!(
+            "[Announcement] 公告缓存解析失败，已隔离并忽略缓存: path={}, backup={}",
+            path.display(),
+            backup_path.display()
+        )),
+        Ok(None) => logger::log_warn(&format!(
+            "[Announcement] 公告缓存解析失败，文件已不存在，忽略缓存: path={}",
+            path.display()
+        )),
+        Err(error) => logger::log_warn(&format!(
+            "[Announcement] 公告缓存解析失败，隔离失败，忽略缓存: path={}, error={}",
+            path.display(),
+            error
+        )),
+    }
+    Ok(None)
 }
 
 fn save_cache(payload: &AnnouncementResponse) -> Result<(), String> {
@@ -265,8 +285,8 @@ fn save_cache(payload: &AnnouncementResponse) -> Result<(), String> {
     };
     let content =
         serde_json::to_string_pretty(&cache).map_err(|e| format!("序列化公告缓存失败: {}", e))?;
-    fs::write(get_cache_path()?, content).map_err(|e| format!("写入公告缓存失败: {}", e))?;
-    Ok(())
+    crate::modules::atomic_write::write_string_atomic(&get_cache_path()?, &content)
+        .map_err(|e| format!("写入公告缓存失败: {}", e))
 }
 
 fn remove_cache() -> Result<(), String> {
@@ -282,18 +302,42 @@ fn get_read_ids() -> Result<Vec<String>, String> {
     if !path.exists() {
         return Ok(Vec::new());
     }
-    let content = fs::read_to_string(path).map_err(|e| format!("读取公告已读状态失败: {}", e))?;
+    let content = fs::read_to_string(&path).map_err(|e| format!("读取公告已读状态失败: {}", e))?;
     if content.trim().is_empty() {
         return Ok(Vec::new());
     }
-    serde_json::from_str(&content).map_err(|e| format!("解析公告已读状态失败: {}", e))
+    match serde_json::from_str(&content) {
+        Ok(ids) => Ok(ids),
+        Err(error) => {
+            match crate::modules::atomic_write::quarantine_file(&path, "invalid-json") {
+                Ok(Some(backup_path)) => logger::log_warn(&format!(
+                    "[Announcement] 公告已读状态解析失败，已隔离并使用空状态: path={}, backup={}, error={}",
+                    path.display(),
+                    backup_path.display(),
+                    error
+                )),
+                Ok(None) => logger::log_warn(&format!(
+                    "[Announcement] 公告已读状态解析失败，文件已不存在，使用空状态: path={}, error={}",
+                    path.display(),
+                    error
+                )),
+                Err(backup_error) => logger::log_warn(&format!(
+                    "[Announcement] 公告已读状态解析失败，隔离失败，使用空状态: path={}, parse_error={}, backup_error={}",
+                    path.display(),
+                    error,
+                    backup_error
+                )),
+            }
+            Ok(Vec::new())
+        }
+    }
 }
 
 fn save_read_ids(ids: &[String]) -> Result<(), String> {
     let content =
         serde_json::to_string_pretty(ids).map_err(|e| format!("序列化公告已读状态失败: {}", e))?;
-    fs::write(get_read_ids_path()?, content).map_err(|e| format!("写入公告已读状态失败: {}", e))?;
-    Ok(())
+    crate::modules::atomic_write::write_string_atomic(&get_read_ids_path()?, &content)
+        .map_err(|e| format!("写入公告已读状态失败: {}", e))
 }
 
 fn parse_version(value: &str) -> Vec<i64> {
@@ -497,12 +541,11 @@ fn apply_localized_top_right_ad(ad: &TopRightAd, locale: &str) -> TopRightAd {
     localized
 }
 
-fn filter_top_right_ad(
-    ad: Option<TopRightAd>,
+fn filter_top_right_ad_item(
+    mut item: TopRightAd,
     current_version: &str,
     locale: &str,
 ) -> Option<TopRightAd> {
-    let mut item = ad?;
     let target_versions = if item.target_versions.trim().is_empty() {
         "*"
     } else {
@@ -527,6 +570,33 @@ fn filter_top_right_ad(
 
     item = apply_localized_top_right_ad(&item, locale);
     Some(item)
+}
+
+fn filter_top_right_ad(
+    ad: Option<TopRightAd>,
+    current_version: &str,
+    locale: &str,
+) -> Option<TopRightAd> {
+    filter_top_right_ad_item(ad?, current_version, locale)
+}
+
+fn filter_top_right_ads(
+    ads: Vec<TopRightAd>,
+    current_version: &str,
+    locale: &str,
+) -> Vec<TopRightAd> {
+    let mut filtered: Vec<TopRightAd> = ads
+        .into_iter()
+        .filter_map(|item| filter_top_right_ad_item(item, current_version, locale))
+        .collect();
+
+    filtered.sort_by(|a, b| {
+        let a_time = parse_datetime_millis(&a.created_at).unwrap_or(0);
+        let b_time = parse_datetime_millis(&b.created_at).unwrap_or(0);
+        b.priority.cmp(&a.priority).then(b_time.cmp(&a_time))
+    });
+
+    filtered
 }
 
 async fn fetch_remote_announcements() -> Result<AnnouncementResponse, String> {
@@ -621,7 +691,8 @@ pub async fn get_top_right_ad_state() -> Result<TopRightAdState, String> {
     let locale = config::get_user_config().language.to_lowercase();
     let raw_payload = load_announcements_raw().await?;
     let ad = filter_top_right_ad(raw_payload.top_right_ad, current_version, &locale);
-    Ok(TopRightAdState { ad })
+    let ads = filter_top_right_ads(raw_payload.top_right_ads, current_version, &locale);
+    Ok(TopRightAdState { ad, ads })
 }
 
 pub async fn mark_announcement_as_read(id: &str) -> Result<(), String> {

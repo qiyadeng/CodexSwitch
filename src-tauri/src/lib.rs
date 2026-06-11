@@ -9,7 +9,6 @@ use modules::logger;
 use std::sync::OnceLock;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-#[cfg(target_os = "macos")]
 use tauri::RunEvent;
 use tauri::WindowEvent;
 use tauri::{Emitter, Manager};
@@ -23,6 +22,53 @@ static APP_HANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub fn get_app_handle() -> Option<&'static tauri::AppHandle> {
     APP_HANDLE.get()
 }
+
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+fn raise_process_file_descriptor_limit() {
+    const TARGET_NOFILE_LIMIT: libc::rlim_t = 4096;
+
+    unsafe {
+        let mut limit = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+        if libc::getrlimit(libc::RLIMIT_NOFILE, &mut limit) != 0 {
+            logger::log_warn(&format!(
+                "[Startup] 读取进程文件句柄上限失败: {}",
+                std::io::Error::last_os_error()
+            ));
+            return;
+        }
+
+        let target = if limit.rlim_max == libc::RLIM_INFINITY {
+            TARGET_NOFILE_LIMIT
+        } else {
+            TARGET_NOFILE_LIMIT.min(limit.rlim_max)
+        };
+        if target <= limit.rlim_cur || target == 0 {
+            return;
+        }
+
+        let previous = limit.rlim_cur;
+        limit.rlim_cur = target;
+        if libc::setrlimit(libc::RLIMIT_NOFILE, &limit) == 0 {
+            logger::log_info(&format!(
+                "[Startup] 已提升进程文件句柄软限制: {} -> {}",
+                previous, target
+            ));
+        } else {
+            logger::log_warn(&format!(
+                "[Startup] 提升进程文件句柄软限制失败: {} -> {}, error={}",
+                previous,
+                target,
+                std::io::Error::last_os_error()
+            ));
+        }
+    }
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+fn raise_process_file_descriptor_limit() {}
 
 #[cfg(target_os = "macos")]
 fn apply_macos_activation_policy(app: &tauri::AppHandle) {
@@ -55,6 +101,7 @@ fn apply_macos_activation_policy(app: &tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     logger::init_logger();
+    raise_process_file_descriptor_limit();
     // 启动时先加载一次配置，确保进程级代理环境与用户设置同步。
     let _ = modules::config::get_user_config();
 
@@ -94,7 +141,21 @@ pub fn run() {
             }
         }))
         .setup(|app| {
-            info!("Cockpit Tools 启动...");
+            info!("Codex Switch 启动...");
+            let current_exe = std::env::current_exe()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|err| format!("unknown: {}", err));
+            let build_mode = if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            };
+            logger::log_info(&format!(
+                "[Startup] 启动诊断: marker=tray-diagnostics-v1, version={}, mode={}, exe={}",
+                env!("CARGO_PKG_VERSION"),
+                build_mode,
+                current_exe
+            ));
 
             // 存储全局 AppHandle
             let _ = APP_HANDLE.set(app.handle().clone());
@@ -234,6 +295,20 @@ pub fn run() {
                 logger::log_error(&format!("[Tray] 创建骨架托盘失败: {}", e));
             }
 
+            #[cfg(target_os = "macos")]
+            {
+                let tray_app_handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(800));
+                    if let Err(err) = modules::tray::apply_tray_icon_style(&tray_app_handle) {
+                        logger::log_warn(&format!(
+                            "[Tray] macOS 启动后重应用菜单栏图标样式失败: {}",
+                            err
+                        ));
+                    }
+                });
+            }
+
             // 后台线程加载完整托盘菜单（含账号数据）
             let tray_app_handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -278,6 +353,7 @@ pub fn run() {
                     }
                     CloseWindowBehavior::Quit => {
                         info!("[Window] 用户选择退出应用");
+                        window.app_handle().exit(0);
                     }
                     CloseWindowBehavior::Ask => {
                         api.prevent_close();
@@ -303,8 +379,6 @@ pub fn run() {
             commands::account::switch_account,
             commands::account::load_antigravity_switch_history,
             commands::account::clear_antigravity_switch_history,
-            commands::account::bind_account_fingerprint,
-            commands::account::get_bound_accounts,
             commands::account::update_account_tags,
             commands::account::update_account_notes,
             commands::account::load_account_groups,
@@ -312,27 +386,6 @@ pub fn run() {
             commands::account::sync_current_from_client,
             commands::account::sync_from_extension,
             // Device Commands
-            commands::device::get_device_profiles,
-            commands::device::bind_device_profile,
-            commands::device::bind_device_profile_with_profile,
-            commands::device::list_device_versions,
-            commands::device::restore_device_version,
-            commands::device::delete_device_version,
-            commands::device::restore_original_device,
-            commands::device::open_device_folder,
-            commands::device::preview_generate_profile,
-            commands::device::preview_current_profile,
-            // Fingerprint Commands
-            commands::device::list_fingerprints,
-            commands::device::get_fingerprint,
-            commands::device::generate_new_fingerprint,
-            commands::device::capture_current_fingerprint,
-            commands::device::create_fingerprint_with_profile,
-            commands::device::apply_fingerprint,
-            commands::device::delete_fingerprint,
-            commands::device::delete_unbound_fingerprints,
-            commands::device::rename_fingerprint,
-            commands::device::get_current_fingerprint_id,
             // OAuth Commands
             commands::oauth::start_oauth_login,
             commands::oauth::prepare_oauth_url,
@@ -341,8 +394,6 @@ pub fn run() {
             commands::oauth::cancel_oauth_login,
             // Import/Export Commands
             commands::import::import_from_old_tools,
-            commands::import::import_fingerprints_from_old_tools,
-            commands::import::import_fingerprints_from_json,
             commands::import::import_from_local,
             commands::import::import_from_json,
             commands::import::import_from_files,
@@ -366,6 +417,13 @@ pub fn run() {
             commands::system::delete_auto_backup_file,
             commands::system::cleanup_auto_backup_files,
             commands::system::open_auto_backup_dir,
+            commands::system::get_webdav_sync_settings,
+            commands::system::save_webdav_sync_settings,
+            commands::system::test_webdav_sync_connection,
+            commands::system::upload_auto_backup_to_webdav,
+            commands::system::list_webdav_backup_files,
+            commands::system::read_webdav_backup_file,
+            commands::system::delete_webdav_backup_file,
             commands::system::get_network_config,
             commands::system::save_network_config,
             commands::system::get_general_config,
@@ -376,6 +434,7 @@ pub fn run() {
             commands::system::set_codex_launch_on_switch,
             commands::system::set_codex_local_access_entry_visible,
             commands::system::detect_app_path,
+            commands::system::get_antigravity_installed_version_info,
             commands::system::set_wakeup_override,
             commands::system::handle_window_close,
             commands::system::show_floating_card_window,
@@ -410,6 +469,9 @@ pub fn run() {
             commands::wakeup::wakeup_verification_load_history,
             commands::wakeup::wakeup_verification_delete_history,
             commands::wakeup::wakeup_verification_run_batch,
+            commands::wakeup::confirm_wakeup_task,
+            commands::wakeup::cancel_wakeup_task,
+            commands::wakeup::check_wakeup_timeouts,
             // Update Commands
             commands::update::should_check_updates,
             commands::update::update_last_check_time,
@@ -427,6 +489,8 @@ pub fn run() {
             commands::announcement::announcement_mark_all_as_read,
             commands::announcement::announcement_force_refresh,
             commands::announcement::announcement_get_top_right_ad,
+            commands::announcement::announcement_get_sponsor_module,
+            commands::announcement::announcement_force_refresh_sponsor_module,
             // Group Commands
             commands::group::get_group_settings,
             commands::group::save_group_settings,
@@ -443,6 +507,11 @@ pub fn run() {
             commands::codex::open_codex_config_toml,
             commands::codex::get_codex_quick_config,
             commands::codex::save_codex_quick_config,
+            commands::codex::get_codex_app_speed_config,
+            commands::codex::save_codex_app_speed,
+            commands::codex::get_codex_api_service_app_speed_config,
+            commands::codex::save_codex_api_service_app_speed,
+            commands::codex::update_codex_account_app_speed,
             commands::codex::refresh_codex_account_profile,
             commands::codex::switch_codex_account,
             commands::codex::delete_codex_account,
@@ -451,7 +520,13 @@ pub fn run() {
             commands::codex::import_codex_from_json,
             commands::codex::export_codex_accounts,
             commands::codex::import_codex_from_files,
+            commands::codex::start_codex_batch_import_from_files,
+            commands::codex::cancel_codex_batch_import,
+            commands::codex::resume_codex_batch_import,
+            commands::codex::get_codex_batch_import_preview,
+            commands::codex::confirm_codex_batch_import,
             commands::codex::refresh_codex_quota,
+            commands::codex::refresh_codex_subscription_info,
             commands::codex::refresh_all_codex_quotas,
             commands::codex::refresh_current_codex_quota,
             commands::codex::codex_oauth_login_start,
@@ -462,6 +537,7 @@ pub fn run() {
             commands::codex::add_codex_account_with_api_key,
             commands::codex::update_codex_account_name,
             commands::codex::update_codex_api_key_credentials,
+            commands::codex::update_codex_api_key_bound_oauth_account,
             commands::codex::is_codex_oauth_port_in_use,
             commands::codex::close_codex_oauth_port,
             commands::codex::update_codex_account_tags,
@@ -482,17 +558,41 @@ pub fn run() {
             commands::codex::save_codex_account_groups,
             commands::codex::load_codex_model_providers,
             commands::codex::save_codex_model_providers,
+            commands::codex::codex_test_model_provider_connection,
+            commands::codex::codex_query_model_provider_usage,
             commands::codex::codex_local_access_get_state,
             commands::codex::codex_local_access_save_accounts,
             commands::codex::codex_local_access_remove_account,
             commands::codex::codex_local_access_rotate_api_key,
+            commands::codex::codex_local_access_update_bound_oauth_account,
             commands::codex::codex_local_access_clear_stats,
+            commands::codex::codex_local_access_query_request_logs,
             commands::codex::codex_local_access_prepare_restart,
             commands::codex::codex_local_access_kill_port,
             commands::codex::codex_local_access_update_port,
             commands::codex::codex_local_access_update_routing_strategy,
+            commands::codex::codex_local_access_update_custom_routing,
+            commands::codex::codex_local_access_update_account_model_rules,
+            commands::codex::codex_local_access_update_model_rules,
+            commands::codex::codex_local_access_update_model_pricings,
+            commands::codex::codex_local_access_update_routing_options,
+            commands::codex::codex_local_access_update_timeouts,
+            commands::codex::codex_local_access_update_timeout_presets,
+            commands::codex::codex_local_access_update_upstream_proxy_config,
+            commands::codex::codex_local_access_update_gateway_mode,
+            commands::codex::codex_local_access_update_debug_logs,
+            commands::codex::codex_local_access_update_access_scope,
+            commands::codex::codex_local_access_update_client_base_url_host,
+            commands::codex::codex_local_access_update_image_generation_mode,
+            commands::codex::codex_local_access_create_api_key,
+            commands::codex::codex_local_access_update_api_key,
+            commands::codex::codex_local_access_rotate_named_api_key,
+            commands::codex::codex_local_access_delete_api_key,
             commands::codex::codex_local_access_set_enabled,
             commands::codex::codex_local_access_activate,
+            commands::codex::codex_local_access_test,
+            commands::codex::codex_local_access_chat_test,
+            commands::codex::codex_local_access_chat_test_stream,
             // GitHub Copilot Commands
             commands::github_copilot::list_github_copilot_accounts,
             commands::github_copilot::delete_github_copilot_account,
@@ -825,14 +925,21 @@ pub fn run() {
         .expect("error while building tauri application");
 
     app.run(|app_handle, event| {
+        match &event {
+            RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+                tauri::async_runtime::block_on(async {
+                    modules::codex_local_access::shutdown_local_access_gateway_for_app_exit().await;
+                });
+            }
+            _ => {}
+        }
+
         #[cfg(target_os = "macos")]
         {
             match event {
                 RunEvent::Reopen { .. } => {
-                    if let Some(window) = app_handle.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.unminimize();
-                        let _ = window.set_focus();
+                    if let Err(err) = modules::floating_card_window::show_main_window(app_handle) {
+                        logger::log_warn(&format!("[Window] Dock 重新打开主窗口失败: {}", err));
                     }
                 }
                 RunEvent::Opened { urls } => {

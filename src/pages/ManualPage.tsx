@@ -9,7 +9,6 @@ import {
   Rocket,
   Search,
   Settings,
-  ShieldAlert,
   Sparkles,
 } from 'lucide-react';
 import type { Page } from '../types/navigation';
@@ -79,7 +78,7 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
         ],
         actions: [
           { id: 'go-dashboard', kind: 'navigate', page: 'dashboard', label: t('manual.actions.goDashboard', '前往仪表盘'), primary: true },
-          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity') },
+          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity IDE') },
           { id: 'go-settings', kind: 'navigate', page: 'settings', label: t('manual.actions.goSettings', '前往设置') },
         ],
       },
@@ -117,10 +116,10 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
       {
         id: 'antigravity',
         icon: <Sparkles size={18} />,
-        title: t('manual.antigravity.title', 'Antigravity 账号管理'),
+        title: t('manual.antigravity.title', 'Antigravity IDE 账号管理'),
         summary: t(
           'manual.antigravity.summary',
-          '管理 Antigravity 账号生命周期：添加、刷新配额、切换、分组与标签。',
+          '管理 Antigravity IDE 账号生命周期：添加、刷新配额、切换、分组与标签。',
         ),
         outcomes: [
           t('manual.antigravity.outcomes.0', '支持 OAuth、导入、导出和批量操作。'),
@@ -141,7 +140,7 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
           t('manual.antigravity.keywords.3', '标签'),
         ],
         actions: [
-          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity'), primary: true },
+          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity IDE'), primary: true },
         ],
       },
       {
@@ -212,36 +211,6 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
         ],
         actions: [
           { id: 'go-instances', kind: 'navigate', page: 'instances', label: t('manual.actions.goInstances', '前往多开实例'), primary: true },
-        ],
-      },
-      {
-        id: 'fingerprints',
-        icon: <ShieldAlert size={18} />,
-        title: t('manual.fingerprints.title', '设备指纹'),
-        summary: t(
-          'manual.fingerprints.summary',
-          '管理指纹模板与账号绑定关系，支持生成、捕获、导入和绑定账号维护。',
-        ),
-        outcomes: [
-          t('manual.fingerprints.outcomes.0', '生成/捕获新指纹并维护元数据。'),
-          t('manual.fingerprints.outcomes.1', '查看某指纹已绑定账号并增删绑定关系。'),
-        ],
-        steps: [
-          t('manual.fingerprints.steps.0', '先创建或导入指纹。'),
-          t('manual.fingerprints.steps.1', '进入详情确认指纹信息是否正确。'),
-          t('manual.fingerprints.steps.2', '在绑定管理中将账号关联到目标指纹。'),
-        ],
-        cautions: [
-          t('manual.fingerprints.cautions.0', '删除指纹前先看绑定账号数量，避免误操作影响生产账号。'),
-        ],
-        keywords: [
-          t('manual.fingerprints.keywords.0', '指纹'),
-          t('manual.fingerprints.keywords.1', '绑定'),
-          t('manual.fingerprints.keywords.2', '导入'),
-          t('manual.fingerprints.keywords.3', 'capture'),
-        ],
-        actions: [
-          { id: 'go-fingerprints', kind: 'navigate', page: 'fingerprints', label: t('manual.actions.goFingerprints', '前往设备指纹'), primary: true },
         ],
       },
       {
@@ -350,7 +319,7 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
           t('manual.dataPrivacy.keywords.7', 'app.log'),
         ],
         actions: [
-          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity'), primary: true },
+          { id: 'go-overview', kind: 'navigate', page: 'overview', label: t('manual.actions.goAntigravity', '前往 Antigravity IDE'), primary: true },
           { id: 'go-settings', kind: 'navigate', page: 'settings', label: t('manual.actions.goSettings', '前往设置') },
         ],
       },
@@ -431,7 +400,7 @@ export function ManualPage({ onNavigate, onOpenPlatformLayout }: ManualPageProps
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('manual.searchPlaceholder', '搜索功能、场景或关键词（如：多开、注入、唤醒、指纹）')}
+            placeholder={t('manual.searchPlaceholder', '搜索功能、场景或关键词（如：多开、注入、唤醒）')}
             aria-label={t('manual.searchAria', '搜索手册')}
           />
         </div>

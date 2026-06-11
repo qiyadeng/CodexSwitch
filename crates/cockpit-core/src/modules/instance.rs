@@ -80,24 +80,60 @@ pub fn get_default_user_data_dir() -> Result<PathBuf, String> {
     #[cfg(target_os = "macos")]
     {
         let home = dirs::home_dir().ok_or("无法获取用户主目录")?;
-        return Ok(home.join("Library/Application Support/Antigravity"));
+        return Ok(home.join("Library/Application Support/Antigravity IDE"));
     }
 
     #[cfg(target_os = "windows")]
     {
         let appdata =
             std::env::var("APPDATA").map_err(|_| "无法获取 APPDATA 环境变量".to_string())?;
-        return Ok(PathBuf::from(appdata).join("Antigravity"));
+        let appdata = PathBuf::from(appdata);
+        let candidates = windows_antigravity_user_data_candidates(&appdata);
+        for candidate in candidates {
+            if candidate.exists() {
+                return Ok(candidate);
+            }
+        }
+        return Ok(windows_antigravity_user_data_candidates(&appdata)
+            .into_iter()
+            .next()
+            .unwrap_or_else(|| appdata.join("Antigravity IDE")));
     }
 
     #[cfg(target_os = "linux")]
     {
         let home = dirs::home_dir().ok_or("无法获取用户主目录")?;
-        return Ok(home.join(".config/Antigravity"));
+        return Ok(home.join(".config/Antigravity IDE"));
     }
 
     #[allow(unreachable_code)]
-    Err("无法确定 Antigravity 默认目录".to_string())
+    Err("无法确定 Antigravity IDE 默认目录".to_string())
+}
+
+#[cfg(target_os = "windows")]
+fn windows_antigravity_user_data_candidates(appdata: &Path) -> Vec<PathBuf> {
+    let antigravity_dir = appdata.join("Antigravity");
+    let antigravity_ide_dir = appdata.join("Antigravity IDE");
+
+    if windows_app_root_exists("Antigravity", &["Antigravity.exe", "antigravity.exe"]) {
+        return vec![antigravity_dir, antigravity_ide_dir];
+    }
+
+    vec![antigravity_ide_dir, antigravity_dir]
+}
+
+#[cfg(target_os = "windows")]
+fn windows_app_root_exists(root_name: &str, exe_names: &[&str]) -> bool {
+    let Some(programs_dir) = std::env::var("LOCALAPPDATA")
+        .ok()
+        .map(|value| PathBuf::from(value).join("Programs"))
+    else {
+        return false;
+    };
+    let root = programs_dir.join(root_name);
+    exe_names
+        .iter()
+        .any(|exe_name| root.join(exe_name).exists())
 }
 
 pub fn get_default_instances_root_dir() -> Result<PathBuf, String> {
@@ -208,13 +244,7 @@ fn ensure_state_db_for_injection(profile_dir: &Path) -> Result<PathBuf, String> 
 pub fn inject_account_to_profile(profile_dir: &Path, account_id: &str) -> Result<(), String> {
     let account = modules::load_account(account_id)?;
     let db_path = ensure_state_db_for_injection(profile_dir)?;
-    modules::db::inject_token_to_path(
-        &db_path,
-        &account.token.access_token,
-        &account.token.refresh_token,
-        account.token.expiry_timestamp,
-    )
-    .map(|_| ())
+    modules::db::inject_account_token_to_path(&db_path, &account).map(|_| ())
 }
 
 pub fn create_instance(params: CreateInstanceParams) -> Result<InstanceProfile, String> {

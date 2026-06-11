@@ -1,10 +1,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+#[cfg(target_os = "windows")]
+use std::process::{Command, Stdio};
 use std::sync::Mutex;
 
 use chrono::Utc;
 use uuid::Uuid;
 
+use crate::models::codex::CodexAppSpeed;
 use crate::models::{DefaultInstanceSettings, InstanceLaunchMode, InstanceProfile, InstanceStore};
 use crate::modules;
 use crate::modules::instance::InstanceDefaults;
@@ -15,15 +18,42 @@ static CODEX_INSTANCE_STORE_LOCK: std::sync::LazyLock<Mutex<()>> =
 
 const CODEX_INSTANCES_FILE: &str = "codex_instances.json";
 pub const CODEX_API_SERVICE_BIND_ACCOUNT_ID: &str = "__api_service__";
+const CODEX_PROVIDER_GATEWAY_BIND_ACCOUNT_PREFIX: &str = "__provider_gateway__:";
 const CODEX_SHARED_SKILLS_DIR_NAME: &str = "skills";
 const CODEX_SHARED_RULES_DIR_NAME: &str = "rules";
 const CODEX_SHARED_AGENTS_FILE_NAME: &str = "AGENTS.md";
 const CODEX_SHARED_VENDOR_IMPORTS_SKILLS_DIR: &str = "vendor_imports/skills";
 #[cfg(target_os = "windows")]
 const CODEX_WINDOWS_APP_DATA_DIR_NAME: &str = "codex-app-data";
+#[cfg(target_os = "macos")]
+const CODEX_MACOS_APP_DATA_DIR_NAME: &str = "codex-app-data";
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+#[cfg(target_os = "windows")]
+const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x0000_0400;
 
 pub fn is_api_service_bind_account_id(account_id: &str) -> bool {
     account_id.trim() == CODEX_API_SERVICE_BIND_ACCOUNT_ID
+}
+
+pub fn parse_provider_gateway_bind_account_id(account_id: &str) -> Option<String> {
+    account_id
+        .trim()
+        .strip_prefix(CODEX_PROVIDER_GATEWAY_BIND_ACCOUNT_PREFIX)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+}
+
+pub fn provider_gateway_bind_account_id(account_id: &str) -> Option<String> {
+    let account_id = account_id.trim();
+    if account_id.is_empty() {
+        return None;
+    }
+    Some(format!(
+        "{}{}",
+        CODEX_PROVIDER_GATEWAY_BIND_ACCOUNT_PREFIX, account_id
+    ))
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +66,7 @@ pub struct CreateInstanceParams {
     pub copy_source_instance_id: Option<String>,
     pub init_mode: Option<String>,
     pub launch_mode: Option<InstanceLaunchMode>,
+    pub app_speed: Option<CodexAppSpeed>,
 }
 
 #[derive(Debug, Clone)]
@@ -46,6 +77,7 @@ pub struct UpdateInstanceParams {
     pub extra_args: Option<String>,
     pub bind_account_id: Option<Option<String>>,
     pub launch_mode: Option<InstanceLaunchMode>,
+    pub app_speed: Option<CodexAppSpeed>,
 }
 
 fn instances_path() -> Result<PathBuf, String> {
@@ -55,7 +87,11 @@ fn instances_path() -> Result<PathBuf, String> {
 
 pub fn load_instance_store() -> Result<InstanceStore, String> {
     let path = instances_path()?;
-    instance_store::load_instance_store(&path, CODEX_INSTANCES_FILE)
+    let mut store = instance_store::load_instance_store(&path, CODEX_INSTANCES_FILE)?;
+    if normalize_managed_instance_dirs(&mut store)? {
+        save_instance_store(&store)?;
+    }
+    Ok(store)
 }
 
 pub fn save_instance_store(store: &InstanceStore) -> Result<(), String> {
@@ -73,6 +109,7 @@ pub fn update_default_settings(
     extra_args: Option<String>,
     follow_local_account: Option<bool>,
     launch_mode: Option<InstanceLaunchMode>,
+    auto_sync_threads: Option<bool>,
 ) -> Result<DefaultInstanceSettings, String> {
     let _lock = CODEX_INSTANCE_STORE_LOCK
         .lock()
@@ -102,7 +139,22 @@ pub fn update_default_settings(
         settings.launch_mode = mode;
     }
 
+    if let Some(enabled) = auto_sync_threads {
+        settings.auto_sync_threads = enabled;
+    }
+
     let updated = settings.clone();
+    save_instance_store(&store)?;
+    Ok(updated)
+}
+
+pub fn update_default_app_speed(speed: CodexAppSpeed) -> Result<DefaultInstanceSettings, String> {
+    let _lock = CODEX_INSTANCE_STORE_LOCK
+        .lock()
+        .map_err(|_| "无法获取实例锁")?;
+    let mut store = load_instance_store()?;
+    store.default_settings.app_speed = speed;
+    let updated = store.default_settings.clone();
     save_instance_store(&store)?;
     Ok(updated)
 }
@@ -112,21 +164,72 @@ pub fn get_default_codex_home() -> Result<PathBuf, String> {
 }
 
 pub fn get_default_instances_root_dir() -> Result<PathBuf, String> {
+    Ok(modules::account::get_data_dir()?
+        .join("instances")
+        .join("codex"))
+}
+
+fn legacy_hardcoded_instances_root_dir() -> Result<Option<PathBuf>, String> {
     #[cfg(target_os = "macos")]
     {
         let home = dirs::home_dir().ok_or("无法获取用户主目录")?;
-        return Ok(home.join(".antigravity_cockpit/instances/codex"));
+        return Ok(Some(home.join(".antigravity_cockpit/instances/codex")));
     }
 
     #[cfg(target_os = "windows")]
     {
         let appdata =
             std::env::var("APPDATA").map_err(|_| "无法获取 APPDATA 环境变量".to_string())?;
-        return Ok(PathBuf::from(appdata).join(".antigravity_cockpit\\instances\\codex"));
+        return Ok(Some(
+            PathBuf::from(appdata).join(".antigravity_cockpit\\instances\\codex"),
+        ));
     }
 
-    #[allow(unreachable_code)]
-    Err("Codex 多开实例仅支持 macOS 和 Windows".to_string())
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        Ok(None)
+    }
+}
+
+fn migrate_managed_instance_dir(
+    instance: &mut InstanceProfile,
+    active_root: &Path,
+    legacy_root: &Path,
+) -> Result<bool, String> {
+    let current = PathBuf::from(instance.user_data_dir.trim());
+    let relative_path = match current.strip_prefix(legacy_root) {
+        Ok(path) if path.components().next().is_some() => path.to_path_buf(),
+        _ => return Ok(false),
+    };
+    let next = active_root.join(relative_path);
+    if paths_point_to_same_location(&current, &next) {
+        return Ok(false);
+    }
+
+    if current.exists() && !next.exists() {
+        instance_store::copy_dir_recursive(&current, &next)?;
+    }
+
+    instance.user_data_dir = next.to_string_lossy().to_string();
+    Ok(true)
+}
+
+fn normalize_managed_instance_dirs(store: &mut InstanceStore) -> Result<bool, String> {
+    let active_root = get_default_instances_root_dir()?;
+    let Some(legacy_root) = legacy_hardcoded_instances_root_dir()? else {
+        return Ok(false);
+    };
+    if paths_point_to_same_location(&active_root, &legacy_root) {
+        return Ok(false);
+    }
+
+    let mut changed = false;
+    for instance in &mut store.instances {
+        if migrate_managed_instance_dir(instance, &active_root, &legacy_root)? {
+            changed = true;
+        }
+    }
+    Ok(changed)
 }
 
 pub fn get_instance_defaults() -> Result<InstanceDefaults, String> {
@@ -161,6 +264,23 @@ pub fn delete_windows_app_user_data_dir(codex_home: &Path) -> Result<(), String>
     modules::instance::delete_instance_directory(&app_user_data_dir)
 }
 
+#[cfg(target_os = "macos")]
+fn normalize_macos_codex_home_for_hash(path: &Path) -> String {
+    let resolved = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    resolved.to_string_lossy().to_string()
+}
+
+#[cfg(target_os = "macos")]
+pub fn get_macos_app_user_data_dir(codex_home: &Path) -> Result<PathBuf, String> {
+    let root = get_default_instances_root_dir()?
+        .parent()
+        .ok_or("无法获取 Codex 实例根目录")?
+        .join(CODEX_MACOS_APP_DATA_DIR_NAME);
+    let normalized = normalize_macos_codex_home_for_hash(codex_home);
+    let digest = format!("{:x}", md5::compute(normalized.as_bytes()));
+    Ok(root.join(digest))
+}
+
 #[cfg(unix)]
 fn create_directory_symlink(source: &Path, target: &Path) -> Result<(), String> {
     std::os::unix::fs::symlink(source, target).map_err(|e| format!("创建目录共享链接失败: {}", e))
@@ -168,8 +288,87 @@ fn create_directory_symlink(source: &Path, target: &Path) -> Result<(), String> 
 
 #[cfg(windows)]
 fn create_directory_symlink(source: &Path, target: &Path) -> Result<(), String> {
-    std::os::windows::fs::symlink_dir(source, target)
-        .map_err(|e| format!("创建目录共享链接失败: {}", e))
+    use std::os::windows::process::CommandExt;
+
+    fn escape_powershell_single_quoted(value: &str) -> String {
+        value.replace('\'', "''")
+    }
+
+    fn quote_cmd_arg(value: &Path) -> String {
+        format!("\"{}\"", value.to_string_lossy().replace('"', "\"\""))
+    }
+
+    fn output_detail(stdout: &[u8], stderr: &[u8]) -> String {
+        let stdout = String::from_utf8_lossy(stdout);
+        let stderr = String::from_utf8_lossy(stderr);
+        [stdout.trim(), stderr.trim()]
+            .into_iter()
+            .filter(|value| !value.is_empty())
+            .collect::<Vec<_>>()
+            .join("; ")
+    }
+
+    let source_text = source.to_string_lossy();
+    let target_text = target.to_string_lossy();
+    let script = format!(
+        "$ErrorActionPreference='Stop';\n\
+         [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false);\n\
+         $target='{}';\n\
+         $source='{}';\n\
+         New-Item -ItemType Junction -Path $target -Target $source -ErrorAction Stop | Out-Null",
+        escape_powershell_single_quoted(&target_text),
+        escape_powershell_single_quoted(&source_text)
+    );
+    let output = Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &script,
+        ])
+        .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .map_err(|e| format!("创建目录共享联接失败: {}", e))?;
+
+    if output.status.success() {
+        return Ok(());
+    }
+    let powershell_status = output.status;
+    let powershell_detail = output_detail(&output.stdout, &output.stderr);
+
+    let mklink_command = format!(
+        "mklink /J {} {}",
+        quote_cmd_arg(target),
+        quote_cmd_arg(source)
+    );
+    let output = Command::new("cmd")
+        .args(["/D", "/C", &mklink_command])
+        .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .map_err(|e| format!("创建目录共享联接失败: {}", e))?;
+
+    if output.status.success() {
+        return Ok(());
+    }
+
+    let mklink_detail = output_detail(&output.stdout, &output.stderr);
+    Err(format!(
+        "创建目录共享联接失败: powershell_status={}, powershell_detail={}, mklink_status={}, mklink_detail={}, source={}, target={}",
+        powershell_status,
+        powershell_detail,
+        output.status,
+        mklink_detail,
+        display_abs_path(source),
+        display_abs_path(target)
+    ))
 }
 
 #[cfg(not(any(unix, windows)))]
@@ -184,8 +383,9 @@ fn create_file_symlink(source: &Path, target: &Path) -> Result<(), String> {
 
 #[cfg(windows)]
 fn create_file_symlink(source: &Path, target: &Path) -> Result<(), String> {
-    std::os::windows::fs::symlink_file(source, target)
-        .map_err(|e| format!("创建文件共享链接失败: {}", e))
+    fs::copy(source, target)
+        .map(|_| ())
+        .map_err(|e| format!("复制共享文件失败: {}", e))
 }
 
 #[cfg(not(any(unix, windows)))]
@@ -197,6 +397,23 @@ fn remove_symlink(path: &Path) -> Result<(), String> {
     fs::remove_file(path)
         .or_else(|_| fs::remove_dir(path))
         .map_err(|e| format!("移除已有共享链接失败: {}", e))
+}
+
+#[cfg(target_os = "windows")]
+fn is_windows_reparse_point(metadata: &fs::Metadata) -> bool {
+    use std::os::windows::fs::MetadataExt;
+
+    metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
+}
+
+#[cfg(target_os = "windows")]
+fn is_shared_directory_link(metadata: &fs::Metadata) -> bool {
+    metadata.file_type().is_symlink() || is_windows_reparse_point(metadata)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn is_shared_directory_link(metadata: &fs::Metadata) -> bool {
+    metadata.file_type().is_symlink()
 }
 
 fn is_directory_empty(path: &Path) -> Result<bool, String> {
@@ -332,7 +549,7 @@ fn sync_shared_directory(
             e
         )
     })?;
-    if metadata.file_type().is_symlink() {
+    if is_shared_directory_link(&metadata) {
         let current_target = fs::read_link(&instance_dir).map_err(|e| {
             format!(
                 "读取实例共享目录链接失败 ({}): {}",
@@ -696,6 +913,7 @@ pub fn create_instance(params: CreateInstanceParams) -> Result<InstanceProfile, 
             params.bind_account_id
         },
         launch_mode: params.launch_mode.unwrap_or_default(),
+        app_speed: params.app_speed.unwrap_or_default(),
         created_at: Utc::now().timestamp_millis(),
         last_launched_at: None,
         last_pid: None,
@@ -749,10 +967,47 @@ pub fn update_instance(params: UpdateInstanceParams) -> Result<InstanceProfile, 
     if let Some(mode) = params.launch_mode {
         instance.launch_mode = mode;
     }
+    if let Some(speed) = params.app_speed {
+        instance.app_speed = speed;
+    }
 
     let updated = instance.clone();
     save_instance_store(&store)?;
     Ok(updated)
+}
+
+pub fn update_bound_instances_app_speed(
+    account_id: &str,
+    speed: CodexAppSpeed,
+) -> Result<Vec<InstanceProfile>, String> {
+    let target_account_id = account_id.trim();
+    if target_account_id.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let _lock = CODEX_INSTANCE_STORE_LOCK
+        .lock()
+        .map_err(|_| "无法获取实例锁")?;
+    let mut store = load_instance_store()?;
+    let mut changed = false;
+    let mut updated_instances = Vec::new();
+
+    for instance in &mut store.instances {
+        if instance.bind_account_id.as_deref() != Some(target_account_id) {
+            continue;
+        }
+        if instance.app_speed != speed {
+            instance.app_speed = speed.clone();
+            changed = true;
+        }
+        updated_instances.push(instance.clone());
+    }
+
+    if changed {
+        save_instance_store(&store)?;
+    }
+
+    Ok(updated_instances)
 }
 
 pub fn delete_instance(instance_id: &str) -> Result<(), String> {

@@ -10,6 +10,7 @@ import type {
   CodexTrashedSessionRecord,
   CodexSessionRestoreSummary,
   CodexQuickConfig,
+  CodexAppSpeed,
 } from "../types/codex";
 import type { InstanceLaunchMode, InstanceProfile } from "../types/instance";
 
@@ -30,6 +31,7 @@ export async function createInstance(payload: {
   extraArgs?: string;
   bindAccountId?: string | null;
   launchMode?: InstanceLaunchMode;
+  appSpeed?: CodexAppSpeed;
   copySourceInstanceId: string;
   initMode?: "copy" | "empty" | "existingDir";
 }): Promise<InstanceProfile> {
@@ -40,6 +42,7 @@ export async function createInstance(payload: {
     extraArgs: payload.extraArgs ?? "",
     bindAccountId: payload.bindAccountId ?? null,
     launchMode: payload.launchMode ?? "app",
+    appSpeed: payload.appSpeed ?? "standard",
     copySourceInstanceId: payload.copySourceInstanceId,
     initMode: payload.initMode ?? "copy",
   });
@@ -53,6 +56,8 @@ export async function updateInstance(payload: {
   bindAccountId?: string | null;
   followLocalAccount?: boolean;
   launchMode?: InstanceLaunchMode;
+  appSpeed?: CodexAppSpeed;
+  autoSyncThreads?: boolean;
 }): Promise<InstanceProfile> {
   const body: Record<string, unknown> = {
     instanceId: payload.instanceId,
@@ -74,6 +79,12 @@ export async function updateInstance(payload: {
   }
   if (payload.launchMode !== undefined) {
     body.launchMode = payload.launchMode;
+  }
+  if (payload.appSpeed !== undefined) {
+    body.appSpeed = payload.appSpeed;
+  }
+  if (payload.autoSyncThreads !== undefined) {
+    body.autoSyncThreads = payload.autoSyncThreads;
   }
   return await invoke("codex_update_instance", body);
 }

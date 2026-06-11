@@ -18,9 +18,11 @@ import { useTranslation } from 'react-i18next';
 import { FileText, FolderOpen, RefreshCw, X } from 'lucide-react';
 import { SideNav } from './components/layout/SideNav';
 import { GlobalModal } from './components/GlobalModal';
+import { TopCenterPromoBanner } from './components/TopCenterPromoBanner';
 import type { QuickSettingsType } from './components/QuickSettingsPopover';
 import { Page } from './types/navigation';
 import { useAutoRefresh } from './hooks/useAutoRefresh';
+import { useEasterEggTrigger } from './hooks/useEasterEggTrigger';
 import { useGlobalModal } from './hooks/useGlobalModal';
 import { changeLanguage, getCurrentLanguage, normalizeLanguage } from './i18n';
 import { useAccountStore } from './stores/useAccountStore';
@@ -38,10 +40,13 @@ import { useWorkbuddyAccountStore } from './stores/useWorkbuddyAccountStore';
 import { useZedAccountStore } from './stores/useZedAccountStore';
 import { useSideNavLayoutStore } from './stores/useSideNavLayoutStore';
 import { usePlatformLayoutStore } from './stores/usePlatformLayoutStore';
+import { useTopRightAdStore } from './stores/useTopRightAdStore';
+import { useSponsorStore } from './stores/useSponsorStore';
 import type { UpdateCheckResult, UpdateInfo } from './components/UpdateNotification';
 import type { Update as UpdaterUpdate } from '@tauri-apps/plugin-updater';
 import { parseUpdaterReleaseNotes, resolveUpdaterDownloadUrl } from './utils/updaterReleaseNotes';
 import { FloatingCardWindow } from './pages/FloatingCardWindow';
+import { initWakeupNotificationListener } from './utils/wakeupNotificationListener';
 import {
   createUpdaterCanceledError,
   isRetryableUpdaterError,
@@ -68,6 +73,9 @@ const AccountsPage = lazy(() =>
 );
 const CodexAccountsPage = lazy(() =>
   import('./pages/CodexAccountsPage').then((module) => ({ default: module.CodexAccountsPage })),
+);
+const CodexApiServicePage = lazy(() =>
+  import('./pages/CodexApiServicePage').then((module) => ({ default: module.CodexApiServicePage })),
 );
 const GitHubCopilotAccountsPage = lazy(() =>
   import('./pages/GitHubCopilotAccountsPage').then((module) => ({
@@ -103,10 +111,7 @@ const WorkbuddyAccountsPage = lazy(() =>
 );
 const ZedAccountsPage = lazy(() =>
   import('./pages/ZedAccountsPage').then((module) => ({ default: module.ZedAccountsPage })),
-);
-const FingerprintsPage = lazy(() =>
-  import('./pages/FingerprintsPage').then((module) => ({ default: module.FingerprintsPage })),
-);
+);;
 const WakeupTasksPage = lazy(() =>
   import('./pages/WakeupTasksPage').then((module) => ({ default: module.WakeupTasksPage })),
 );
@@ -123,6 +128,9 @@ const TwoFactorAuthPage = lazy(() =>
 );
 const ManualPage = lazy(() =>
   import('./pages/ManualPage').then((module) => ({ default: module.ManualPage })),
+);
+const ApiKeyFunPage = lazy(() =>
+  import('./pages/ApiKeyFunPage').then((module) => ({ default: module.ApiKeyFunPage })),
 );
 const InstancesPage = lazy(() =>
   import('./pages/InstancesPage').then((module) => ({ default: module.InstancesPage })),
@@ -141,6 +149,9 @@ const VersionJumpNotification = lazy(() =>
 const CloseConfirmDialog = lazy(() =>
   import('./components/CloseConfirmDialog').then((module) => ({ default: module.CloseConfirmDialog })),
 );
+const BreakoutModal = lazy(() =>
+  import('./components/easter-egg/BreakoutModal').then((module) => ({ default: module.BreakoutModal })),
+);
 const LogViewerModal = lazy(() =>
   import('./components/LogViewerModal').then((module) => ({ default: module.LogViewerModal })),
 );
@@ -156,6 +167,7 @@ interface GeneralConfig extends GeneralConfigTheme {
   antigravity_app_path: string;
   codex_app_path: string;
   codex_launch_on_switch: boolean;
+  top_right_ad_visible?: boolean;
   vscode_app_path: string;
   windsurf_app_path: string;
   kiro_app_path: string;
@@ -183,12 +195,13 @@ type AppPathMissingDetail = {
   retry?:
     | { kind: 'default' }
     | { kind: 'instance'; instanceId?: string }
-    | { kind: 'switchAccount'; accountId?: string };
+    | { kind: 'switchAccount'; accountId?: string; runtimeTarget?: string };
 };
 
 const WAKEUP_ENABLED_KEY = 'agtools.wakeup.enabled';
 const TASKS_STORAGE_KEY = 'agtools.wakeup.tasks';
 const WAKEUP_FORCE_DISABLE_MIGRATION_KEY = 'agtools.wakeup.migration.force_disable_0_8_14';
+const TOP_RIGHT_AD_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 const EXTERNAL_IMPORT_DEDUPE_WINDOW_MS = 30 * 1000;
 
 type WakeupHistoryRecord = {
@@ -274,6 +287,7 @@ function buildExternalImportDedupeKey(payload: {
   page: string;
   token: string;
   importUrl?: string | null;
+  apiBaseUrl?: string | null;
   minAppVersion?: string | null;
   rawUrl?: string | null;
 }): string {
@@ -282,6 +296,7 @@ function buildExternalImportDedupeKey(payload: {
     payload.page,
     payload.rawUrl ?? '',
     payload.importUrl ?? '',
+    payload.apiBaseUrl ?? '',
     payload.minAppVersion ?? '',
     payload.token,
   ].join('|');
@@ -371,7 +386,7 @@ function getQuotaAlertPlatformLabel(
     case 'zed':
       return t('nav.zed', 'Zed');
     default:
-      return t('nav.overview', 'Antigravity');
+      return t('nav.overview', 'Antigravity IDE');
   }
 }
 
@@ -470,6 +485,7 @@ function isWindowsPlatform(): boolean {
 function normalizeCodexOnlyPage(page: Page): Page {
   switch (page) {
     case 'codex':
+    case 'codex-api-service':
     case 'manual':
     case 'settings':
       return page;
@@ -492,6 +508,8 @@ function MainApp() {
   const [showLogViewer, setShowLogViewer] = useState(false);
   const [showPlatformLayoutModal, setShowPlatformLayoutModal] = useState(false);
   const [platformLayoutRequestedGroupId, setPlatformLayoutRequestedGroupId] = useState<string | null>(null);
+  const [showBreakout, setShowBreakout] = useState(false);
+  const [hasBreakoutSession, setHasBreakoutSession] = useState(false);
   const [appPathMissing, setAppPathMissing] = useState<AppPathMissingDetail | null>(null);
   const [appPathSetting, setAppPathSetting] = useState(false);
   const [appPathDetecting, setAppPathDetecting] = useState(false);
@@ -529,10 +547,21 @@ function MainApp() {
   const updateCheckRequestIdRef = useRef(0);
   const externalImportHandledAtRef = useRef<Map<string, number>>(new Map());
   const { showModal, closeModal } = useGlobalModal();
+  const topRightAdState = useTopRightAdStore((state) => state.state);
+  const fetchTopRightAdState = useTopRightAdStore((state) => state.fetchState);
+  const sponsorModuleState = useSponsorStore((state) => state.state);
+  const fetchSponsorModuleState = useSponsorStore((state) => state.fetchState);
+  const sponsorModuleInitialized = useSponsorStore((state) => state.initialized);
+  const sponsorEntryVisible = Boolean(sponsorModuleState.sponsorModule);
+  const [topRightAdVisible, setTopRightAdVisible] = useState(true);
   const trayRefreshInFlightRef = useRef(false);
   const openPlatformLayoutModal = useCallback(() => {
     setPlatformLayoutRequestedGroupId(null);
     setShowPlatformLayoutModal(true);
+  }, []);
+  const openBreakout = useCallback(() => {
+    setHasBreakoutSession(true);
+    setShowBreakout(true);
   }, []);
   const ensureExternalImportVersionCompatible = useCallback(
     async (payload: ExternalProviderImportPayload): Promise<boolean> => {
@@ -615,17 +644,53 @@ function MainApp() {
       autoImport: normalized.autoImport,
       tokenLength: normalized.token.length,
       hasImportUrl: Boolean(normalized.importUrl),
+      apiBaseUrl: normalized.apiBaseUrl ?? null,
       minAppVersion: normalized.minAppVersion ?? null,
       source: normalized.source ?? null,
     });
-    setPage(normalized.page);
+    setPage(normalizeCodexOnlyPage(normalized.page));
     window.setTimeout(() => {
       console.info('[ExternalImport][App] 分发前端外部导入事件');
       dispatchExternalProviderImportEvent(normalized);
     }, 0);
   }, [ensureExternalImportVersionCompatible]);
+  const handleBreakoutMinimize = useCallback(() => {
+    setShowBreakout(false);
+  }, []);
+  const handleBreakoutTerminate = useCallback(() => {
+    setShowBreakout(false);
+    setHasBreakoutSession(false);
+  }, []);
+  const handleResumeBreakout = useCallback(() => {
+    if (!hasBreakoutSession) return;
+    setShowBreakout(true);
+  }, [hasBreakoutSession]);
+
+  const {
+    count: easterEggClickCount,
+    registerClick: handleEasterEggTriggerClick,
+    reset: resetEasterEggTrigger,
+  } = useEasterEggTrigger({
+    threshold: 20,
+    windowMs: 8000,
+    onTrigger: openBreakout,
+  });
+  const handleBreakoutEntryTriggerClick = useCallback(() => {
+    if (hasBreakoutSession) {
+      resetEasterEggTrigger();
+      handleResumeBreakout();
+      return;
+    }
+    handleEasterEggTriggerClick();
+  }, [handleEasterEggTriggerClick, handleResumeBreakout, hasBreakoutSession, resetEasterEggTrigger]);
+  
   // 启用自动刷新 hook
   useAutoRefresh();
+
+  // 初始化唤醒通知监听器
+  useEffect(() => {
+    initWakeupNotificationListener();
+  }, []);
 
   useEffect(() => {
     const handleRefreshShortcut = (event: KeyboardEvent) => {
@@ -647,6 +712,59 @@ function MainApp() {
       window.removeEventListener('keydown', handleRefreshShortcut, true);
     };
   }, []);
+
+  useEffect(() => {
+    void fetchTopRightAdState();
+  }, [fetchTopRightAdState]);
+
+  useEffect(() => {
+    const loadTopRightAdVisible = async () => {
+      try {
+        const config = await invoke<GeneralConfig>('get_general_config');
+        setTopRightAdVisible(config.top_right_ad_visible ?? true);
+      } catch (error) {
+        console.error('Failed to load top-right ad visibility config:', error);
+        setTopRightAdVisible(true);
+      }
+    };
+
+    void loadTopRightAdVisible();
+    window.addEventListener('config-updated', loadTopRightAdVisible);
+    return () => {
+      window.removeEventListener('config-updated', loadTopRightAdVisible);
+    };
+  }, []);
+
+  useEffect(() => {
+    void fetchSponsorModuleState();
+  }, [fetchSponsorModuleState]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void fetchTopRightAdState();
+      void fetchSponsorModuleState();
+    }, TOP_RIGHT_AD_REFRESH_INTERVAL_MS);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [fetchSponsorModuleState, fetchTopRightAdState]);
+
+  useEffect(() => {
+    const handleLanguageChanged = () => {
+      void fetchTopRightAdState();
+      void fetchSponsorModuleState();
+    };
+    window.addEventListener('general-language-updated', handleLanguageChanged);
+    return () => {
+      window.removeEventListener('general-language-updated', handleLanguageChanged);
+    };
+  }, [fetchSponsorModuleState, fetchTopRightAdState]);
+
+  useEffect(() => {
+    if (sponsorModuleInitialized && page === 'api-relay' && !sponsorEntryVisible) {
+      setPage('codex');
+    }
+  }, [page, sponsorEntryVisible, sponsorModuleInitialized]);
 
   useEffect(() => {
     if (sideNavLayoutMode !== 'classic' || sideNavClassicFirstSyncDone) {
@@ -698,8 +816,9 @@ function MainApp() {
     } catch (error) {
       writeUpdateLog(
         'warn',
-        `应用重启前关闭 Codex API 服务监听失败，继续重启: error=${sanitizeUpdaterErrorMessage(error)}`,
+        `应用重启前关闭 Codex API 服务监听失败，已中止本次重启: error=${sanitizeUpdaterErrorMessage(error)}`,
       );
+      throw error;
     }
   }, [t, writeUpdateLog]);
 
@@ -964,42 +1083,64 @@ function MainApp() {
     const shouldInstall = updateAction.state === 'ready'
       ? updateAction.requiresInstall
       : Boolean(pendingSilentUpdateRef.current);
+    let failureStage: 'prepare' | 'install' | 'relaunch' = 'prepare';
     try {
       writeUpdateLog(
         'info',
         `用户点击立即重启应用更新: version=${targetVersion || 'unknown'}, install_before_restart=${shouldInstall}`,
       );
+      setUpdateRetryStatus(
+        t('update_notification.stoppingApiService', '正在关闭 API 服务...'),
+      );
+      setUpdateDownloadError('');
+      setUpdateErrorDetails('');
+      await prepareCodexLocalAccessBeforeRelaunch();
+      failureStage = 'install';
       const pendingUpdate = pendingSilentUpdateRef.current;
       if (shouldInstall && pendingUpdate) {
         await pendingUpdate.install();
       }
       if (pendingUpdate) {
-        await pendingUpdate.close();
+        await pendingUpdate.close().catch(() => {});
         pendingSilentUpdateRef.current = null;
       }
-      await prepareCodexLocalAccessBeforeRelaunch();
       setSilentUpdateVersion(null);
       setUpdateRetryStatus('');
       setUpdateDownloadError('');
       setUpdateErrorDetails('');
       setUpdateAction({
-        state: 'hidden',
-        version: null,
-        progress: 0,
-        requiresInstall: true,
+        state: 'ready',
+        version: targetVersion || null,
+        progress: 100,
+        requiresInstall: false,
       });
+      failureStage = 'relaunch';
       const { relaunch } = await import('@tauri-apps/plugin-process');
       await relaunch();
     } catch (error) {
       await restoreCodexLocalAccessAfterRelaunchFailure();
       console.error('[App] Failed to apply pending update:', error);
-      writeUpdateLog('error', `用户手动应用更新失败: error=${sanitizeUpdaterErrorMessage(error)}`);
+      const compactError = sanitizeUpdaterErrorMessage(error);
+      const errorMessage = failureStage === 'prepare'
+        ? t('update_notification.stopApiServiceFailed', '无法关闭 API 服务，请先停用后重试。')
+        : failureStage === 'install'
+          ? t('update_notification.installFailed', '系统安装失败，请稍后重试或手动下载安装。')
+          : t('update_notification.restartRequiredAfterInstall', '更新已安装，请手动重启应用完成切换。');
+      setUpdateRetryStatus('');
+      setUpdateDownloadError(errorMessage);
+      setUpdateErrorDetails(compactError);
+      writeUpdateLog(
+        'error',
+        `用户手动应用更新失败: stage=${failureStage}, error=${compactError}`,
+      );
+      throw error;
     }
   }, [
     prepareCodexLocalAccessBeforeRelaunch,
     restoreCodexLocalAccessAfterRelaunchFailure,
     silentUpdateVersion,
     updateAction,
+    t,
     writeUpdateLog,
   ]);
 
@@ -1037,8 +1178,10 @@ function MainApp() {
       setUpdateDownloadError('');
       setUpdateErrorDetails('');
 
+      let relaunchStage: 'prepare' | 'relaunch' = 'prepare';
       try {
         await prepareCodexLocalAccessBeforeRelaunch();
+        relaunchStage = 'relaunch';
         const { relaunch } = await import('@tauri-apps/plugin-process');
         await relaunch();
       } catch (error) {
@@ -1051,7 +1194,9 @@ function MainApp() {
         );
         setUpdateRetryStatus('');
         setUpdateDownloadError(
-          t('update_notification.restartRequiredAfterInstall', '更新已安装，请手动重启应用完成切换。'),
+          relaunchStage === 'prepare'
+            ? t('update_notification.stopApiServiceFailed', '无法关闭 API 服务，请先停用后重试。')
+            : t('update_notification.restartRequiredAfterInstall', '更新已安装，请手动重启应用完成切换。'),
         );
         setUpdateErrorDetails(compactError);
       }
@@ -1314,7 +1459,13 @@ function MainApp() {
     }
 
     if (updateAction.state === 'ready') {
-      await handleApplyPendingUpdate();
+      try {
+        await handleApplyPendingUpdate();
+      } catch (error) {
+        console.error('[App] Quick update restart failed:', error);
+        writeUpdateLog('error', `侧边栏重启更新失败: error=${sanitizeUpdaterErrorMessage(error)}`);
+        openUpdateNotification('manual');
+      }
       return;
     }
 
@@ -2347,7 +2498,7 @@ function MainApp() {
     const refreshTasks = [
       {
         command: 'refresh_current_quota',
-        errorMessage: 'Failed to refresh Antigravity quotas:',
+        errorMessage: 'Failed to refresh Antigravity IDE quotas:',
       },
       {
         command: 'refresh_current_codex_quota',
@@ -2544,7 +2695,10 @@ function MainApp() {
         await useZedAccountStore.getState().switchAccount(retry.accountId);
         setPage('zed');
       } else if (retry?.kind === 'switchAccount' && retry.accountId) {
-        await invoke('switch_account', { accountId: retry.accountId });
+        await invoke('switch_account', {
+          accountId: retry.accountId,
+          runtimeTarget: retry.runtimeTarget,
+        });
         await Promise.allSettled([
           useAccountStore.getState().fetchAccounts(),
           useAccountStore.getState().fetchCurrentAccount(),
@@ -2661,18 +2815,19 @@ function MainApp() {
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
-        listen<string>('tray:navigate', (event) => {
-          const target = String(event.payload || '');
-          switch (target) {
-            case 'codex':
-            case 'manual':
-            case 'settings':
-              setPage(target as Page);
-              break;
-            default:
-              break;
-          }
-        }).then((fn) => { unlisten = fn; });
+    listen<string>('tray:navigate', (event) => {
+      const target = String(event.payload || '');
+      switch (target) {
+        case 'codex':
+        case 'codex-api-service':
+        case 'manual':
+        case 'settings':
+          setPage(target as Page);
+          break;
+        default:
+          break;
+      }
+    }).then((fn) => { unlisten = fn; });
 
     return () => {
       if (unlisten) {
@@ -2781,7 +2936,7 @@ function MainApp() {
                 ? 'Qoder'
               : appPathMissing.app === 'trae'
                 ? 'Trae'
-              : 'Antigravity'
+              : 'Antigravity IDE'
     : '';
 
   const appPathMissingPathLabel = appPathMissing
@@ -2852,6 +3007,16 @@ function MainApp() {
       {showCloseDialog && (
         <Suspense fallback={null}>
           <CloseConfirmDialog onClose={() => setShowCloseDialog(false)} />
+        </Suspense>
+      )}
+
+      {hasBreakoutSession && (
+        <Suspense fallback={null}>
+          <BreakoutModal
+            open={showBreakout}
+            onMinimize={handleBreakoutMinimize}
+            onTerminate={handleBreakoutTerminate}
+          />
         </Suspense>
       )}
 
@@ -2998,10 +3163,14 @@ function MainApp() {
         page={page}
         setPage={setPage}
         onOpenPlatformLayout={openPlatformLayoutModal}
+        easterEggClickCount={easterEggClickCount}
+        onEasterEggTriggerClick={handleBreakoutEntryTriggerClick}
+        hasBreakoutSession={hasBreakoutSession}
         updateActionState={updateAction.state}
         updateProgress={updateAction.progress}
         onUpdateActionClick={handleQuickUpdateActionClick}
         updateRemindersEnabled={updateRemindersEnabled}
+        sponsorEntryVisible={sponsorEntryVisible}
         onOpenLogViewer={() => setShowLogViewer(true)}
       />
 
@@ -3038,11 +3207,18 @@ function MainApp() {
             <DashboardPage
               onNavigate={setPage}
               onOpenPlatformLayout={openPlatformLayoutModal}
-              topCenterBanner={null}
+              onEasterEggTriggerClick={handleBreakoutEntryTriggerClick}
+              topCenterBanner={
+                topRightAdVisible && topRightAdState.ads.length > 0 ? (
+                  <TopCenterPromoBanner reserveWhenEmpty={false} />
+                ) : null
+              }
             />
           )}
+          {page === 'api-relay' && <ApiKeyFunPage />}
           {page === 'overview' && <AccountsPage onNavigate={setPage} />}
           {page === 'codex' && <CodexAccountsPage />}
+          {page === 'codex-api-service' && <CodexApiServicePage />}
           {page === 'github-copilot' && <GitHubCopilotAccountsPage />}
           {page === 'windsurf' && <WindsurfAccountsPage />}
           {page === 'kiro' && <KiroAccountsPage />}
@@ -3055,7 +3231,6 @@ function MainApp() {
           {page === 'workbuddy' && <WorkbuddyAccountsPage />}
           {page === 'zed' && <ZedAccountsPage />}
           {page === 'instances' && <InstancesPage onNavigate={setPage} />}
-          {page === 'fingerprints' && <FingerprintsPage onNavigate={setPage} />}
           {page === 'wakeup' && <WakeupTasksPage onNavigate={setPage} />}
           {page === 'verification' && <WakeupVerificationPage onNavigate={setPage} />}
           {page === '2fa' && <TwoFactorAuthPage />}

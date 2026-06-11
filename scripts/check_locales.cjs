@@ -168,6 +168,7 @@ function isAllowedEnglishReuse(key, value) {
     'Cockpit Api',
     'Newbee API',
     'Antigravity',
+    'Antigravity IDE',
     'Codex',
     'GitHub Copilot',
     'Kiro',
@@ -263,6 +264,11 @@ function isAllowedEnglishReuse(key, value) {
     'windsurf.credits.title',
     'breakout.historyLevelShort',
     'settings.general.minutes',
+    'settings.webdav.retentionTitle',
+    'settings.webdav.retentionDesc',
+    'settings.webdav.retentionUnit',
+    'settings.webdav.collapseAll',
+    'settings.webdav.expandAll',
   ]);
 
   return allowedKeys.has(key);
