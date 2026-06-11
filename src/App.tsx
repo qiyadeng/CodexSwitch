@@ -3207,7 +3207,6 @@ function MainApp() {
             <DashboardPage
               onNavigate={setPage}
               onOpenPlatformLayout={openPlatformLayoutModal}
-              onEasterEggTriggerClick={handleBreakoutEntryTriggerClick}
               topCenterBanner={
                 topRightAdVisible && topRightAdState.ads.length > 0 ? (
                   <TopCenterPromoBanner reserveWhenEmpty={false} />
