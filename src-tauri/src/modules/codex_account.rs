@@ -13,6 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use toml_edit::{value, Document};
 
 static CODEX_QUOTA_ALERT_LAST_SENT: std::sync::LazyLock<Mutex<HashMap<String, i64>>> =
@@ -309,6 +310,67 @@ fn validate_api_key_credentials(
     }
 
     Ok((normalized_key, normalized_base_url))
+}
+
+fn extract_api_key_test_error_message(body: &str) -> String {
+    serde_json::from_str::<serde_json::Value>(body)
+        .ok()
+        .and_then(|value| {
+            value
+                .get("error")
+                .and_then(|error| error.get("message"))
+                .and_then(|message| message.as_str())
+                .or_else(|| value.get("message").and_then(|message| message.as_str()))
+                .or_else(|| value.get("detail").and_then(|detail| detail.as_str()))
+                .map(|message| message.to_string())
+        })
+        .unwrap_or_else(|| {
+            let trimmed = body.trim();
+            if trimmed.is_empty() {
+                "empty response body".to_string()
+            } else {
+                trimmed.chars().take(300).collect::<String>()
+            }
+        })
+}
+
+pub async fn test_api_key_credentials(
+    api_key: String,
+    api_base_url: Option<String>,
+) -> Result<(), String> {
+    let (api_key, api_base_url) = validate_api_key_credentials(&api_key, api_base_url.as_deref())?;
+    let base_url = api_base_url.unwrap_or_else(|| CODEX_DEFAULT_OPENAI_BASE_URL.to_string());
+    let endpoint = format!("{}/models", base_url.trim_end_matches('/'));
+
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(15))
+        .build()
+        .map_err(|err| format!("Failed to create API test client: {}", err))?;
+
+    let response = client
+        .get(&endpoint)
+        .bearer_auth(api_key)
+        .header(ACCEPT, "application/json")
+        .send()
+        .await
+        .map_err(|err| format!("API Key test request failed: {}", err))?;
+
+    let status = response.status();
+    if status.is_success() {
+        logger::log_info(&format!(
+            "Codex API Key test succeeded: endpoint={}",
+            endpoint
+        ));
+        return Ok(());
+    }
+
+    let body = response.text().await.unwrap_or_default();
+    let message = extract_api_key_test_error_message(&body);
+    logger::log_warn(&format!(
+        "Codex API Key test failed: endpoint={}, status={}, message={}",
+        endpoint, status, message
+    ));
+    Err(format!("API Key test failed ({}): {}", status, message))
 }
 
 fn build_api_key_email(api_key: &str) -> String {
@@ -6006,10 +6068,11 @@ mod tests {
     use super::{
         build_account_storage_id, build_auth_file_value, decode_jwt_payload_value,
         detect_auth_file_plan_type_from_path, ensure_managed_account_fresh,
-        extract_codex_import_candidate_from_value, extract_codex_tokens_from_value,
-        extract_user_info, format_refresh_error_for_user, get_accounts_dir,
-        get_accounts_storage_path, get_current_account_from_loaded, is_managed_auth_refresh_due,
-        list_accounts_checked, load_account, load_account_index, looks_like_sub2api_export,
+        extract_api_key_test_error_message, extract_codex_import_candidate_from_value,
+        extract_codex_tokens_from_value, extract_user_info, format_refresh_error_for_user,
+        get_accounts_dir, get_accounts_storage_path, get_current_account_from_loaded,
+        is_managed_auth_refresh_due, list_accounts_checked, load_account, load_account_index,
+        looks_like_sub2api_export,
         parse_auth_file_last_refresh, parse_codex_account_compat, parse_line_delimited_json_values,
         read_api_provider_from_config_toml, read_quick_config_from_config_toml,
         resolve_api_provider_config, save_account, save_account_index,
@@ -6030,6 +6093,16 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     static TEST_ENV_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+    #[test]
+    fn extract_api_key_test_error_message_prefers_nested_error_message() {
+        let raw = r#"{"error":{"message":"Invalid API key provided."}}"#;
+
+        assert_eq!(
+            extract_api_key_test_error_message(raw),
+            "Invalid API key provided."
+        );
+    }
 
     #[test]
     fn parse_line_delimited_json_values_accepts_one_object_per_line() {

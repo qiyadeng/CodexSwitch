@@ -210,6 +210,10 @@ import {
 } from "../utils/codexLocalAccessRiskNotice";
 import md5 from "blueimp-md5";
 
+type ApiKeyCredentialTestResult =
+  | { ok: true; apiKey: string; apiBaseUrl?: string; signature: string }
+  | { ok: false };
+
 const CODEX_TOKEN_SINGLE_EXAMPLE = `{
   "tokens": {
     "id_token": "eyJ...",
@@ -245,7 +249,6 @@ const CODEX_TOKEN_BATCH_EXAMPLE = `[
   }
 ]`;
 const OPENAI_OFFICIAL_PRESET_ID = "openai_official";
-const OPENAI_OFFICIAL_BASE_URL = "https://api.openai.com/v1";
 
 function normalizeCodexApiBaseUrl(rawValue?: string | null): string {
   return normalizeHttpBaseUrl(rawValue ?? "") ?? "";
@@ -1938,6 +1941,12 @@ export function CodexAccountsPage() {
     [t],
   );
 
+  const buildApiKeyTestSignature = useCallback(
+    (apiKey: string, apiBaseUrl?: string) =>
+      md5(`${apiKey.trim()}\n${(apiBaseUrl ?? "").trim()}`),
+    [],
+  );
+
   const {
     accounts,
     loading,
@@ -2157,6 +2166,10 @@ export function CodexAccountsPage() {
   const [apiBaseUrlInput, setApiBaseUrlInput] = useState(
     DEFAULT_CODEX_API_BASE_URL,
   );
+  const [apiKeyTesting, setApiKeyTesting] = useState(false);
+  const [apiKeyVerifiedSignature, setApiKeyVerifiedSignature] = useState<
+    string | null
+  >(null);
   const [apiProviderPresetId, setApiProviderPresetId] = useState(
     DEFAULT_CODEX_API_PROVIDER_ID,
   );
@@ -2202,6 +2215,11 @@ export function CodexAccountsPage() {
     setEditingNewManagedProviderNameInput,
   ] = useState("");
   const [savingApiKeyCredentials, setSavingApiKeyCredentials] = useState(false);
+  const [editingApiKeyTesting, setEditingApiKeyTesting] = useState(false);
+  const [
+    editingApiKeyVerifiedSignature,
+    setEditingApiKeyVerifiedSignature,
+  ] = useState<string | null>(null);
   const [quickSwitchAccountId, setQuickSwitchAccountId] = useState<
     string | null
   >(null);
@@ -2267,6 +2285,14 @@ export function CodexAccountsPage() {
   const inlineRenameDiscardRef = useRef(false);
   const apiSwitchNoticeRepairSeqRef = useRef(0);
   const apiSwitchNoticeAutoCloseTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setApiKeyVerifiedSignature(null);
+  }, [apiKeyInput, apiBaseUrlInput]);
+
+  useEffect(() => {
+    setEditingApiKeyVerifiedSignature(null);
+  }, [editingApiKeyCredentialsValue, editingApiBaseUrlCredentialsValue]);
 
   useEffect(
     () => () => {
@@ -4288,6 +4314,87 @@ export function CodexAccountsPage() {
     }
   }, []);
 
+  const performApiKeyCredentialTest = useCallback(
+    async (
+      apiKeyRaw: string,
+      apiBaseUrlRaw: string,
+      options?: { forEdit?: boolean },
+    ): Promise<ApiKeyCredentialTestResult> => {
+      const validation = validateApiKeyCredentialInputs(
+        apiKeyRaw,
+        apiBaseUrlRaw,
+      );
+      if (!validation.ok) {
+        if (options?.forEdit) {
+          setMessage({ text: validation.message, tone: "error" });
+        } else {
+          page.setAddStatus("error");
+          page.setAddMessage(validation.message);
+        }
+        return { ok: false };
+      }
+
+      const setTesting = options?.forEdit
+        ? setEditingApiKeyTesting
+        : setApiKeyTesting;
+      setTesting(true);
+      if (options?.forEdit) {
+        setMessage({
+          text: t("codex.api.test.testing", "正在测试 API Key..."),
+        });
+      } else {
+        page.setAddStatus("loading");
+        page.setAddMessage(
+          t("codex.api.test.testing", "正在测试 API Key..."),
+        );
+      }
+
+      try {
+        await codexService.testCodexApiKeyCredentials(
+          validation.apiKey,
+          validation.apiBaseUrl,
+        );
+        const signature = buildApiKeyTestSignature(
+          validation.apiKey,
+          validation.apiBaseUrl,
+        );
+        if (options?.forEdit) {
+          setEditingApiKeyVerifiedSignature(signature);
+          setMessage({
+            text: t("codex.api.test.success", "API Key 测试通过"),
+          });
+        } else {
+          setApiKeyVerifiedSignature(signature);
+          page.setAddStatus("success");
+          page.setAddMessage(t("codex.api.test.success", "API Key 测试通过"));
+        }
+        return { ...validation, signature };
+      } catch (err) {
+        const error = String(err).replace(/^Error:\s*/, "");
+        const text = t("codex.api.test.failed", {
+          defaultValue: "API Key 测试失败：{{error}}",
+          error,
+        });
+        if (options?.forEdit) {
+          setMessage({ text, tone: "error" });
+        } else {
+          page.setAddStatus("error");
+          page.setAddMessage(text);
+        }
+        return { ok: false };
+      } finally {
+        setTesting(false);
+      }
+    },
+    [
+      buildApiKeyTestSignature,
+      page,
+      setMessage,
+      t,
+      validateApiKeyCredentialInputs,
+    ],
+  );
+
   const handleApiKeyLogin = async () => {
     const validation = validateApiKeyCredentialInputs(
       apiKeyInput,
@@ -4298,6 +4405,20 @@ export function CodexAccountsPage() {
       page.setAddMessage(validation.message);
       return;
     }
+    let credential = validation;
+    const signature = buildApiKeyTestSignature(
+      validation.apiKey,
+      validation.apiBaseUrl,
+    );
+    if (apiKeyVerifiedSignature !== signature) {
+      const testResult = await performApiKeyCredentialTest(
+        apiKeyInput,
+        apiBaseUrlInput,
+      );
+      if (!testResult.ok) return;
+      credential = testResult;
+    }
+
     const providerPayload = buildApiProviderPayload(
       apiBaseUrlInput,
       apiProviderPresetId,
@@ -4310,7 +4431,7 @@ export function CodexAccountsPage() {
     try {
       let finalProviderPayload = providerPayload;
       if (
-        validation.apiBaseUrl &&
+        credential.apiBaseUrl &&
         providerPayload.apiProviderMode === "custom" &&
         providerPayload.apiProviderId !== COCKPIT_API_PROVIDER_ID
       ) {
@@ -4322,8 +4443,8 @@ export function CodexAccountsPage() {
               ? null
               : (providerPayload.apiProviderId ?? null),
             providerName: providerPayload.apiProviderName ?? null,
-            apiBaseUrl: validation.apiBaseUrl,
-            apiKey: validation.apiKey,
+            apiBaseUrl: credential.apiBaseUrl,
+            apiKey: credential.apiKey,
             apiKeyName: providerPayload.accountName,
             sourceTag: providerPayload.sponsorTemplate?.id ?? null,
             modelCatalog: providerPayload.sponsorTemplate?.modelCatalog,
@@ -4345,7 +4466,7 @@ export function CodexAccountsPage() {
           try {
             const usageSummary = await queryCodexModelProviderUsage({
               baseUrl: savedProvider.baseUrl,
-              apiKey: validation.apiKey,
+              apiKey: credential.apiKey,
               integrationType: savedProvider.integrationType ?? null,
             });
             if (
@@ -4371,8 +4492,8 @@ export function CodexAccountsPage() {
         }
       }
       const account = await codexService.addCodexAccountWithApiKey(
-        validation.apiKey,
-        validation.apiBaseUrl,
+        credential.apiKey,
+        credential.apiBaseUrl,
         finalProviderPayload.apiProviderMode,
         finalProviderPayload.apiProviderId,
         finalProviderPayload.apiProviderName,
@@ -5341,6 +5462,7 @@ export function CodexAccountsPage() {
     setEditingManagedProviderId("");
     setEditingManagedProviderApiKeyId("");
     setEditingNewManagedProviderNameInput("");
+    setEditingApiKeyVerifiedSignature(null);
   }, [savingApiKeyCredentials]);
 
   const openApiKeyCredentialsModal = useCallback(
@@ -5370,6 +5492,7 @@ export function CodexAccountsPage() {
       setEditingNewManagedProviderNameInput(
         matchedProvider?.name ?? account.api_provider_name ?? "",
       );
+      setEditingApiKeyVerifiedSignature(null);
     },
     [managedProviders],
   );
@@ -5389,6 +5512,21 @@ export function CodexAccountsPage() {
       });
       return;
     }
+    let credential = validation;
+    const signature = buildApiKeyTestSignature(
+      validation.apiKey,
+      validation.apiBaseUrl,
+    );
+    if (editingApiKeyVerifiedSignature !== signature) {
+      const testResult = await performApiKeyCredentialTest(
+        editingApiKeyCredentialsValue,
+        editingApiBaseUrlCredentialsValue,
+        { forEdit: true },
+      );
+      if (!testResult.ok) return;
+      credential = testResult;
+    }
+
     const providerPayload = buildApiProviderPayload(
       editingApiBaseUrlCredentialsValue,
       editingApiProviderPresetId,
@@ -5400,8 +5538,8 @@ export function CodexAccountsPage() {
     try {
       await updateApiKeyCredentials(
         accountId,
-        validation.apiKey,
-        validation.apiBaseUrl,
+        credential.apiKey,
+        credential.apiBaseUrl,
         providerPayload.apiProviderMode,
         providerPayload.apiProviderId,
         providerPayload.apiProviderName,
@@ -5412,7 +5550,7 @@ export function CodexAccountsPage() {
         providerPayload.apiWireApi,
       );
       if (
-        validation.apiBaseUrl &&
+        credential.apiBaseUrl &&
         providerPayload.apiProviderMode === "custom" &&
         providerPayload.apiProviderId !== COCKPIT_API_PROVIDER_ID
       ) {
@@ -5424,8 +5562,8 @@ export function CodexAccountsPage() {
               ? null
               : (providerPayload.apiProviderId ?? null),
             providerName: providerPayload.apiProviderName ?? null,
-            apiBaseUrl: validation.apiBaseUrl,
-            apiKey: validation.apiKey,
+            apiBaseUrl: credential.apiBaseUrl,
+            apiKey: credential.apiKey,
             apiKeyName: providerPayload.accountName,
             sourceTag: providerPayload.sponsorTemplate?.id ?? null,
             modelCatalog: providerPayload.sponsorTemplate?.modelCatalog,
@@ -5438,7 +5576,7 @@ export function CodexAccountsPage() {
           try {
             const usageSummary = await queryCodexModelProviderUsage({
               baseUrl: savedProvider.baseUrl,
-              apiKey: validation.apiKey,
+              apiKey: credential.apiKey,
               integrationType: savedProvider.integrationType ?? null,
             });
             if (
@@ -5486,12 +5624,15 @@ export function CodexAccountsPage() {
     }
   }, [
     buildApiProviderPayload,
+    buildApiKeyTestSignature,
     editingApiBaseUrlCredentialsValue,
     editingApiKeyCredentialsId,
     editingApiKeyCredentialsValue,
+    editingApiKeyVerifiedSignature,
     editingApiProviderPresetId,
     editingManagedProviderId,
     editingNewManagedProviderNameInput,
+    performApiKeyCredentialTest,
     reloadManagedProviders,
     setMessage,
     t,
@@ -11740,11 +11881,37 @@ export function CodexAccountsPage() {
                       )}
                       <div className="api-key-add-actions">
                         <button
+                          className="btn btn-secondary"
+                          onClick={() =>
+                            void performApiKeyCredentialTest(
+                              apiKeyInput,
+                              apiBaseUrlInput,
+                            )
+                          }
+                          disabled={
+                            importing ||
+                            addStatus === "loading" ||
+                            apiKeyTesting ||
+                            !apiKeyInput.trim() ||
+                            !apiBaseUrlInput.trim()
+                          }
+                        >
+                          {apiKeyTesting ? (
+                            <RefreshCw size={16} className="loading-spinner" />
+                          ) : (
+                            <Play size={16} />
+                          )}
+                          {apiKeyTesting
+                            ? t("codex.api.test.testingShort", "测试中")
+                            : t("codex.api.test.button", "测试")}
+                        </button>
+                        <button
                           className="btn btn-primary"
                           onClick={() => void handleApiKeyLogin()}
                           disabled={
                             importing ||
                             addStatus === "loading" ||
+                            apiKeyTesting ||
                             !apiKeyInput.trim()
                           }
                         >
@@ -12726,15 +12893,41 @@ export function CodexAccountsPage() {
                       <button
                         className="btn btn-secondary"
                         onClick={closeApiKeyCredentialsModal}
-                        disabled={savingApiKeyCredentials}
+                        disabled={savingApiKeyCredentials || editingApiKeyTesting}
                       >
                         {t("common.cancel")}
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() =>
+                          void performApiKeyCredentialTest(
+                            editingApiKeyCredentialsValue,
+                            editingApiBaseUrlCredentialsValue,
+                            { forEdit: true },
+                          )
+                        }
+                        disabled={
+                          savingApiKeyCredentials ||
+                          editingApiKeyTesting ||
+                          !editingApiKeyCredentialsValue.trim() ||
+                          !editingApiBaseUrlCredentialsValue.trim()
+                        }
+                      >
+                        {editingApiKeyTesting ? (
+                          <RefreshCw size={16} className="loading-spinner" />
+                        ) : (
+                          <Play size={16} />
+                        )}
+                        {editingApiKeyTesting
+                          ? t("codex.api.test.testingShort", "测试中")
+                          : t("codex.api.test.button", "测试")}
                       </button>
                       <button
                         className="btn btn-primary"
                         onClick={() => void handleSubmitApiKeyCredentials()}
                         disabled={
                           savingApiKeyCredentials ||
+                          editingApiKeyTesting ||
                           !editingApiKeyCredentialsValue.trim()
                         }
                       >

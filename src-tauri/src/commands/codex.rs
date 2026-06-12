@@ -721,6 +721,14 @@ pub fn add_codex_account_with_api_key(
 }
 
 #[tauri::command]
+pub async fn test_codex_api_key_credentials(
+    api_key: String,
+    api_base_url: Option<String>,
+) -> Result<(), String> {
+    codex_account::test_api_key_credentials(api_key, api_base_url).await
+}
+
+#[tauri::command]
 pub fn update_codex_account_name(account_id: String, name: String) -> Result<CodexAccount, String> {
     codex_account::update_account_name(&account_id, name)
 }

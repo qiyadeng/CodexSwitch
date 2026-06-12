@@ -275,6 +275,16 @@ export async function addCodexAccountWithApiKey(
   });
 }
 
+export async function testCodexApiKeyCredentials(
+  apiKey: string,
+  apiBaseUrl?: string,
+): Promise<void> {
+  await invoke('test_codex_api_key_credentials', {
+    apiKey,
+    apiBaseUrl: apiBaseUrl ?? null,
+  });
+}
+
 export async function updateCodexAccountName(accountId: string, name: string): Promise<CodexAccount> {
   return await invoke('update_codex_account_name', { accountId, name });
 }
